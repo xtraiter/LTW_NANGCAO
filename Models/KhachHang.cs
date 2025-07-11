@@ -1,0 +1,24 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace CinemaManagement.Models
+{
+    public class KhachHang
+    {
+        [Key]
+        [StringLength(10)]
+        public string MaKhachHang { get; set; } = string.Empty;
+
+        [StringLength(100)]
+        public string HoTen { get; set; } = string.Empty;
+
+        [StringLength(15)]
+        public string SDT { get; set; } = string.Empty;
+
+        public int DiemTichLuy { get; set; }
+
+        // Navigation properties
+        public virtual ICollection<TaiKhoan> TaiKhoans { get; set; } = new List<TaiKhoan>();
+        public virtual ICollection<HoaDon> HoaDons { get; set; } = new List<HoaDon>();
+    }
+}

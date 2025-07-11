@@ -1,0 +1,633 @@
+@model CinemaManagement.ViewModels.PhatHanhHangLoatViewModel
+
+@{
+    ViewData["Title"] = "Phát hành vé hàng loạt";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Phát hành vé hàng loạt
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle me-2"></i>Hướng dẫn sử dụng:</h6>
+                                <ul class="mb-0">
+                                    <li><strong>Click vào ghế:</strong> Chọn/bỏ chọn ghế để phát hành vé</li>
+                                    <li><strong>Phím tắt:</strong> Ctrl+A (chọn tất cả), Ctrl+D (bỏ chọn), Esc (bỏ chọn)</li>
+                                    <li><strong>Màu sắc:</strong> 
+                                        <span class="badge bg-success">Xanh lá</span> = Có thể chọn |
+                                        <span class="badge bg-primary">Xanh dương</span> = Đã chọn |
+                                        <span class="badge bg-danger">Đỏ</span> = Đã có vé
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Quay lại danh sách lịch chiếu
+                            </a>
+                        </div>
+                    </div>
+
+                    @if (Model.LichChieu != null)
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card border-primary">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0">Thông tin lịch chiếu</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <table class="table table-borderless">
+                                                    <tr>
+                                                        <td><strong>Mã lịch chiếu:</strong></td>
+                                                        <td>@Model.LichChieu.MaLichChieu</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><strong>Tên phim:</strong></td>
+                                                        <td>@Model.LichChieu.Phim?.TenPhim</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><strong>Phòng chiếu:</strong></td>
+                                                        <td><span class="badge bg-secondary fs-6">@Model.LichChieu.PhongChieu?.TenPhong</span></td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <table class="table table-borderless">
+                                                    <tr>
+                                                        <td><strong>Thời gian bắt đầu:</strong></td>
+                                                        <td>@Model.LichChieu.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><strong>Thời gian kết thúc:</strong></td>
+                                                        <td>@Model.LichChieu.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><strong>Giá vé cơ bản:</strong></td>
+                                                        <td><span class="fw-bold text-success">@Model.LichChieu.Gia.ToString("C0")</span></td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form asp-action="PhatHanhHangLoat" method="post" id="phatHanhForm" role="form" aria-label="Form phát hành vé hàng loạt">
+                            <input type="hidden" name="MaLichChieu" value="@Model.LichChieu.MaLichChieu" aria-label="Mã lịch chiếu" />
+                            
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="card border-success">
+                                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">Chọn ghế để phát hành vé</h5>
+                                            <div>
+                                                <button type="button" class="btn btn-sm btn-light" onclick="chonTatCa()" 
+                                                        aria-label="Chọn tất cả ghế" title="Chọn tất cả ghế có thể chọn">
+                                                    <i class="fas fa-check-square me-1" aria-hidden="true"></i>
+                                                    Chọn tất cả
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-light" onclick="boChonTatCa()"
+                                                        aria-label="Bỏ chọn tất cả ghế" title="Bỏ chọn tất cả ghế đã chọn">
+                                                    <i class="fas fa-square me-1" aria-hidden="true"></i>
+                                                    Bỏ chọn tất cả
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-light" onclick="chonTheoHang()"
+                                                        aria-label="Chọn ghế theo hàng" title="Chọn ghế theo hàng cụ thể">
+                                                    <i class="fas fa-list me-1" aria-hidden="true"></i>
+                                                    Chọn theo hàng
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <div class="screen mb-4">
+                                                        <i class="fas fa-video me-2"></i>
+                                                        MÀN HÌNH
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-4">
+                                                <div class="col-12">
+                                                    <div class="d-flex justify-content-center flex-wrap gap-4">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="seat me-2"></div>
+                                                            <small>Ghế trống - Có thể chọn</small>
+                                                        </div>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="seat selected me-2"></div>
+                                                            <small>Ghế đã chọn - Sẽ phát hành vé</small>
+                                                        </div>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="seat occupied me-2"></div>
+                                                            <small>Đã có vé - Không thể chọn</small>
+                                                        </div>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="seat vip me-2"></div>
+                                                            <small>Ghế VIP - Giá cao hơn</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="seat-map text-center" id="seatMap">
+                                                @{
+                                                    var occupiedSeats = Model.GheCoVe.ToList();
+                                                    var seatsByRow = Model.DanhSachGhe.GroupBy(g => g.SoGhe.Substring(0, 1)).OrderBy(g => g.Key);
+                                                }
+                                                
+                                                @foreach (var row in seatsByRow)
+                                                {
+                                                    <div class="seat-row mb-3">
+                                                        <div class="d-flex align-items-center justify-content-center">
+                                                            <span class="row-label me-3">@row.Key</span>
+                                                            <button type="button" class="btn btn-sm btn-outline-primary me-2" 
+                                                                    onclick="toggleHang('@row.Key')" 
+                                                                    aria-label="Chọn/Bỏ chọn toàn bộ hàng @row.Key"
+                                                                    title="Chọn/Bỏ chọn toàn bộ hàng @row.Key">
+                                                                <i class="fas fa-hand-pointer" aria-hidden="true"></i>
+                                                            </button>
+                                                            @foreach (var seat in row.OrderBy(s => int.Parse(s.SoGhe.Substring(1))))
+                                                            {
+                                                                var isOccupied = occupiedSeats.Contains(seat.MaGhe);
+                                                                var seatClass = "seat";
+                                                                
+                                                                if (isOccupied)
+                                                                {
+                                                                    seatClass += " occupied";
+                                                                }
+                                                                else if (seat.LoaiGhe == "VIP")
+                                                                {
+                                                                    seatClass += " vip";
+                                                                }
+
+                                                                <span class="@seatClass" 
+                                                                      data-seat-id="@seat.MaGhe" 
+                                                                      data-seat-number="@seat.SoGhe"
+                                                                      data-seat-price="@seat.GiaGhe"
+                                                                      data-seat-type="@seat.LoaiGhe"
+                                                                      data-row="@row.Key"
+                                                                      @(isOccupied ? "disabled" : "")
+                                                                      data-bs-toggle="tooltip" 
+                                                                      data-bs-placement="top" 
+                                                                      title="Ghế @seat.SoGhe - @seat.LoaiGhe - @seat.GiaGhe.ToString("C0") - @(isOccupied ? "Đã có vé" : "Còn trống")"
+                                                                      aria-label="@(isOccupied ? $"Ghế {seat.SoGhe} đã có vé" : $"Ghế {seat.SoGhe}, giá {seat.GiaGhe:C0}")"
+                                                                      tabindex="@(isOccupied ? "-1" : "0")"
+                                                                      role="@(isOccupied ? "text" : "button")">
+                                                                    @seat.SoGhe.Substring(1)
+                                                                    @if (!isOccupied)
+                                                                    {
+                                                                        <input type="checkbox" 
+                                                                               name="GheChon" 
+                                                                               value="@seat.MaGhe" 
+                                                                               class="seat-checkbox visually-hidden" 
+                                                                               aria-label="Chọn ghế @seat.SoGhe" />
+                                                                    }
+                                                                    <div class="seat-price">@seat.GiaGhe.ToString("C0")</div>
+                                                                </span>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+
+                                            <div class="row mt-4">
+                                                <div class="col-md-6">
+                                                    <div class="card border-info">
+                                                        <div class="card-header bg-info text-white">
+                                                            <h6 class="mb-0">Thống kê chi tiết</h6>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="row text-center">
+                                                                <div class="col-6">
+                                                                    <div class="fw-bold text-success fs-4" id="soGheChon">0</div>
+                                                                    <small class="text-muted">Sẽ phát hành</small>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <div class="fw-bold text-info fs-4">@Model.GheCoVe.Count</div>
+                                                                    <small class="text-muted">Đã có vé</small>
+                                                                </div>
+                                                            </div>
+                                                            <hr>
+                                                            <div class="row text-center">
+                                                                <div class="col-6">
+                                                                    <div class="fw-bold text-primary fs-4" id="tongTien">0 ₫</div>
+                                                                    <small class="text-muted">Tổng tiền dự kiến</small>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <div class="fw-bold text-secondary fs-4" id="soGheTrong">@(Model.DanhSachGhe.Count - Model.GheCoVe.Count)</div>
+                                                                    <small class="text-muted">Tổng ghế trống</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card border-warning">
+                                                        <div class="card-header bg-warning text-dark">
+                                                            <h6 class="mb-0">Danh sách ghế đã chọn</h6>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div id="danhSachGheChon" class="min-height-100">
+                                                                <em class="text-muted">Chưa chọn ghế nào</em>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-12 text-center">
+                                    <button type="submit" class="btn btn-success btn-lg me-2" id="submitButton" disabled
+                                            aria-label="Phát hành vé cho các ghế đã chọn" 
+                                            title="Click để phát hành vé cho các ghế đã chọn">
+                                        <i class="fas fa-exclamation-triangle me-1" aria-hidden="true"></i>
+                                        Chưa chọn ghế
+                                    </button>
+                                    <a asp-action="Index" class="btn btn-secondary btn-lg"
+                                       aria-label="Hủy bỏ và quay lại danh sách lịch chiếu"
+                                       title="Hủy bỏ thao tác và quay lại danh sách lịch chiếu">
+                                        <i class="fas fa-times me-1" aria-hidden="true"></i>
+                                        Hủy bỏ
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Utility classes */
+    .visually-hidden {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+    }
+    
+    /* Seat row styling */
+    .seat-row {
+        line-height: 50px;
+        text-align: center;
+    }
+    
+    .row-label {
+        display: inline-block;
+        width: 40px;
+        font-weight: bold;
+        color: var(--primary-color);
+        font-size: 16px;
+    }
+    
+    /* Seat styling */
+    .seat {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        margin: 2px;
+        border-radius: 8px;
+        border: 2px solid #ddd;
+        background-color: #f8f9fa;
+        color: #333;
+        text-align: center;
+        line-height: 36px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .seat.available {
+        background-color: #e8f5e8;
+        border-color: #28a745;
+        color: #155724;
+    }
+    
+    .seat.selected {
+        background-color: #007bff;
+        border-color: #0056b3;
+        color: white;
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+    }
+    
+    .seat.occupied {
+        background-color: #dc3545;
+        border-color: #721c24;
+        color: white;
+        cursor: not-allowed;
+    }
+    
+    .seat.vip {
+        background-color: #ffc107;
+        border-color: #d39e00;
+        color: #212529;
+        font-weight: bold;
+    }
+    
+    .seat.vip.selected {
+        background-color: #fd7e14;
+        border-color: #d63384;
+        color: white;
+    }
+    
+    .seat-price {
+        font-size: 8px !important;
+        font-weight: 500;
+        color: #fff;
+        position: absolute;
+        bottom: 1px;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        text-shadow: 0 0 2px rgba(0,0,0,0.8);
+        max-width: calc(100% - 4px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1;
+        background: rgba(0,0,0,0.5);
+        border-radius: 2px;
+        padding: 0 2px;
+    }
+    
+    .seat.available .seat-price {
+        color: #155724;
+        background: rgba(255,255,255,0.8);
+        text-shadow: none;
+    }
+    
+    .seat.vip .seat-price {
+        color: #212529;
+        background: rgba(255,255,255,0.8);
+        text-shadow: none;
+    }
+    
+    .seat:hover:not(.occupied) {
+        transform: scale(1.1);
+    }
+    
+    /* Utility */
+    .min-height-100 {
+        min-height: 100px;
+    }
+    
+    /* Responsive design */
+    @@media (max-width: 768px) {
+        .seat {
+            width: 35px;
+            height: 35px;
+            font-size: 10px;
+            line-height: 31px;
+        }
+        
+        .seat-price {
+            font-size: 7px !important;
+            bottom: 0px;
+            padding: 0 1px;
+        }
+        
+        .row-label {
+            width: 30px;
+            font-size: 14px;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Khai báo biến toàn cục
+        var giaLichChieu = parseFloat('@((Model.LichChieu?.Gia ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture))');
+        var selectedSeats = [];
+        var totalAmount = 0;
+        
+        // Định nghĩa các hàm global trước
+        function chonTatCa() {
+            $('.seat:not(.occupied):not(.selected)').each(function() {
+                $(this).trigger('click');
+            });
+        }
+
+        function boChonTatCa() {
+            $('.seat.selected').each(function() {
+                $(this).trigger('click');
+            });
+        }
+
+        function chonTheoHang() {
+            var rows = [];
+            $('.seat').each(function() {
+                var row = $(this).data('row');
+                if (row && rows.indexOf(row) === -1) {
+                    rows.push(row);
+                }
+            });
+            
+            var selectedRows = prompt('Chọn hàng ghế (cách nhau bằng dấu phẩy):\nCác hàng có sẵn: ' + rows.join(', '));
+            
+            if (selectedRows) {
+                var rowsToSelect = selectedRows.split(',').map(function(row) {
+                    return row.trim().toUpperCase();
+                });
+                
+                rowsToSelect.forEach(function(row) {
+                    if (rows.indexOf(row) !== -1) {
+                        $('.seat[data-row="' + row + '"]:not(.occupied)').each(function() {
+                            if (!$(this).hasClass('selected')) {
+                                $(this).trigger('click');
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        function toggleHang(rowLabel) {
+            var seatsInRow = $('.seat[data-row="' + rowLabel + '"]:not(.occupied)');
+            var selectedSeatsInRow = seatsInRow.filter('.selected');
+            
+            if (selectedSeatsInRow.length === seatsInRow.length) {
+                // Nếu tất cả đã chọn, bỏ chọn tất cả
+                selectedSeatsInRow.each(function() {
+                    $(this).trigger('click');
+                });
+            } else {
+                // Nếu chưa chọn hết, chọn tất cả
+                seatsInRow.not('.selected').each(function() {
+                    $(this).trigger('click');
+                });
+            }
+        }
+
+        function updateUI() {
+            // Cập nhật số ghế đã chọn
+            $('#soGheChon').text(selectedSeats.length);
+            
+            // Cập nhật tổng tiền
+            $('#tongTien').text(formatCurrency(totalAmount));
+            
+            // Cập nhật danh sách ghế đã chọn
+            var danhSachDiv = $('#danhSachGheChon');
+            if (selectedSeats.length > 0) {
+                var badges = selectedSeats.map(function(seat) {
+                    return '<span class="badge bg-info">' + seat.number + '</span>';
+                }).join('');
+                
+                var html = '<div class="mb-2"><strong>Sẽ phát hành vé cho ' + selectedSeats.length + ' ghế:</strong></div>' +
+                          '<div class="d-flex flex-wrap gap-1">' + badges + '</div>';
+                danhSachDiv.html(html);
+            } else {
+                danhSachDiv.html('<em class="text-muted">Chưa chọn ghế nào để phát hành vé</em>');
+            }
+            
+            // Cập nhật trạng thái nút submit
+            var submitButton = $('#submitButton');
+            if (selectedSeats.length === 0) {
+                submitButton.prop('disabled', true);
+                submitButton.html('<i class="fas fa-exclamation-triangle me-1" aria-hidden="true"></i>Chưa chọn ghế');
+                submitButton.removeClass('btn-success').addClass('btn-secondary');
+            } else {
+                submitButton.prop('disabled', false);
+                submitButton.html('<i class="fas fa-check me-1" aria-hidden="true"></i>Phát hành ' + selectedSeats.length + ' vé');
+                submitButton.removeClass('btn-secondary').addClass('btn-success');
+            }
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+        
+        $(document).ready(function() {
+            console.log('Khởi tạo trang phát hành vé, giá lịch chiếu:', giaLichChieu);
+            
+            // Khởi tạo tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Xử lý chọn ghế
+            $(document).on('click', '.seat:not(.occupied)', function() {
+                var seatId = $(this).data('seat-id');
+                var seatNumber = $(this).data('seat-number');
+                var seatPrice = parseFloat($(this).data('seat-price')) || 0;
+                var seatType = $(this).data('seat-type');
+                var checkbox = $(this).find('.seat-checkbox');
+
+                if ($(this).hasClass('selected')) {
+                    // Bỏ chọn ghế
+                    $(this).removeClass('selected');
+                    selectedSeats = selectedSeats.filter(function(seat) {
+                        return seat.id !== seatId;
+                    });
+                    totalAmount -= (giaLichChieu + seatPrice);
+                    if (checkbox.length) {
+                        checkbox.prop('checked', false);
+                    }
+                } else {
+                    // Chọn ghế
+                    $(this).addClass('selected');
+                    selectedSeats.push({
+                        id: seatId,
+                        number: seatNumber,
+                        price: seatPrice,
+                        type: seatType
+                    });
+                    totalAmount += (giaLichChieu + seatPrice);
+                    if (checkbox.length) {
+                        checkbox.prop('checked', true);
+                    }
+                }
+
+                updateUI();
+            });
+
+            // Keyboard shortcuts
+            $(document).keydown(function(e) {
+                if (e.ctrlKey && e.key === 'a') {
+                    e.preventDefault();
+                    chonTatCa();
+                }
+                if (e.ctrlKey && e.key === 'd') {
+                    e.preventDefault();
+                    boChonTatCa();
+                }
+                if (e.key === 'Escape') {
+                    boChonTatCa();
+                }
+            });
+
+            // Form submission
+            $('#phatHanhForm').on('submit', function(e) {
+                if (selectedSeats.length === 0) {
+                    e.preventDefault();
+                    alert('Vui lòng chọn ít nhất một ghế để phát hành vé!');
+                    return false;
+                }
+                
+                var confirmResult = confirm('Bạn có chắc chắn muốn phát hành vé cho ' + selectedSeats.length + ' ghế đã chọn?\n\nTổng tiền: ' + formatCurrency(totalAmount));
+                if (!confirmResult) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Initial UI update
+            updateUI();
+        });
+    </script>
+}

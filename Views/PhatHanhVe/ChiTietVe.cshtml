@@ -1,0 +1,243 @@
+@model CinemaManagement.Models.Ve
+
+@{
+    ViewData["Title"] = "Chi tiết vé";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-ticket-alt me-2"></i>
+                        Chi tiết vé: @Model.MaVe
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <a asp-action="DanhSachVe" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Quay lại danh sách
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">Thông tin vé</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Mã vé:</strong></td>
+                                            <td>@Model.MaVe</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Trạng thái:</strong></td>
+                                            <td>
+                                                @if (Model.TrangThai == "Còn hạn")
+                                                {
+                                                    <span class="badge bg-success fs-6">@Model.TrangThai</span>
+                                                }
+                                                else if (Model.TrangThai == "Hết hạn")
+                                                {
+                                                    <span class="badge bg-danger fs-6">@Model.TrangThai</span>
+                                                }
+                                                else if (Model.TrangThai == "Đã sử dụng")
+                                                {
+                                                    <span class="badge bg-info fs-6">@Model.TrangThai</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning fs-6">@Model.TrangThai</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Giá vé:</strong></td>
+                                            <td><span class="fw-bold text-success fs-5">@Model.Gia.ToString("C0")</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Hạn sử dụng:</strong></td>
+                                            <td>
+                                                @Model.HanSuDung.ToString("dd/MM/yyyy HH:mm")
+                                                @if (Model.HanSuDung < DateTime.Now)
+                                                {
+                                                    <small class="text-danger">(Đã hết hạn)</small>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-success">(Còn hạn)</small>
+                                                }
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">Thông tin suất chiếu</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Tên phim:</strong></td>
+                                            <td>@Model.TenPhim</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Phòng chiếu:</strong></td>
+                                            <td><span class="badge bg-secondary fs-6">@Model.TenPhong</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Số ghế:</strong></td>
+                                            <td><span class="badge bg-primary fs-6">@Model.SoGhe</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Loại ghế:</strong></td>
+                                            <td>@Model.GheNgoi?.LoaiGhe</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Giá ghế:</strong></td>
+                                            <td>@Model.GheNgoi?.GiaGhe.ToString("C0")</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.LichChieu != null)
+                    {
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card border-warning">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h5 class="mb-0">Chi tiết lịch chiếu</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <table class="table table-borderless">
+                                                    <tr>
+                                                        <td><strong>Mã lịch chiếu:</strong></td>
+                                                        <td>@Model.MaLichChieu</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><strong>Thời gian bắt đầu:</strong></td>
+                                                        <td>@Model.LichChieu.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><strong>Thời gian kết thúc:</strong></td>
+                                                        <td>@Model.LichChieu.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm")</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <table class="table table-borderless">
+                                                    <tr>
+                                                        <td><strong>Giá lịch chiếu:</strong></td>
+                                                        <td>@Model.LichChieu.Gia.ToString("C0")</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><strong>Nhân viên phụ trách:</strong></td>
+                                                        <td>@Model.LichChieu.NhanVien?.TenNhanVien</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">Thao tác</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="btn-group me-2" role="group">
+                                        <button type="button" class="btn btn-outline-success" onclick="capNhatTrangThai('@Model.MaVe', 'Còn hạn')">
+                                            <i class="fas fa-check me-1"></i>
+                                            Còn hạn
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" onclick="capNhatTrangThai('@Model.MaVe', 'Hết hạn')">
+                                            <i class="fas fa-times me-1"></i>
+                                            Hết hạn
+                                        </button>
+                                        <button type="button" class="btn btn-outline-info" onclick="capNhatTrangThai('@Model.MaVe', 'Đã sử dụng')">
+                                            <i class="fas fa-ticket-alt me-1"></i>
+                                            Đã sử dụng
+                                        </button>
+                                    </div>
+                                    <button type="button" class="btn btn-danger" onclick="xoaVe('@Model.MaVe')">
+                                        <i class="fas fa-trash me-1"></i>
+                                        Xóa vé
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function capNhatTrangThai(maVe, trangThai) {
+            if (confirm(`Bạn có chắc muốn cập nhật trạng thái vé ${maVe} thành "${trangThai}"?`)) {
+                $.ajax({
+                    url: '@Url.Action("CapNhatTrangThai", "PhatHanhVe")',
+                    type: 'POST',
+                    data: {
+                        maVe: maVe,
+                        trangThai: trangThai
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert('Lỗi: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi cập nhật trạng thái vé.');
+                    }
+                });
+            }
+        }
+
+        function xoaVe(maVe) {
+            if (confirm(`Bạn có chắc muốn xóa vé ${maVe}?`)) {
+                $.ajax({
+                    url: '@Url.Action("XoaVe", "PhatHanhVe")',
+                    type: 'POST',
+                    data: {
+                        maVe: maVe
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Xóa vé thành công!');
+                            window.location.href = '@Url.Action("DanhSachVe", "PhatHanhVe")';
+                        } else {
+                            alert('Lỗi: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi xóa vé.');
+                    }
+                });
+            }
+        }
+    </script>
+}

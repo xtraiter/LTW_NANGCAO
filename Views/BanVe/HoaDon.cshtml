@@ -1,0 +1,390 @@
+@model CinemaManagement.ViewModels.HoaDonViewModel
+@{
+    ViewData["Title"] = "Hóa Đơn";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Success Alert -->
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <strong>Thanh toán thành công!</strong> Hóa đơn đã được tạo và vé đã được xuất.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="card fade-in invoice-card">
+            <div class="card-header text-center bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-receipt me-2"></i>
+                    HÓA ĐỞN BÁN VÉ ĐIỆN TỬ
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <!-- Header thông tin rạp -->
+                <div class="text-center mb-4 cinema-header">
+                    <h3 class="text-primary mb-2">🎬 HỆ THỐNG RẠP CHIẾU PHIM 🎬</h3>
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i>123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh</p>
+                            <p class="mb-1"><i class="fas fa-phone me-2"></i>Hotline: 1900-xxxx | <i class="fas fa-envelope me-2"></i>info@cinema.vn</p>
+                            <p class="mb-0"><i class="fas fa-globe me-2"></i>www.cinema.vn</p>
+                        </div>
+                    </div>
+                    <hr class="my-3">
+                </div>
+
+                <!-- Thông tin hóa đơn -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="info-box">
+                            <h6 class="text-primary mb-2"><i class="fas fa-file-invoice me-2"></i>Thông tin hóa đơn</h6>
+                            <p class="mb-1"><strong>Mã hóa đơn:</strong> <span class="text-primary">@Model.HoaDon.MaHoaDon</span></p>
+                            <p class="mb-1"><strong>Ngày tạo:</strong> @Model.HoaDon.ThoiGianTao.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                            <p class="mb-0"><strong>Nhân viên:</strong> @Model.NhanVien.TenNhanVien</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-box">
+                            <h6 class="text-primary mb-2"><i class="fas fa-user me-2"></i>Thông tin khách hàng</h6>
+                            @if (Model.KhachHang != null)
+                            {
+                                <p class="mb-1"><strong>Họ tên:</strong> @Model.KhachHang.HoTen</p>
+                                <p class="mb-1"><strong>SĐT:</strong> @Model.KhachHang.SDT</p>
+                                <p class="mb-0"><strong>Điểm tích lũy:</strong> <span class="badge bg-warning">@Model.KhachHang.DiemTichLuy điểm</span></p>
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-0"><i class="fas fa-user-slash me-2"></i>Khách lẻ - Không tích điểm</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chi tiết vé -->
+                <div class="mb-4">
+                    <h6 class="text-primary mb-3"><i class="fas fa-ticket-alt me-2"></i>Chi tiết vé đã mua</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th class="text-center">Mã vé</th>
+                                    <th>Phim</th>
+                                    <th class="text-center">Phòng</th>
+                                    <th class="text-center">Ghế</th>
+                                    <th class="text-center">Loại</th>
+                                    <th class="text-center">Đơn giá</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var cthd in Model.ChiTietHoaDon)
+                                {
+                                    <tr>
+                                        <td class="text-center"><code>@cthd.Ve.MaVe</code></td>
+                                        <td><strong>@cthd.Ve.TenPhim</strong></td>
+                                        <td class="text-center">@cthd.Ve.TenPhong</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary">@cthd.Ve.SoGhe</span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if (cthd.Ve.GheNgoi.LoaiGhe == "VIP")
+                                            {
+                                                <span class="badge bg-warning">VIP</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">@cthd.Ve.GheNgoi.LoaiGhe</span>
+                                            }
+                                        </td>
+                                        <td class="text-center"><strong>@cthd.DonGia.ToString("N0") ₫</strong></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Thông tin suất chiếu -->
+                @if (Model.ChiTietHoaDon.Any())
+                {
+                    var firstTicket = Model.ChiTietHoaDon.First().Ve;
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="alert alert-info border-info">
+                                <h6 class="alert-heading">
+                                    <i class="fas fa-film me-2"></i>
+                                    Thông tin suất chiếu
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>🎬 Phim:</strong> @firstTicket.TenPhim</p>
+                                        <p class="mb-1"><strong>🏢 Phòng:</strong> @firstTicket.TenPhong</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>📅 Ngày chiếu:</strong> @firstTicket.HanSuDung.ToString("dd/MM/yyyy")</p>
+                                        <p class="mb-1"><strong>🕒 Giờ chiếu:</strong> @firstTicket.HanSuDung.ToString("HH:mm")</p>
+                                    </div>
+                                </div>
+                                <hr class="my-2">
+                                <p class="mb-0 text-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Lưu ý quan trọng:</strong> Vui lòng có mặt trước 15 phút. Vé không được hoàn trả sau khi xuất.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Tổng cộng -->
+                <div class="row mb-4">
+                    <div class="col-md-7"></div>
+                    <div class="col-md-5">
+                        <div class="payment-summary">
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Tạm tính:</strong></td>
+                                    <td class="text-end"><strong>@(Model.ChiTietHoaDon.Sum(c => c.DonGia).ToString("N0")) ₫</strong></td>
+                                </tr>
+                                @if (Model.VoucherSuDung != null)
+                                {
+                                    var discount = Model.ChiTietHoaDon.Sum(c => c.DonGia) - Model.HoaDon.TongTien;
+                                    <tr class="text-success">
+                                        <td><i class="fas fa-tag me-1"></i>Giảm giá (@Model.VoucherSuDung.TenGiamGia):</td>
+                                        <td class="text-end"><strong>-@discount.ToString("N0") ₫</strong></td>
+                                    </tr>
+                                }
+                                <tr class="table-primary">
+                                    <td><strong><i class="fas fa-coins me-2"></i>TỔNG CỘNG:</strong></td>
+                                    <td class="text-end"><strong class="fs-5">@Model.HoaDon.TongTien.ToString("N0") ₫</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QR Code và Footer -->
+                <div class="text-center mb-4">
+                    <div class="qr-section p-3 border rounded">
+                        <p class="mb-2"><strong>Mã QR để kiểm tra vé:</strong></p>
+                        <div class="qr-placeholder">
+                            <i class="fas fa-qrcode fa-3x text-muted"></i>
+                            <p class="text-muted small mt-2">@Model.HoaDon.MaHoaDon</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="text-center footer-section pt-3 border-top">
+                    <p class="text-primary mb-2"><strong>🎉 Cảm ơn quý khách đã sử dụng dịch vụ! 🎉</strong></p>
+                    <p class="text-muted mb-1">Chúc quý khách xem phim vui vẻ và có những trải nghiệm tuyệt vời!</p>
+                    <p class="text-muted small">Hóa đơn được in lúc: @DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                </div>
+
+                <!-- Actions -->
+                <div class="text-center mt-4 no-print">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-primary btn-lg" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i>In hóa đơn
+                        </button>
+                        <button type="button" class="btn btn-success btn-lg" id="exportPdf">
+                            <i class="fas fa-file-pdf me-2"></i>Xuất PDF
+                        </button>
+                        <a href="@Url.Action("Index")" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-plus me-2"></i>Bán vé mới
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto-hide success alert after 5 seconds
+            setTimeout(function() {
+                $('.alert-success').fadeOut();
+            }, 5000);
+
+            // Export PDF functionality
+            $('#exportPdf').click(function() {
+                $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Đang xuất...');
+                
+                // Simple implementation - just print to PDF
+                // In real application, you might want to use a PDF library
+                setTimeout(function() {
+                    window.print();
+                    $('#exportPdf').prop('disabled', false).html('<i class="fas fa-file-pdf me-2"></i>Xuất PDF');
+                }, 1000);
+            });
+
+            // Print shortcut
+            $(document).keydown(function(e) {
+                if (e.ctrlKey && e.key === 'p') {
+                    e.preventDefault();
+                    window.print();
+                }
+            });
+
+            // Add print styles dynamically
+            if (!document.querySelector('#print-styles')) {
+                var style = document.createElement('style');
+                style.id = 'print-styles';
+                style.innerHTML = `
+                    @@@@media print {
+                        body * { visibility: hidden; }
+                        .invoice-card, .invoice-card * { visibility: visible; }
+                        .invoice-card { position: absolute; left: 0; top: 0; width: 100%; }
+                        .no-print, .no-print * { display: none !important; }
+                        .btn, .alert-dismissible .btn-close { display: none !important; }
+                        .card { border: none !important; box-shadow: none !important; }
+                        body { background: white !important; color: black !important; }
+                        .text-primary { color: #000 !important; }
+                        .table-primary { background-color: #f8f9fa !important; }
+                        .badge { border: 1px solid #000; }
+                        .alert { border: 1px solid #000; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Success animation
+            $('.alert-success').addClass('animate__animated animate__fadeInDown');
+        });
+    </script>
+
+    <style>
+        .invoice-card {
+            max-width: none;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .cinema-header {
+            background: linear-gradient(135deg, var(--light-blue) 0%, #ffffff 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .payment-summary {
+            background-color: var(--light-blue);
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid var(--primary-color);
+        }
+
+        .qr-section {
+            background-color: #f8f9fa;
+            max-width: 200px;
+            margin: 0 auto;
+        }
+
+        .qr-placeholder {
+            padding: 20px;
+        }
+
+        .footer-section {
+            background: linear-gradient(135deg, #ffffff 0%, var(--light-blue) 100%);
+            margin: 20px -20px -20px -20px;
+            padding: 20px;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .table th {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: var(--light-blue);
+        }
+
+        .btn-group .btn {
+            margin: 0 5px;
+        }
+
+        /* Animation for success alert */
+        .alert-success {
+            border-left: 4px solid #28a745;
+        }
+
+        /* Print-specific adjustments */
+        @@media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            .invoice-card {
+                border: none !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            .card-body {
+                padding: 0 !important;
+            }
+            
+            .cinema-header {
+                background: none !important;
+                border: 1px solid #000;
+            }
+            
+            .info-box {
+                background: none !important;
+                border: 1px solid #000;
+            }
+            
+            .payment-summary {
+                background: none !important;
+                border: 2px solid #000;
+            }
+            
+            .table {
+                border: 1px solid #000;
+            }
+            
+            .table th,
+            .table td {
+                border: 1px solid #000 !important;
+            }
+            
+            .alert {
+                border: 1px solid #000;
+                background: none !important;
+            }
+            
+            .badge {
+                border: 1px solid #000;
+                background: none !important;
+                color: #000 !important;
+            }
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 768px) {
+            .btn-group {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn-group .btn {
+                margin: 0;
+                width: 100%;
+            }
+            
+            .info-box {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+}

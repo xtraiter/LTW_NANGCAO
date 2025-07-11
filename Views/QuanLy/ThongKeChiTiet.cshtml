@@ -1,0 +1,380 @@
+@model CinemaManagement.ViewModels.ThongKeChiTietViewModel
+
+@{
+    ViewData["Title"] = "Thống kê chi tiết";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Thống kê chi tiết
+                </h2>
+                <div>
+                    <a asp-action="Index" class="btn btn-secondary me-2">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Quay lại Dashboard
+                    </a>
+                    <a asp-action="BaoCao" class="btn btn-primary">
+                        <i class="fas fa-file-alt me-1"></i>
+                        Báo cáo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê tổng quan -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white text-center">
+                    <h6 class="mb-0">Tổng số vé</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-4 fw-bold text-primary">@Model.TongSoVe</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white text-center">
+                    <h6 class="mb-0">Tổng doanh thu</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-6 fw-bold text-success">@Model.TongDoanhThu.ToString("C0")</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white text-center">
+                    <h6 class="mb-0">Tổng số phim</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-4 fw-bold text-info">@Model.TongSoPhim</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark text-center">
+                    <h6 class="mb-0">Tổng lịch chiếu</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-4 fw-bold text-warning">@Model.TongSoLichChieu</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ doanh thu theo thời gian -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Doanh thu 30 ngày gần nhất
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="doanhThuNgayChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Doanh thu 12 tháng gần nhất
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="doanhThuThangChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê theo phim -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-film me-2"></i>
+                        Thống kê theo phim
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.ThongKeTheoPhim.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Mã phim</th>
+                                        <th>Tên phim</th>
+                                        <th>Số vé</th>
+                                        <th>Doanh thu</th>
+                                        <th>Giá trung bình</th>
+                                        <th>Tỷ lệ</th>
+                                        <th>Biểu đồ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var phim in Model.ThongKeTheoPhim)
+                                    {
+                                        var tiLe = Model.TongDoanhThu > 0 ? (phim.DoanhThu * 100 / Model.TongDoanhThu) : 0;
+                                        <tr>
+                                            <td><span class="badge bg-secondary">@phim.MaPhim</span></td>
+                                            <td><strong>@phim.TenPhim</strong></td>
+                                            <td><span class="badge bg-primary fs-6">@phim.SoVe</span></td>
+                                            <td><span class="fw-bold text-success">@phim.DoanhThu.ToString("C0")</span></td>
+                                            <td><span class="text-info">@phim.GiaTrungBinh.ToString("C0")</span></td>
+                                            <td><span class="fw-bold">@tiLe.ToString("F1")%</span></td>
+                                            <td>
+                                                <div class="progress" style="height: 20px; width: 100px;">
+                                                    <div class="progress-bar bg-success" style="width: @tiLe%">
+                                                        @tiLe.ToString("F1")%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Chưa có dữ liệu thống kê theo phim.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê theo phòng -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-door-open me-2"></i>
+                        Thống kê theo phòng chiếu
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.ThongKeTheoPhong.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Mã phòng</th>
+                                        <th>Tên phòng</th>
+                                        <th>Số vé</th>
+                                        <th>Doanh thu</th>
+                                        <th>Tỷ lệ</th>
+                                        <th>Biểu đồ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var phong in Model.ThongKeTheoPhong)
+                                    {
+                                        var tiLe = Model.TongDoanhThu > 0 ? (phong.DoanhThu * 100 / Model.TongDoanhThu) : 0;
+                                        <tr>
+                                            <td><span class="badge bg-secondary">@phong.MaPhong</span></td>
+                                            <td><strong>@phong.TenPhong</strong></td>
+                                            <td><span class="badge bg-primary fs-6">@phong.SoVe</span></td>
+                                            <td><span class="fw-bold text-success">@phong.DoanhThu.ToString("C0")</span></td>
+                                            <td><span class="fw-bold">@tiLe.ToString("F1")%</span></td>
+                                            <td>
+                                                <div class="progress" style="height: 20px; width: 100px;">
+                                                    <div class="progress-bar bg-info" style="width: @tiLe%">
+                                                        @tiLe.ToString("F1")%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Chưa có dữ liệu thống kê theo phòng chiếu.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ tổng hợp -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Doanh thu theo phim (Top 5)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="doanhThuPhimChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Doanh thu theo phòng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="doanhThuPhongChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Doanh thu theo ngày
+        const doanhThuNgayData = @Html.Raw(Json.Serialize(Model.DoanhThuTheoNgay));
+        const doanhThuNgayCtx = document.getElementById('doanhThuNgayChart').getContext('2d');
+        new Chart(doanhThuNgayCtx, {
+            type: 'line',
+            data: {
+                labels: doanhThuNgayData.map(d => new Date(d.ngay).toLocaleDateString('vi-VN')),
+                datasets: [{
+                    label: 'Doanh thu',
+                    data: doanhThuNgayData.map(d => d.doanhThu),
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('vi-VN') + ' ₫';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Doanh thu theo tháng
+        const doanhThuThangData = @Html.Raw(Json.Serialize(Model.DoanhThuTheoThang));
+        const doanhThuThangCtx = document.getElementById('doanhThuThangChart').getContext('2d');
+        new Chart(doanhThuThangCtx, {
+            type: 'bar',
+            data: {
+                labels: doanhThuThangData.map(d => d.thang + '/' + d.nam),
+                datasets: [{
+                    label: 'Doanh thu',
+                    data: doanhThuThangData.map(d => d.doanhThu),
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('vi-VN') + ' ₫';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Doanh thu theo phim (Top 5)
+        const topPhimData = @Html.Raw(Json.Serialize(Model.ThongKeTheoPhim.Take(5)));
+        const doanhThuPhimCtx = document.getElementById('doanhThuPhimChart').getContext('2d');
+        new Chart(doanhThuPhimCtx, {
+            type: 'pie',
+            data: {
+                labels: topPhimData.map(p => p.tenPhim),
+                datasets: [{
+                    data: topPhimData.map(p => p.doanhThu),
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Doanh thu theo phòng
+        const phongData = @Html.Raw(Json.Serialize(Model.ThongKeTheoPhong));
+        const doanhThuPhongCtx = document.getElementById('doanhThuPhongChart').getContext('2d');
+        new Chart(doanhThuPhongCtx, {
+            type: 'doughnut',
+            data: {
+                labels: phongData.map(p => p.tenPhong),
+                datasets: [{
+                    data: phongData.map(p => p.doanhThu),
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF',
+                        '#FF9F40'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+}

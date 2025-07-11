@@ -1,0 +1,117 @@
+@model List<CinemaManagement.Models.LichChieu>
+
+@{
+    ViewData["Title"] = "Quản lý phát hành vé";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-ticket-alt me-2"></i>
+                        Quản lý phát hành vé
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <a asp-action="DanhSachVe" class="btn btn-success me-2">
+                                <i class="fas fa-list me-1"></i>
+                                Danh sách vé
+                            </a>
+                            <a asp-action="ThongKe" class="btn btn-info">
+                                <i class="fas fa-chart-bar me-1"></i>
+                                Thống kê
+                            </a>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <small class="text-muted">Tổng cộng: @Model.Count lịch chiếu</small>
+                        </div>
+                    </div>
+
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Mã lịch chiếu</th>
+                                        <th>Phim</th>
+                                        <th>Phòng</th>
+                                        <th>Thời gian bắt đầu</th>
+                                        <th>Thời gian kết thúc</th>
+                                        <th>Giá vé</th>
+                                        <th>Nhân viên</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var lichChieu in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@lichChieu.MaLichChieu</strong>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold">@lichChieu.Phim?.TenPhim</div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">@lichChieu.PhongChieu?.TenPhong</span>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">@lichChieu.ThoiGianBatDau.ToString("dd/MM/yyyy")</small><br>
+                                                <strong>@lichChieu.ThoiGianBatDau.ToString("HH:mm")</strong>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">@lichChieu.ThoiGianKetThuc.ToString("dd/MM/yyyy")</small><br>
+                                                <strong>@lichChieu.ThoiGianKetThuc.ToString("HH:mm")</strong>
+                                            </td>
+                                            <td>
+                                                <span class="fw-bold text-success">@lichChieu.Gia.ToString("C0")</span>
+                                            </td>
+                                            <td>
+                                                <small>@lichChieu.NhanVien?.TenNhanVien</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="PhatHanhHangLoat" asp-route-maLichChieu="@lichChieu.MaLichChieu" 
+                                                       class="btn btn-sm btn-primary" title="Phát hành vé hàng loạt">
+                                                        <i class="fas fa-plus"></i>
+                                                        Phát hành
+                                                    </a>
+                                                    <a asp-action="SoDoGhe" asp-route-maLichChieu="@lichChieu.MaLichChieu" 
+                                                       class="btn btn-sm btn-secondary" title="Xem sơ đồ ghế">
+                                                        <i class="fas fa-th"></i>
+                                                        Sơ đồ
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Hiện tại chưa có lịch chiếu nào trong hệ thống.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Khởi tạo tooltip
+            $('[data-bs-toggle="tooltip"]').tooltip();
+        });
+    </script>
+}

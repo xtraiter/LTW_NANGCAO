@@ -1,0 +1,181 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Hệ thống Quản lý Rạp Chiếu Phim</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/CinemaManagement.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-film me-2"></i>
+                    CinemaManagement
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        @if (Context.Session.GetString("MaNhanVien") != null)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="BanVe" asp-action="Index">
+                                    <i class="fas fa-ticket-alt me-1"></i>Bán Vé
+                                </a>
+                            </li>
+                            @if (Context.Session.GetString("VaiTro") == "Quản lý")
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-plus-circle me-1"></i>Phát Hành Vé
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="PhatHanhVe" asp-action="Index">
+                                            <i class="fas fa-calendar-alt me-1"></i>Danh sách lịch chiếu
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="PhatHanhVe" asp-action="DanhSachVe">
+                                            <i class="fas fa-list me-1"></i>Danh sách vé
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="PhatHanhVe" asp-action="ThongKe">
+                                            <i class="fas fa-chart-bar me-1"></i>Thống kê vé
+                                        </a></li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-chart-bar me-1"></i>Quản Lý
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="QuanLy" asp-action="Index">
+                                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="QuanLy" asp-action="ThongKeChiTiet">
+                                            <i class="fas fa-chart-line me-1"></i>Thống kê chi tiết
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="QuanLy" asp-action="BaoCao">
+                                            <i class="fas fa-file-alt me-1"></i>Báo cáo
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="QuanLy" asp-action="QuanLyPhim">
+                                            <i class="fas fa-film me-1"></i>Quản lý phim
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="QuanLy" asp-action="QuanLyLichChieu">
+                                            <i class="fas fa-calendar-alt me-1"></i>Quản lý lịch chiếu
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="QuanLy" asp-action="QuanLyNhanVien">
+                                            <i class="fas fa-users me-1"></i>Quản lý nhân viên
+                                        </a></li>
+                                    </ul>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                    <i class="fas fa-home me-1"></i>Trang Chủ
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                    <ul class="navbar-nav">
+                        @if (Context.Session.GetString("MaNhanVien") != null)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user me-1"></i>
+                                    @{
+                                        var tenNhanVien = Context.Session.GetString("TenNhanVien");
+                                        var email = Context.Session.GetString("Email");
+                                        var vaiTro = Context.Session.GetString("VaiTro");
+                                    }
+                                    @(tenNhanVien ?? email ?? "Người dùng")
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><h6 class="dropdown-header">
+                                        <i class="fas fa-info-circle me-1"></i>@(vaiTro ?? "Vai trò")
+                                    </h6></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    @if (!string.IsNullOrEmpty(email))
+                                    {
+                                        <li><span class="dropdown-item-text">
+                                            <small><strong>Email:</strong> @email</small>
+                                        </span></li>
+                                    }
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-controller="Auth" asp-action="Logout">
+                                        <i class="fas fa-sign-out-alt me-1"></i>Đăng Xuất
+                                    </a></li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Auth" asp-action="Login">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Đăng Nhập
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <div class="container-fluid flex-grow-1">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="footer border-top text-muted mt-auto py-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <p class="mb-0">
+                        <i class="fas fa-film me-2"></i>
+                        &copy; 2025 - Hệ thống Quản lý Rạp Chiếu Phim
+                    </p>
+                </div>
+                <div class="col-md-4 text-center">
+                    @if (!string.IsNullOrEmpty(Context.Session.GetString("Email")))
+                    {
+                        <small>
+                            <i class="fas fa-user me-1"></i>
+                            @Context.Session.GetString("VaiTro") | @Context.Session.GetString("Email")
+                        </small>
+                    }
+                    else
+                    {
+                        <small>
+                            <i class="fas fa-sign-in-alt me-1"></i>
+                            Chưa đăng nhập
+                        </small>
+                    }
+                </div>
+                <div class="col-md-4 text-end">
+                    <small>
+                        <i class="fas fa-code me-1"></i>
+                        Phiên bản 1.0 | @DateTime.Now.ToString("dd/MM/yyyy")
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,295 @@
+@model CinemaManagement.ViewModels.SoDoGheViewModel
+
+@{
+    ViewData["Title"] = "Sơ đồ ghế";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-th me-2"></i>
+                        Sơ đồ ghế - @Model.LichChieu.Phim?.TenPhim
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Quay lại danh sách lịch chiếu
+                            </a>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <a asp-action="PhatHanhHangLoat" asp-route-maLichChieu="@Model.LichChieu.MaLichChieu" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>
+                                Phát hành vé
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">Thông tin lịch chiếu</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <strong>Mã lịch chiếu:</strong><br>
+                                            @Model.LichChieu.MaLichChieu
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Phòng chiếu:</strong><br>
+                                            <span class="badge bg-secondary fs-6">@Model.LichChieu.PhongChieu?.TenPhong</span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Thời gian:</strong><br>
+                                            @Model.LichChieu.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Giá vé:</strong><br>
+                                            <span class="fw-bold text-success">@Model.LichChieu.Gia.ToString("C0")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">Sơ đồ ghế</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <div class="d-flex justify-content-center">
+                                                <div class="text-center">
+                                                    <div class="bg-dark text-white p-2 rounded mb-3" style="width: 200px;">
+                                                        <i class="fas fa-tv me-2"></i>
+                                                        MÀN HÌNH
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <div class="d-flex justify-content-center gap-4">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="seat-legend available me-2"></div>
+                                                    <small>Ghế trống</small>
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="seat-legend occupied me-2"></div>
+                                                    <small>Đã có vé</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="seat-map">
+                                        @{
+                                            var gheTheoHang = Model.DanhSachGhe.GroupBy(g => g.SoGhe.Substring(0, 1)).OrderBy(g => g.Key);
+                                            var tongGhe = Model.DanhSachGhe.Count;
+                                            var gheTrong = tongGhe - Model.GheCoVe.Count;
+                                        }
+                                        @foreach (var hang in gheTheoHang)
+                                        {
+                                            <div class="seat-row mb-2">
+                                                <div class="row-label">@hang.Key</div>
+                                                <div class="seats">
+                                                    @foreach (var ghe in hang.OrderBy(g => g.SoGhe))
+                                                    {
+                                                        var coVe = Model.GheCoVe.Contains(ghe.MaGhe);
+                                                        var cssClass = coVe ? "seat occupied" : "seat available";
+                                                        
+                                                        <div class="@cssClass" 
+                                                             data-bs-toggle="tooltip" 
+                                                             data-bs-placement="top" 
+                                                             title="Ghế @ghe.SoGhe - @ghe.LoaiGhe - @ghe.GiaGhe.ToString("C0") - @(coVe ? "Đã có vé" : "Còn trống")">
+                                                            @ghe.SoGhe
+                                                            <div class="seat-price">+@ghe.GiaGhe.ToString("C0")</div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">Thống kê ghế</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <div class="fw-bold text-primary fs-4">@tongGhe</div>
+                                            <small class="text-muted">Tổng ghế</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="fw-bold text-success fs-4">@gheTrong</div>
+                                            <small class="text-muted">Ghế trống</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="fw-bold text-danger fs-4">@Model.GheCoVe.Count</div>
+                                            <small class="text-muted">Đã có vé</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">Loại ghế</h6>
+                                </div>
+                                <div class="card-body">
+                                    @{
+                                        var loaiGhe = Model.DanhSachGhe.GroupBy(g => g.LoaiGhe).Select(g => new { 
+                                            LoaiGhe = g.Key, 
+                                            SoLuong = g.Count(),
+                                            DaCoVe = g.Count(x => Model.GheCoVe.Contains(x.MaGhe))
+                                        }).ToList();
+                                    }
+                                    @foreach (var loai in loaiGhe)
+                                    {
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>@loai.LoaiGhe:</span>
+                                            <span class="badge bg-secondary">@(loai.SoLuong - loai.DaCoVe)/@loai.SoLuong</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">Doanh thu dự kiến</h6>
+                                </div>
+                                <div class="card-body">
+                                    @{
+                                        var doanhThuToiDa = Model.DanhSachGhe.Sum(g => g.GiaGhe + Model.LichChieu.Gia);
+                                        var doanhThuHienTai = Model.DanhSachGhe.Where(g => Model.GheCoVe.Contains(g.MaGhe)).Sum(g => g.GiaGhe + Model.LichChieu.Gia);
+                                        var tiLe = tongGhe > 0 ? (Model.GheCoVe.Count * 100 / tongGhe) : 0;
+                                    }
+                                    <div class="text-center">
+                                        <div class="fw-bold text-success fs-5">@doanhThuHienTai.ToString("C0")</div>
+                                        <small class="text-muted">Hiện tại</small>
+                                        <hr>
+                                        <div class="fw-bold text-info fs-6">@doanhThuToiDa.ToString("C0")</div>
+                                        <small class="text-muted">Tối đa</small>
+                                        <hr>
+                                        <div class="progress mt-2">
+                                            <div class="progress-bar bg-success" style="width: @tiLe%"></div>
+                                        </div>
+                                        <small class="text-muted">@tiLe.ToString("F1")% đã bán</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .seat-legend {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    
+    .seat-legend.available {
+        background-color: #28a745;
+        border: 1px solid #1e7e34;
+    }
+    
+    .seat-legend.occupied {
+        background-color: #dc3545;
+        border: 1px solid #bd2130;
+    }
+    
+    .seat-map {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .seat-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+    
+    .row-label {
+        width: 30px;
+        text-align: center;
+        font-weight: bold;
+        color: #6c757d;
+    }
+    
+    .seats {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .seat {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        position: relative;
+        flex-direction: column;
+    }
+    
+    .seat.available {
+        background-color: #28a745;
+        border: 2px solid #1e7e34;
+        color: white;
+    }
+    
+    .seat.occupied {
+        background-color: #dc3545;
+        border: 2px solid #bd2130;
+        color: white;
+    }
+    
+    .seat-price {
+        font-size: 10px;
+        margin-top: 2px;
+        opacity: 0.8;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Khởi tạo tooltip
+            $('[data-bs-toggle="tooltip"]').tooltip();
+        });
+    </script>
+}

@@ -1,0 +1,125 @@
+@model IEnumerable<CinemaManagement.Models.LichChieu>
+
+@{
+    ViewData["Title"] = "Quản lý lịch chiếu";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">
+                        <i class="fas fa-calendar-alt me-2"></i>Quản lý lịch chiếu
+                    </h3>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+                        <i class="fas fa-plus me-1"></i>Thêm lịch chiếu
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Mã lịch chiếu</th>
+                                    <th>Phim</th>
+                                    <th>Phòng chiếu</th>
+                                    <th>Thời gian bắt đầu</th>
+                                    <th>Thời gian kết thúc</th>
+                                    <th>Giá</th>
+                                    <th>Nhân viên</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.MaLichChieu</td>
+                                        <td>@item.Phim.TenPhim</td>
+                                        <td>@item.PhongChieu.TenPhong</td>
+                                        <td>@item.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@item.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@item.Gia.ToString("C0")</td>
+                                        <td>@item.NhanVien.TenNhanVien</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-outline-primary" onclick="editLichChieu('@item.MaLichChieu')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteLichChieu('@item.MaLichChieu')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thêm lịch chiếu -->
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createModalLabel">Thêm lịch chiếu mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createForm">
+                    <div class="mb-3">
+                        <label for="phimId" class="form-label">Phim</label>
+                        <select class="form-select" id="phimId" required>
+                            <option value="">Chọn phim</option>
+                            <!-- Phim sẽ được load bằng JavaScript -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phongId" class="form-label">Phòng chiếu</label>
+                        <select class="form-select" id="phongId" required>
+                            <option value="">Chọn phòng chiếu</option>
+                            <!-- Phòng chiếu sẽ được load bằng JavaScript -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="thoiGianBatDau" class="form-label">Thời gian bắt đầu</label>
+                        <input type="datetime-local" class="form-control" id="thoiGianBatDau" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="thoiGianKetThuc" class="form-label">Thời gian kết thúc</label>
+                        <input type="datetime-local" class="form-control" id="thoiGianKetThuc" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="createLichChieu()">Thêm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function editLichChieu(maLichChieu) {
+        // TODO: Implement edit functionality
+        alert('Chức năng sửa lịch chiếu đang được phát triển');
+    }
+
+    function deleteLichChieu(maLichChieu) {
+        if (confirm('Bạn có chắc chắn muốn xóa lịch chiếu này?')) {
+            // TODO: Implement delete functionality
+            alert('Chức năng xóa lịch chiếu đang được phát triển');
+        }
+    }
+
+    function createLichChieu() {
+        // TODO: Implement create functionality
+        alert('Chức năng thêm lịch chiếu đang được phát triển');
+    }
+</script>

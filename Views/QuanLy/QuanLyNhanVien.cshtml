@@ -1,0 +1,154 @@
+@model IEnumerable<CinemaManagement.Models.NhanVien>
+
+@{
+    ViewData["Title"] = "Quản lý nhân viên";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">
+                        <i class="fas fa-users me-2"></i>Quản lý nhân viên
+                    </h3>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+                        <i class="fas fa-plus me-1"></i>Thêm nhân viên
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Mã nhân viên</th>
+                                    <th>Tên nhân viên</th>
+                                    <th>Chức vụ</th>
+                                    <th>Ngày sinh</th>
+                                    <th>Số điện thoại</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.MaNhanVien</td>
+                                        <td>@item.TenNhanVien</td>
+                                        <td>
+                                            @if (item.ChucVu == "Quản lý")
+                                            {
+                                                <span class="badge bg-danger">@item.ChucVu</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-primary">@item.ChucVu</span>
+                                            }
+                                        </td>
+                                        <td>@item.NgaySinh.ToString("dd/MM/yyyy")</td>
+                                        <td>@item.SDT</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-outline-primary" onclick="editNhanVien('@item.MaNhanVien')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteNhanVien('@item.MaNhanVien')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thêm nhân viên -->
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createModalLabel">Thêm nhân viên mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tenNhanVien" class="form-label">Tên nhân viên</label>
+                                <input type="text" class="form-control" id="tenNhanVien" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="chucVu" class="form-label">Chức vụ</label>
+                                <select class="form-select" id="chucVu" required>
+                                    <option value="">Chọn chức vụ</option>
+                                    <option value="Nhân viên">Nhân viên</option>
+                                    <option value="Quản lý">Quản lý</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ngaySinh" class="form-label">Ngày sinh</label>
+                                <input type="date" class="form-control" id="ngaySinh" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sdt" class="form-label">Số điện thoại</label>
+                                <input type="tel" class="form-control" id="sdt" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="matKhau" class="form-label">Mật khẩu</label>
+                                <input type="password" class="form-control" id="matKhau" required>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="createNhanVien()">Thêm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function editNhanVien(maNhanVien) {
+        // TODO: Implement edit functionality
+        alert('Chức năng sửa nhân viên đang được phát triển');
+    }
+
+    function deleteNhanVien(maNhanVien) {
+        if (confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) {
+            // TODO: Implement delete functionality
+            alert('Chức năng xóa nhân viên đang được phát triển');
+        }
+    }
+
+    function createNhanVien() {
+        // TODO: Implement create functionality
+        alert('Chức năng thêm nhân viên đang được phát triển');
+    }
+</script>
