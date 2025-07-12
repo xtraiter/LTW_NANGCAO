@@ -78,7 +78,25 @@
                                 </li>
                             }
                         }
-                        else
+                        @if (Context.Session.GetString("MaKhachHang") != null)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="KhachHang" asp-action="Index">
+                                    <i class="fas fa-film me-1"></i>Phim đang chiếu
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="KhachHang" asp-action="GioHang">
+                                    <i class="fas fa-shopping-cart me-1"></i>Giỏ hàng
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="KhachHang" asp-action="LichSuDatVe">
+                                    <i class="fas fa-history me-1"></i>Lịch sử đặt vé
+                                </a>
+                            </li>
+                        }
+                        @if (Context.Session.GetString("MaNhanVien") == null && Context.Session.GetString("MaKhachHang") == null)
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Home" asp-action="Index">
@@ -88,17 +106,18 @@
                         }
                     </ul>
                     <ul class="navbar-nav">
-                        @if (Context.Session.GetString("MaNhanVien") != null)
+                        @if (Context.Session.GetString("MaNhanVien") != null || Context.Session.GetString("MaKhachHang") != null)
                         {
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fas fa-user me-1"></i>
                                     @{
                                         var tenNhanVien = Context.Session.GetString("TenNhanVien");
+                                        var tenKhachHang = Context.Session.GetString("TenKhachHang");
                                         var email = Context.Session.GetString("Email");
                                         var vaiTro = Context.Session.GetString("VaiTro");
                                     }
-                                    @(tenNhanVien ?? email ?? "Người dùng")
+                                    @(tenNhanVien ?? tenKhachHang ?? email ?? "Người dùng")
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li><h6 class="dropdown-header">
@@ -110,6 +129,13 @@
                                         <li><span class="dropdown-item-text">
                                             <small><strong>Email:</strong> @email</small>
                                         </span></li>
+                                    }
+                                    @if (Context.Session.GetString("MaKhachHang") != null)
+                                    {
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="KhachHang" asp-action="TaiKhoan">
+                                            <i class="fas fa-user-cog me-1"></i>Thông tin tài khoản
+                                        </a></li>
                                     }
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" asp-controller="Auth" asp-action="Logout">

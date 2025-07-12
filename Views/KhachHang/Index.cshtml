@@ -1,0 +1,136 @@
+@model List<CinemaManagement.Models.Phim>
+@{
+    ViewData["Title"] = "Danh sách phim";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-film me-2"></i>Danh sách phim đang chiếu
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Bộ lọc và tìm kiếm -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <form method="get" class="d-flex">
+                                <input type="text" name="searchTerm" class="form-control me-2" 
+                                       placeholder="Tìm kiếm phim..." value="@ViewBag.CurrentSearch">
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" 
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    @(ViewBag.CurrentTheLoai ?? "Tất cả thể loại")
+                                </button>
+                                <ul class="dropdown-menu w-100">
+                                    <li><a class="dropdown-item" href="@Url.Action("Index")">Tất cả thể loại</a></li>
+                                    @if (ViewBag.TheLoais != null)
+                                    {
+                                        @foreach (string theLoai in ViewBag.TheLoais)
+                                        {
+                                            <li><a class="dropdown-item" href="@Url.Action("Index", new { theLoai = theLoai })">@theLoai</a></li>
+                                        }
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Danh sách phim -->
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="row">
+                            @foreach (var phim in Model)
+                            {
+                                <div class="col-md-4 col-lg-3 mb-4">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                                             style="height: 300px;">
+                                            @if (!string.IsNullOrEmpty(phim.ViTriFilePhim))
+                                            {
+                                                <img src="@phim.ViTriFilePhim" alt="@phim.TenPhim" 
+                                                     class="img-fluid" style="max-height: 100%; max-width: 100%;">
+                                            }
+                                            else
+                                            {
+                                                <div class="text-center text-muted">
+                                                    <i class="fas fa-film fa-3x"></i>
+                                                    <p class="mt-2">Không có poster</p>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">@phim.TenPhim</h5>
+                                            <p class="card-text">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-tag me-1"></i>@phim.TheLoai<br>
+                                                    <i class="fas fa-clock me-1"></i>@phim.ThoiLuong phút<br>
+                                                    <i class="fas fa-users me-1"></i>@phim.DoTuoiPhanAnh
+                                                </small>
+                                            </p>
+                                            <p class="card-text">@(phim.MoTa.Length > 100 ? phim.MoTa.Substring(0, 100) + "..." : phim.MoTa)</p>
+                                        </div>
+                                        <div class="card-footer">
+                                            <a href="@Url.Action("ChiTietPhim", new { id = phim.MaPhim })" 
+                                               class="btn btn-primary w-100">
+                                                <i class="fas fa-info-circle me-1"></i>Xem chi tiết
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-film fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Không có phim nào</h5>
+                            <p class="text-muted">Hiện tại không có phim nào phù hợp với tìm kiếm của bạn.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Giỏ hàng floating button -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+    <a href="@Url.Action("GioHang")" class="btn btn-success btn-lg rounded-circle" 
+       data-bs-toggle="tooltip" data-bs-placement="left" title="Giỏ hàng">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+              id="cart-count">0</span>
+    </a>
+</div>
+
+@section Scripts {
+    <script>
+        // Cập nhật số lượng giỏ hàng
+        $(document).ready(function() {
+            updateCartCount();
+            
+            // Tooltip
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        function updateCartCount() {
+            // Lấy số lượng từ sessionStorage hoặc API
+            var cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
+            $('#cart-count').text(cart.length);
+        }
+    </script>
+}

@@ -21,21 +21,67 @@ namespace CinemaManagement.Controllers
             return vaiTro == "Quản lý" || vaiTro == "Nhân viên";
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(DateTime? tuNgay, DateTime? denNgay, string? maPhim, string? maPhong)
         {
             if (!IsManagerOrStaff())
             {
                 return RedirectToAction("Login", "Auth");
             }
 
-            var lichChieus = await _context.LichChieus
+            var lichChieusQuery = _context.LichChieus
                 .Include(l => l.Phim)
                 .Include(l => l.PhongChieu)
                 .Include(l => l.NhanVien)
+                .AsQueryable();
+
+            // Lọc theo ngày
+            if (tuNgay.HasValue)
+            {
+                lichChieusQuery = lichChieusQuery.Where(l => l.ThoiGianBatDau.Date >= tuNgay.Value.Date);
+            }
+
+            if (denNgay.HasValue)
+            {
+                lichChieusQuery = lichChieusQuery.Where(l => l.ThoiGianBatDau.Date <= denNgay.Value.Date);
+            }
+
+            // Lọc theo phim
+            if (!string.IsNullOrEmpty(maPhim))
+            {
+                lichChieusQuery = lichChieusQuery.Where(l => l.MaPhim == maPhim);
+            }
+
+            // Lọc theo phòng
+            if (!string.IsNullOrEmpty(maPhong))
+            {
+                lichChieusQuery = lichChieusQuery.Where(l => l.MaPhong == maPhong);
+            }
+
+            var lichChieus = await lichChieusQuery
                 .OrderBy(l => l.ThoiGianBatDau)
                 .ToListAsync();
 
-            return View(lichChieus);
+            // Chuẩn bị dữ liệu cho dropdown
+            var danhSachPhim = await _context.Phims
+                .Select(p => new SelectListItem { Value = p.MaPhim, Text = p.TenPhim })
+                .ToListAsync();
+
+            var danhSachPhong = await _context.PhongChieus
+                .Select(p => new SelectListItem { Value = p.MaPhong, Text = p.TenPhong })
+                .ToListAsync();
+
+            var viewModel = new PhatHanhVeIndexViewModel
+            {
+                LichChieus = lichChieus,
+                DanhSachPhim = danhSachPhim,
+                DanhSachPhong = danhSachPhong,
+                TuNgay = tuNgay?.ToString("yyyy-MM-dd"),
+                DenNgay = denNgay?.ToString("yyyy-MM-dd"),
+                MaPhimSelected = maPhim,
+                MaPhongSelected = maPhong
+            };
+
+            return View(viewModel);
         }
 
         public async Task<IActionResult> DanhSachVe()

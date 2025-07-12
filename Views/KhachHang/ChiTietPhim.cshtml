@@ -1,0 +1,125 @@
+@model CinemaManagement.Models.Phim
+@{
+    ViewData["Title"] = "Chi tiết phim - " + Model.TenPhim;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Thông tin phim -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-film me-2"></i>@Model.TenPhim
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                @if (!string.IsNullOrEmpty(Model.ViTriFilePhim))
+                                {
+                                    <img src="@Model.ViTriFilePhim" alt="@Model.TenPhim" 
+                                         class="img-fluid rounded shadow">
+                                }
+                                else
+                                {
+                                    <div class="bg-light p-5 rounded">
+                                        <i class="fas fa-film fa-3x text-muted"></i>
+                                        <p class="mt-2 text-muted">Không có poster</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <h5>Thông tin phim</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Thể loại:</strong></td>
+                                    <td>@Model.TheLoai</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Thời lượng:</strong></td>
+                                    <td>@Model.ThoiLuong phút</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Độ tuổi:</strong></td>
+                                    <td>@Model.DoTuoiPhanAnh</td>
+                                </tr>
+                            </table>
+                            
+                            <h6>Mô tả</h6>
+                            <p class="text-justify">@Model.MoTa</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lịch chiếu -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>Lịch chiếu
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.LichChieus != null && ((List<CinemaManagement.Models.LichChieu>)ViewBag.LichChieus).Any())
+                    {
+                        <div class="list-group">
+                            @foreach (var lichChieu in (List<CinemaManagement.Models.LichChieu>)ViewBag.LichChieus)
+                            {
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">@lichChieu.PhongChieu.TenPhong</h6>
+                                        <small class="text-success fw-bold">@lichChieu.Gia.ToString("N0") VNĐ</small>
+                                    </div>
+                                    <p class="mb-1">
+                                        <i class="fas fa-clock me-1"></i>
+                                        @lichChieu.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")
+                                    </p>
+                                    <small>
+                                        Kết thúc: @lichChieu.ThoiGianKetThuc.ToString("HH:mm")
+                                    </small>
+                                    <div class="mt-2">
+                                        <a href="@Url.Action("ChonGhe", new { maLichChieu = lichChieu.MaLichChieu })" 
+                                           class="btn btn-primary btn-sm w-100">
+                                            <i class="fas fa-chair me-1"></i>Chọn ghế
+                                        </a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-times fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">Hiện tại chưa có lịch chiếu</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nút quay lại -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Quay lại danh sách phim
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Tooltip cho các nút
+            $('[data-bs-toggle="tooltip"]').tooltip();
+        });
+    </script>
+}

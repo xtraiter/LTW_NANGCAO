@@ -1,4 +1,4 @@
-@model List<CinemaManagement.Models.LichChieu>
+@model CinemaManagement.ViewModels.PhatHanhVeIndexViewModel
 
 @{
     ViewData["Title"] = "Quản lý phát hành vé";
@@ -15,6 +15,87 @@
                     </h4>
                 </div>
                 <div class="card-body">
+                    <!-- Bộ lọc -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">
+                                <i class="fas fa-filter me-2"></i>Bộ lọc tìm kiếm
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <form method="get" action="@Url.Action("Index")">
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <label for="tuNgay" class="form-label">Từ ngày</label>
+                                        <input type="date" class="form-control" id="tuNgay" name="tuNgay" 
+                                               value="@Model.TuNgay">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="denNgay" class="form-label">Đến ngày</label>
+                                        <input type="date" class="form-control" id="denNgay" name="denNgay" 
+                                               value="@Model.DenNgay">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="maPhim" class="form-label">Phim</label>
+                                        <select class="form-select" id="maPhim" name="maPhim">
+                                            <option value="">-- Tất cả phim --</option>
+                                            @foreach (var phim in Model.DanhSachPhim)
+                                            {
+                                                if (Model.MaPhimSelected != null && Model.MaPhimSelected == phim.Value)
+                                                {
+                                                    <option value="@phim.Value" selected="selected">@phim.Text</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@phim.Value">@phim.Text</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="maPhong" class="form-label">Phòng chiếu</label>
+                                        <select class="form-select" id="maPhong" name="maPhong">
+                                            <option value="">-- Tất cả phòng --</option>
+                                            @foreach (var phong in Model.DanhSachPhong)
+                                            {
+                                                if (Model.MaPhongSelected != null && Model.MaPhongSelected == phong.Value)
+                                                {
+                                                    <option value="@phong.Value" selected="selected">@phong.Text</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@phong.Value">@phong.Text</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary me-2">
+                                            <i class="fas fa-search me-1"></i>Tìm kiếm
+                                        </button>
+                                        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                                            <i class="fas fa-times me-1"></i>Xóa bộ lọc
+                                        </a>
+                                        <div class="btn-group ms-2" role="group">
+                                            <button type="button" class="btn btn-outline-info btn-sm" onclick="setToday()">
+                                                <i class="fas fa-calendar-day me-1"></i>Hôm nay
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info btn-sm" onclick="setThisWeek()">
+                                                <i class="fas fa-calendar-week me-1"></i>Tuần này
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info btn-sm" onclick="setThisMonth()">
+                                                <i class="fas fa-calendar-alt me-1"></i>Tháng này
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Thông tin tổng quan -->
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <a asp-action="DanhSachVe" class="btn btn-success me-2">
@@ -27,11 +108,23 @@
                             </a>
                         </div>
                         <div class="col-md-6 text-end">
-                            <small class="text-muted">Tổng cộng: @Model.Count lịch chiếu</small>
+                            <div class="d-flex justify-content-end align-items-center">
+                                <span class="badge bg-primary me-2">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    Tổng: @Model.LichChieus.Count lịch chiếu
+                                </span>
+                                @if (ViewBag.TuNgay != null || ViewBag.DenNgay != null)
+                                {
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-filter me-1"></i>
+                                        Đã lọc
+                                    </span>
+                                }
+                            </div>
                         </div>
                     </div>
 
-                    @if (Model.Any())
+                    @if (Model.LichChieus.Any())
                     {
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
@@ -48,17 +141,36 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var lichChieu in Model)
+                                    @foreach (var lichChieu in Model.LichChieus)
                                     {
-                                        <tr>
+                                        var isExpired = lichChieu.ThoiGianKetThuc < DateTime.Now;
+                                        var isToday = lichChieu.ThoiGianBatDau.Date == DateTime.Today;
+                                        var isUpcoming = lichChieu.ThoiGianBatDau > DateTime.Now;
+                                        var rowClass = isExpired ? "table-secondary" : isToday ? "table-warning" : "";
+                                        
+                                        <tr class="@rowClass">
                                             <td>
                                                 <strong>@lichChieu.MaLichChieu</strong>
+                                                @if (isToday)
+                                                {
+                                                    <br><span class="badge bg-warning text-dark">Hôm nay</span>
+                                                }
+                                                @if (isExpired)
+                                                {
+                                                    <br><span class="badge bg-secondary">Đã kết thúc</span>
+                                                }
+                                                @if (isUpcoming && !isToday)
+                                                {
+                                                    <br><span class="badge bg-info">Sắp chiếu</span>
+                                                }
                                             </td>
                                             <td>
                                                 <div class="fw-bold">@lichChieu.Phim?.TenPhim</div>
+                                                <small class="text-muted">@lichChieu.Phim?.TheLoai</small>
                                             </td>
                                             <td>
                                                 <span class="badge bg-secondary">@lichChieu.PhongChieu?.TenPhong</span>
+                                                <br><small class="text-muted">@lichChieu.PhongChieu?.SoChoNgoi ghế</small>
                                             </td>
                                             <td>
                                                 <small class="text-muted">@lichChieu.ThoiGianBatDau.ToString("dd/MM/yyyy")</small><br>
@@ -76,16 +188,24 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <a asp-action="PhatHanhHangLoat" asp-route-maLichChieu="@lichChieu.MaLichChieu" 
-                                                       class="btn btn-sm btn-primary" title="Phát hành vé hàng loạt">
-                                                        <i class="fas fa-plus"></i>
-                                                        Phát hành
-                                                    </a>
+                                                    @if (!isExpired)
+                                                    {
+                                                        <a asp-action="PhatHanhHangLoat" asp-route-maLichChieu="@lichChieu.MaLichChieu" 
+                                                           class="btn btn-sm btn-primary" title="Phát hành vé hàng loạt">
+                                                            <i class="fas fa-plus"></i>
+                                                            Phát hành
+                                                        </a>
+                                                    }
                                                     <a asp-action="SoDoGhe" asp-route-maLichChieu="@lichChieu.MaLichChieu" 
                                                        class="btn btn-sm btn-secondary" title="Xem sơ đồ ghế">
                                                         <i class="fas fa-th"></i>
                                                         Sơ đồ
                                                     </a>
+                                                    <button type="button" class="btn btn-sm btn-outline-info" 
+                                                            onclick="showLichChieuDetail('@lichChieu.MaLichChieu')" 
+                                                            title="Xem chi tiết">
+                                                        <i class="fas fa-info-circle"></i>
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -112,6 +232,67 @@
         $(document).ready(function() {
             // Khởi tạo tooltip
             $('[data-bs-toggle="tooltip"]').tooltip();
+
+            // Auto submit form khi thay đổi select
+            $('#maPhim, #maPhong').change(function() {
+                if (confirm('Bạn có muốn áp dụng bộ lọc ngay?')) {
+                    $(this).closest('form').submit();
+                }
+            });
         });
+
+        // Hàm đặt ngày hôm nay
+        function setToday() {
+            const today = new Date().toISOString().split('T')[0];
+            $('#tuNgay').val(today);
+            $('#denNgay').val(today);
+        }
+
+        // Hàm đặt tuần này
+        function setThisWeek() {
+            const today = new Date();
+            const firstDay = new Date(today.setDate(today.getDate() - today.getDay()));
+            const lastDay = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+            
+            $('#tuNgay').val(firstDay.toISOString().split('T')[0]);
+            $('#denNgay').val(lastDay.toISOString().split('T')[0]);
+        }
+
+        // Hàm đặt tháng này
+        function setThisMonth() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            
+            $('#tuNgay').val(firstDay.toISOString().split('T')[0]);
+            $('#denNgay').val(lastDay.toISOString().split('T')[0]);
+        }
+
+        // Validation ngày
+        $('#denNgay').change(function() {
+            const tuNgay = $('#tuNgay').val();
+            const denNgay = $(this).val();
+            
+            if (tuNgay && denNgay && new Date(denNgay) < new Date(tuNgay)) {
+                alert('Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu');
+                $(this).val('');
+            }
+        });
+
+        $('#tuNgay').change(function() {
+            const tuNgay = $(this).val();
+            const denNgay = $('#denNgay').val();
+            
+            if (tuNgay && denNgay && new Date(denNgay) < new Date(tuNgay)) {
+                alert('Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc');
+                $('#denNgay').val('');
+            }
+        });
+
+        // Hàm hiển thị chi tiết lịch chiếu
+        function showLichChieuDetail(maLichChieu) {
+            // Trong thực tế, có thể gọi AJAX để lấy thông tin chi tiết
+            alert('Chức năng xem chi tiết lịch chiếu: ' + maLichChieu + '\n\nTính năng này sẽ được phát triển trong phiên bản tiếp theo.');
+        }
     </script>
 }

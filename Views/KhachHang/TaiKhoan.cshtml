@@ -1,0 +1,193 @@
+@model CinemaManagement.Models.KhachHang
+@{
+    ViewData["Title"] = "Thông tin tài khoản";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Thông tin tài khoản -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user me-2"></i>Thông tin tài khoản
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            @TempData["SuccessMessage"]
+                        </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            @TempData["ErrorMessage"]
+                        </div>
+                    }
+
+                    <form method="post" action="@Url.Action("CapNhatTaiKhoan")">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="hoTen" class="form-label">
+                                        <i class="fas fa-user me-1"></i>Họ và tên
+                                    </label>
+                                    <input type="text" class="form-control" id="hoTen" name="hoTen" 
+                                           value="@Model.HoTen" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="sdt" class="form-label">
+                                        <i class="fas fa-phone me-1"></i>Số điện thoại
+                                    </label>
+                                    <input type="tel" class="form-control" id="sdt" name="sdt" 
+                                           value="@Model.SDT">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-id-card me-1"></i>Mã khách hàng
+                                    </label>
+                                    <input type="text" class="form-control" value="@Model.MaKhachHang" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-star me-1"></i>Điểm tích lũy
+                                    </label>
+                                    <input type="text" class="form-control" value="@Model.DiemTichLuy điểm" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Cập nhật thông tin
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin bổ sung -->
+        <div class="col-lg-4">
+            <!-- Card điểm tích lũy -->
+            <div class="card mb-3">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0">
+                        <i class="fas fa-gift me-2"></i>Điểm thành viên
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="text-warning">@Model.DiemTichLuy</h2>
+                    <p class="text-muted mb-0">điểm tích lũy</p>
+                    <hr>
+                    <small class="text-muted">
+                        Tích lũy thêm @(1000 - (Model.DiemTichLuy % 1000)) điểm để nhận voucher
+                    </small>
+                </div>
+            </div>
+
+            <!-- Card thống kê -->
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Thống kê
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-12 mb-3">
+                            <h4 class="text-info mb-0" id="total-tickets">0</h4>
+                            <small class="text-muted">Vé đã mua</small>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <h4 class="text-success mb-0" id="total-spent">0 VNĐ</h4>
+                            <small class="text-muted">Tổng chi tiêu</small>
+                        </div>
+                        <div class="col-12">
+                            <h4 class="text-primary mb-0" id="favorite-genre">Hành động</h4>
+                            <small class="text-muted">Thể loại yêu thích</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card hỗ trợ -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-headset me-2"></i>Hỗ trợ khách hàng
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="tel:1900xxxx" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-phone me-1"></i>Hotline: 1900-xxxx
+                        </a>
+                        <a href="mailto:support@cinema.com" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-envelope me-1"></i>Email hỗ trợ
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-comments me-1"></i>Chat trực tuyến
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nút hành động -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="d-flex gap-2">
+                <a href="@Url.Action("Index")" class="btn btn-outline-primary">
+                    <i class="fas fa-film me-1"></i>Xem phim
+                </a>
+                <a href="@Url.Action("LichSuDatVe")" class="btn btn-outline-info">
+                    <i class="fas fa-history me-1"></i>Lịch sử đặt vé
+                </a>
+                <a href="@Url.Action("GioHang")" class="btn btn-outline-success">
+                    <i class="fas fa-shopping-cart me-1"></i>Giỏ hàng
+                </a>
+                <a href="@Url.Action("Logout", "Auth")" class="btn btn-outline-danger">
+                    <i class="fas fa-sign-out-alt me-1"></i>Đăng xuất
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Load thống kê từ API (demo data)
+            loadUserStats();
+            
+            // Auto hide alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').fadeOut();
+            }, 5000);
+        });
+
+        function loadUserStats() {
+            // Demo data - trong thực tế sẽ load từ API
+            $('#total-tickets').text('12');
+            $('#total-spent').text('2,400,000 VNĐ');
+            $('#favorite-genre').text('Hành động');
+        }
+    </script>
+}

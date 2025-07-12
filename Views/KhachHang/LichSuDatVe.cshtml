@@ -1,0 +1,146 @@
+@model List<CinemaManagement.Models.HoaDon>
+@{
+    ViewData["Title"] = "Lịch sử đặt vé";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Lịch sử đặt vé
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var hoaDon in Model)
+                        {
+                            <div class="card mb-3 border-left-primary">
+                                <div class="card-header">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-receipt me-2"></i>
+                                                Hóa đơn: <code>@hoaDon.MaHoaDon</code>
+                                            </h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>
+                                                @hoaDon.ThoiGianTao.ToString("dd/MM/yyyy HH:mm")
+                                            </small>
+                                        </div>
+                                        <div class="col-md-6 text-end">
+                                            <span class="badge bg-success fs-6">
+                                                @hoaDon.TongTien.ToString("N0") VNĐ
+                                            </span>
+                                            <br>
+                                            <small class="text-muted">@hoaDon.SoLuong vé</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    @if (hoaDon.CTHDs.Any())
+                                    {
+                                        <div class="row">
+                                            @foreach (var cthd in hoaDon.CTHDs)
+                                            {
+                                                var ve = cthd.Ve;
+                                                <div class="col-md-6 col-lg-4 mb-3">
+                                                    <div class="border rounded p-3 h-100">
+                                                        <h6 class="text-primary">@ve.TenPhim</h6>
+                                                        <div class="mb-2">
+                                                            <small class="text-muted">
+                                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                                @ve.TenPhong
+                                                            </small>
+                                                            <br>
+                                                            <small class="text-muted">
+                                                                <i class="fas fa-chair me-1"></i>
+                                                                Ghế: <span class="badge bg-primary">@ve.SoGhe</span>
+                                                            </small>
+                                                        </div>
+                                                        <div class="mb-2">
+                                                            <small class="text-muted">
+                                                                <i class="fas fa-clock me-1"></i>
+                                                                @ve.LichChieu.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")
+                                                            </small>
+                                                        </div>
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <span class="fw-bold text-success">@ve.Gia.ToString("N0") VNĐ</span>
+                                                            @{
+                                                                var isExpired = ve.HanSuDung < DateTime.Now;
+                                                                var isUpcoming = ve.LichChieu.ThoiGianBatDau > DateTime.Now;
+                                                            }
+                                                            @if (isExpired)
+                                                            {
+                                                                <span class="badge bg-secondary">Đã hết hạn</span>
+                                                            }
+                                                            else if (isUpcoming)
+                                                            {
+                                                                <span class="badge bg-success">Sắp chiếu</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-warning">Đã chiếu</span>
+                                                            }
+                                                        </div>
+                                                        <div class="mt-2">
+                                                            <small class="text-muted">
+                                                                Mã vé: <code>@ve.MaVe</code>
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Pagination -->
+                        <nav aria-label="Phân trang lịch sử">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Chưa có lịch sử đặt vé</h5>
+                            <p class="text-muted">Bạn chưa đặt vé nào. Hãy khám phá các bộ phim đang chiếu!</p>
+                            <a href="@Url.Action("Index")" class="btn btn-primary">
+                                <i class="fas fa-film me-1"></i>Xem phim đang chiếu
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Tooltip
+            $('[data-bs-toggle="tooltip"]').tooltip();
+        });
+    </script>
+}

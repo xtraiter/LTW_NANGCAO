@@ -14,10 +14,6 @@
                     Dashboard Quản lý
                 </h2>
                 <div>
-                    <a asp-action="PhatHanhVe" asp-controller="PhatHanhVe" class="btn btn-primary me-2">
-                        <i class="fas fa-plus-circle me-1"></i>
-                        Phát hành vé
-                    </a>
                     <a asp-action="ThongKeChiTiet" class="btn btn-info">
                         <i class="fas fa-chart-bar me-1"></i>
                         Thống kê chi tiết
@@ -26,9 +22,61 @@
             </div>
         </div>
     </div>
-
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>
+                        Thao tác nhanh
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <a asp-action="Index" asp-controller="PhatHanhVe" class="btn btn-primary btn-lg w-100 mb-2">
+                                <i class="fas fa-plus-circle mb-1"></i><br>
+                                Phát hành vé
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a asp-action="DanhSachVe" asp-controller="PhatHanhVe" class="btn btn-success btn-lg w-100 mb-2">
+                                <i class="fas fa-list mb-1"></i><br>
+                                Danh sách vé
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a asp-action="ThongKe" asp-controller="PhatHanhVe" class="btn btn-info btn-lg w-100 mb-2">
+                                <i class="fas fa-chart-bar mb-1"></i><br>
+                                Thống kê vé
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a asp-action="QuanLyPhim" class="btn btn-warning btn-lg w-100 mb-2">
+                                <i class="fas fa-film mb-1"></i><br>
+                                Quản lý phim
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a asp-action="QuanLyLichChieu" class="btn btn-secondary btn-lg w-100 mb-2">
+                                <i class="fas fa-calendar-alt mb-1"></i><br>
+                                Lịch chiếu
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a asp-action="BaoCao" class="btn btn-danger btn-lg w-100 mb-2">
+                                <i class="fas fa-file-alt mb-1"></i><br>
+                                Báo cáo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Thống kê tổng quan -->
-    <div class="row mb-4">
+    <div class="row mb-4 mt-4">
         <div class="col-md-3">
             <div class="card border-primary">
                 <div class="card-body text-center">
@@ -258,59 +306,7 @@
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-bolt me-2"></i>
-                        Thao tác nhanh
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-2">
-                            <a asp-action="Index" asp-controller="PhatHanhVe" class="btn btn-primary btn-lg w-100 mb-2">
-                                <i class="fas fa-plus-circle mb-1"></i><br>
-                                Phát hành vé
-                            </a>
-                        </div>
-                        <div class="col-md-2">
-                            <a asp-action="DanhSachVe" asp-controller="PhatHanhVe" class="btn btn-success btn-lg w-100 mb-2">
-                                <i class="fas fa-list mb-1"></i><br>
-                                Danh sách vé
-                            </a>
-                        </div>
-                        <div class="col-md-2">
-                            <a asp-action="ThongKe" asp-controller="PhatHanhVe" class="btn btn-info btn-lg w-100 mb-2">
-                                <i class="fas fa-chart-bar mb-1"></i><br>
-                                Thống kê vé
-                            </a>
-                        </div>
-                        <div class="col-md-2">
-                            <a asp-action="QuanLyPhim" class="btn btn-warning btn-lg w-100 mb-2">
-                                <i class="fas fa-film mb-1"></i><br>
-                                Quản lý phim
-                            </a>
-                        </div>
-                        <div class="col-md-2">
-                            <a asp-action="QuanLyLichChieu" class="btn btn-secondary btn-lg w-100 mb-2">
-                                <i class="fas fa-calendar-alt mb-1"></i><br>
-                                Lịch chiếu
-                            </a>
-                        </div>
-                        <div class="col-md-2">
-                            <a asp-action="BaoCao" class="btn btn-danger btn-lg w-100 mb-2">
-                                <i class="fas fa-file-alt mb-1"></i><br>
-                                Báo cáo
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 </div>
 
 @section Scripts {

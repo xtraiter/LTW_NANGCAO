@@ -16,14 +16,29 @@ public class HomeController : Controller
     public IActionResult Index()
     {
         // Kiểm tra đăng nhập
+        var role = HttpContext.Session.GetString("Role");
         var maNhanVien = HttpContext.Session.GetString("MaNhanVien");
-        if (string.IsNullOrEmpty(maNhanVien))
+        var maKhachHang = HttpContext.Session.GetString("MaKhachHang");
+
+        if (string.IsNullOrEmpty(role))
         {
             return RedirectToAction("Login", "Auth");
         }
 
-        // Nếu đã đăng nhập, chuyển đến trang bán vé
-        return RedirectToAction("Index", "BanVe");
+        // Chuyển hướng theo role
+        if (role == "Khách hàng" && !string.IsNullOrEmpty(maKhachHang))
+        {
+            return RedirectToAction("Index", "KhachHang");
+        }
+        else if (!string.IsNullOrEmpty(maNhanVien))
+        {
+            // Nếu đã đăng nhập, chuyển đến trang bán vé
+            return RedirectToAction("Index", "BanVe");
+        }
+        else
+        {
+            return RedirectToAction("Login", "Auth");
+        }
     }
 
     public IActionResult Privacy()
