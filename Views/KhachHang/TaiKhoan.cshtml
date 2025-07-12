@@ -4,7 +4,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid">
+<div class="container-fluid mt-4">
     <div class="row">
         <!-- Thông tin tài khoản -->
         <div class="col-lg-8">
@@ -184,10 +184,50 @@
         });
 
         function loadUserStats() {
-            // Demo data - trong thực tế sẽ load từ API
-            $('#total-tickets').text('12');
-            $('#total-spent').text('2,400,000 VNĐ');
-            $('#favorite-genre').text('Hành động');
+            // Gọi API để lấy thống kê thật
+            $.ajax({
+                url: '@Url.Action("GetThongKeKhachHang")',
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        var data = response.data;
+                        
+                        // Cập nhật số vé đã mua
+                        $('#total-tickets').text(data.tongSoVe);
+                        
+                        // Cập nhật tổng chi tiêu với định dạng tiền tệ
+                        var formattedMoney = new Intl.NumberFormat('vi-VN', {
+                            style: 'currency',
+                            currency: 'VND'
+                        }).format(data.tongChiTieu);
+                        $('#total-spent').text(formattedMoney);
+                        
+                        // Cập nhật thể loại yêu thích
+                        $('#favorite-genre').text(data.theLoaiYeuThich);
+                        
+                        // Cập nhật điểm cần tích lũy thêm để nhận voucher
+                        var diemCanThichLuy = 1000 - (data.diemTichLuy % 1000);
+                        if (diemCanThichLuy === 1000) {
+                            diemCanThichLuy = 0; // Đã đủ điểm
+                        }
+                        $('.text-muted small').text('Tích lũy thêm ' + diemCanThichLuy + ' điểm để nhận voucher');
+                    } else {
+                        console.error('Lỗi khi tải thống kê:', response.message);
+                        // Hiển thị dữ liệu mặc định nếu có lỗi
+                        $('#total-tickets').text('0');
+                        $('#total-spent').text('0 VNĐ');
+                        $('#favorite-genre').text('Chưa có');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Lỗi AJAX:', error);
+                    // Hiển thị dữ liệu mặc định nếu có lỗi
+                    $('#total-tickets').text('0');
+                    $('#total-spent').text('0 VNĐ');
+                    $('#favorite-genre').text('Chưa có');
+                }
+            });
         }
     </script>
 }

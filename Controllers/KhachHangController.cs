@@ -480,5 +480,60 @@ namespace CinemaManagement.Controllers
 
             return RedirectToAction("TaiKhoan");
         }
+
+        // API để lấy thống kê khách hàng
+        [HttpGet]
+        public async Task<IActionResult> GetThongKeKhachHang()
+        {
+            if (!IsCustomerLoggedIn())
+            {
+                return Json(new { success = false, message = "Chưa đăng nhập" });
+            }
+
+            var maKhachHang = HttpContext.Session.GetString("MaKhachHang");
+            
+            try
+            {
+                // Lấy tổng số vé đã mua thông qua HoaDon -> CTHD -> Ve
+                var tongSoVe = await _context.CTHDs
+                    .Where(cthd => cthd.HoaDon.MaKhachHang == maKhachHang)
+                    .CountAsync();
+
+                // Lấy tổng số tiền đã chi tiêu
+                var tongChiTieu = await _context.HoaDons
+                    .Where(hd => hd.MaKhachHang == maKhachHang)
+                    .SumAsync(hd => hd.TongTien);
+
+                // Lấy thể loại phim yêu thích (thể loại được mua nhiều nhất)
+                var theLoaiYeuThich = await _context.CTHDs
+                    .Where(cthd => cthd.HoaDon.MaKhachHang == maKhachHang)
+                    .Include(cthd => cthd.Ve)
+                    .ThenInclude(v => v.Phim)
+                    .GroupBy(cthd => cthd.Ve.Phim.TheLoai)
+                    .OrderByDescending(g => g.Count())
+                    .Select(g => g.Key)
+                    .FirstOrDefaultAsync() ?? "Chưa có";
+
+                // Lấy thông tin khách hàng để có điểm tích lũy
+                var khachHang = await _context.KhachHangs
+                    .FirstOrDefaultAsync(kh => kh.MaKhachHang == maKhachHang);
+
+                return Json(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        tongSoVe = tongSoVe,
+                        tongChiTieu = tongChiTieu,
+                        theLoaiYeuThich = theLoaiYeuThich,
+                        diemTichLuy = khachHang?.DiemTichLuy ?? 0
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
     }
 }

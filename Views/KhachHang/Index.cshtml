@@ -4,7 +4,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid">
+<div class="container-fluid mt-4">
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -102,16 +102,6 @@
             </div>
         </div>
     </div>
-</div>
-
-<!-- Giỏ hàng floating button -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
-    <a href="@Url.Action("GioHang")" class="btn btn-success btn-lg rounded-circle" 
-       data-bs-toggle="tooltip" data-bs-placement="left" title="Giỏ hàng">
-        <i class="fas fa-shopping-cart"></i>
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
-              id="cart-count">0</span>
-    </a>
 </div>
 
 @section Scripts {

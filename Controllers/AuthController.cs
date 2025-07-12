@@ -69,9 +69,13 @@ namespace CinemaManagement.Controllers
             {
                 return RedirectToAction("Index", "BanVe"); // Nhân viên chỉ đi đến bán vé
             }
+            else if (taiKhoan.Role == "Khách hàng")
+            {
+                return RedirectToAction("Index", "KhachHang"); // Khách hàng đi đến trang khách hàng
+            }
             else
             {
-                return RedirectToAction("Index", "Home"); // Khách hàng đi đến trang chủ
+                return RedirectToAction("Index", "Home"); // Fallback
             }
         }
 
