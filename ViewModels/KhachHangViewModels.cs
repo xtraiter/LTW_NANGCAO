@@ -22,6 +22,9 @@ namespace CinemaManagement.ViewModels
     public class KhachHangChonGheViewModel
     {
         public LichChieu LichChieu { get; set; } = null!;
+        public List<GheNgoi> DanhSachGhe { get; set; } = new List<GheNgoi>();
+        public List<Ve> DanhSachVeDaBan { get; set; } = new List<Ve>();
+        public List<Ve> DanhSachVeDaPhatHanh { get; set; } = new List<Ve>();
         public List<string> GheDaDat { get; set; } = new List<string>();
     }
 

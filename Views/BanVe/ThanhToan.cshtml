@@ -113,7 +113,11 @@
                             <input type="hidden" id="customerId" value="">
                         </div>
                         <div id="noCustomer" class="text-muted">
-                            <p>Khách lẻ - không tích điểm</p>
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Khách lẻ</strong> - Không tích điểm thành viên
+                                <br><small>Nhập thông tin khách hàng để được tích điểm và ưu đãi</small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -325,8 +329,11 @@
                         $('#noCustomer').addClass('d-none');
                         selectedCustomer = customer.maKhachHang;
                         
-                        // Show success message
-                        showInfoMessage('Đã tìm thấy khách hàng: ' + customer.hoTen);
+                        // Show success message with loyalty info
+                        var loyaltyInfo = customer.diemTichLuy > 0 
+                            ? ` (Điểm hiện tại: ${customer.diemTichLuy})` 
+                            : ' (Khách hàng mới)';
+                        showInfoMessage('Đã tìm thấy khách hàng: ' + customer.hoTen + loyaltyInfo + '. Giao dịch này sẽ được tích điểm.');
                     } else {
                         showErrorMessage(response.message || 'Không tìm thấy khách hàng');
                         resetCustomerInfo();
@@ -347,6 +354,7 @@
                 $('#noCustomer').removeClass('d-none');
                 $('#customerId').val('');
                 selectedCustomer = '';
+                showInfoMessage('Đã chuyển về chế độ khách lẻ - Giao dịch sẽ không được tích điểm');
             }
 
             function showInfoMessage(message) {
@@ -468,13 +476,16 @@
                 
                 if (selectedCustomer && currentDiscount > 0) {
                     confirmMessage += '\n\nThông tin:\n';
-                    confirmMessage += '- Khách hàng: ' + $('#customerName').text() + '\n';
+                    confirmMessage += '- Khách hàng: ' + $('#customerName').text() + ' (Có tích điểm)\n';
                     confirmMessage += '- Voucher giảm: ' + formatCurrency(currentDiscount) + '\n';
                     confirmMessage += '- Thành tiền: ' + formatCurrency(finalAmount);
                 } else if (selectedCustomer) {
-                    confirmMessage += '\n\nKhách hàng: ' + $('#customerName').text();
+                    confirmMessage += '\n\nKhách hàng: ' + $('#customerName').text() + ' (Có tích điểm)';
                 } else if (currentDiscount > 0) {
-                    confirmMessage += '\n\nVoucher giảm: ' + formatCurrency(currentDiscount);
+                    confirmMessage += '\n\nVoucher giảm: ' + formatCurrency(currentDiscount) + '\n';
+                    confirmMessage += 'Ghi chú: Khách lẻ - Không tích điểm';
+                } else {
+                    confirmMessage += '\n\nGhi chú: Khách lẻ - Không tích điểm';
                 }
                 
                 if (confirm(confirmMessage)) {

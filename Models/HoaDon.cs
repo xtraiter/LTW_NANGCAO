@@ -24,7 +24,7 @@ namespace CinemaManagement.Models
 
         // Navigation properties
         [ForeignKey("MaKhachHang")]
-        public virtual KhachHang KhachHang { get; set; } = null!;
+        public virtual KhachHang? KhachHang { get; set; }
 
         [ForeignKey("MaNhanVien")]
         public virtual NhanVien NhanVien { get; set; } = null!;

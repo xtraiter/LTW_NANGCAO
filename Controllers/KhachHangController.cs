@@ -118,15 +118,28 @@ namespace CinemaManagement.Controllers
                 return NotFound();
             }
 
-            // Lấy danh sách ghế đã được đặt cho lịch chiếu này
-            var gheDaDat = await _context.Ves
-                .Where(v => v.MaLichChieu == maLichChieu && v.TrangThai == "Đã đặt")
-                .Select(v => v.MaGhe)
+            var danhSachGhe = await _context.GheNgois
+                .Where(g => g.MaPhong == lichChieu.MaPhong)
+                .OrderBy(g => g.SoGhe)
                 .ToListAsync();
+
+            var danhSachVeDaBan = await _context.Ves
+                .Where(v => v.MaLichChieu == maLichChieu && v.TrangThai == "Đã bán")
+                .ToListAsync();
+
+            var danhSachVeDaPhatHanh = await _context.Ves
+                .Where(v => v.MaLichChieu == maLichChieu && (v.TrangThai == "Chưa đặt" || v.TrangThai == "Còn hạn"))
+                .ToListAsync();
+
+            // Lấy danh sách ghế đã được đặt cho lịch chiếu này
+            var gheDaDat = danhSachVeDaBan.Select(v => v.MaGhe).ToList();
 
             var viewModel = new KhachHangChonGheViewModel
             {
                 LichChieu = lichChieu,
+                DanhSachGhe = danhSachGhe,
+                DanhSachVeDaBan = danhSachVeDaBan,
+                DanhSachVeDaPhatHanh = danhSachVeDaPhatHanh,
                 GheDaDat = gheDaDat
             };
 
@@ -527,6 +540,43 @@ namespace CinemaManagement.Controllers
                         tongChiTieu = tongChiTieu,
                         theLoaiYeuThich = theLoaiYeuThich,
                         diemTichLuy = khachHang?.DiemTichLuy ?? 0
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // API để lấy trạng thái ghế real-time
+        [HttpGet]
+        public async Task<IActionResult> GetTrangThaiGhe(string maLichChieu)
+        {
+            if (!IsCustomerLoggedIn())
+            {
+                return Json(new { success = false, message = "Chưa đăng nhập" });
+            }
+
+            try
+            {
+                var danhSachVeDaBan = await _context.Ves
+                    .Where(v => v.MaLichChieu == maLichChieu && v.TrangThai == "Đã bán")
+                    .Select(v => v.MaGhe)
+                    .ToListAsync();
+
+                var danhSachVeDaPhatHanh = await _context.Ves
+                    .Where(v => v.MaLichChieu == maLichChieu && (v.TrangThai == "Chưa đặt" || v.TrangThai == "Còn hạn"))
+                    .Select(v => v.MaGhe)
+                    .ToListAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        gheDaBan = danhSachVeDaBan,
+                        gheDaPhatHanh = danhSachVeDaPhatHanh
                     }
                 });
             }

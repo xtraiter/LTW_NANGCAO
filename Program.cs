@@ -21,6 +21,32 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
+// Tạo khách hàng GUEST nếu chưa tồn tại
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<CinemaDbContext>();
+    try
+    {
+        var guestCustomer = await context.KhachHangs.FindAsync("GUEST");
+        if (guestCustomer == null)
+        {
+            context.KhachHangs.Add(new CinemaManagement.Models.KhachHang
+            {
+                MaKhachHang = "GUEST",
+                HoTen = "Khách lẻ",
+                SDT = "0000000000",
+                DiemTichLuy = 0
+            });
+            await context.SaveChangesAsync();
+            Console.WriteLine("Đã tạo khách hàng GUEST cho khách lẻ");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Lỗi khi tạo khách hàng GUEST: {ex.Message}");
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
