@@ -69,9 +69,13 @@ namespace CinemaManagement.Controllers
             {
                 return RedirectToAction("Index", "BanVe"); // Nhân viên chỉ đi đến bán vé
             }
+            else if (taiKhoan.Role == "Khách hàng")
+            {
+                return RedirectToAction("Index", "KhachHang"); // Khách hàng đi đến trang khách hàng
+            }
             else
             {
-                return RedirectToAction("Index", "Home"); // Khách hàng đi đến trang chủ
+                return RedirectToAction("Index", "Home"); // Fallback
             }
         }
 
@@ -80,6 +84,25 @@ namespace CinemaManagement.Controllers
         {
             HttpContext.Session.Clear();
             return RedirectToAction("Login");
+        }
+
+        // GET: Auth/TestAccounts - Debug purpose only
+        public async Task<IActionResult> TestAccounts()
+        {
+            var accounts = await _context.TaiKhoans
+                .Include(t => t.NhanVien)
+                .Include(t => t.KhachHang)
+                .ToListAsync();
+            
+            return Json(accounts.Select(a => new {
+                MaTK = a.MaTK,
+                Email = a.Email,
+                MatKhau = a.MatKhau,
+                Role = a.Role,
+                TrangThai = a.TrangThai,
+                TenNhanVien = a.NhanVien?.TenNhanVien,
+                TenKhachHang = a.KhachHang?.HoTen
+            }));
         }
     }
 }

@@ -22,7 +22,10 @@ builder.Services.AddSession(options =>
 var app = builder.Build();
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> MuaVe(KhachHang)
 // Tạo khách hàng GUEST nếu chưa tồn tại
 using (var scope = app.Services.CreateScope())
 {
@@ -66,7 +69,10 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+<<<<<<< HEAD
 >>>>>>> 2aebf78 (Hoàn thành các giao diện, chức năng mua vé dành cho Khách Hàng)
+=======
+>>>>>>> MuaVe(KhachHang)
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {

@@ -308,7 +308,7 @@ namespace CinemaManagement.Controllers
                         TongTien = thanhTien,
                         ThoiGianTao = DateTime.Now,
                         SoLuong = danhSachGheDuocChon.Count,
-                        MaKhachHang = khachHang?.MaKhachHang ?? "KH001", // Khách hàng mặc định
+                        MaKhachHang = khachHang?.MaKhachHang ?? "GUEST", // GUEST cho khách lẻ
                         MaNhanVien = maNhanVien
                     };
 
@@ -394,8 +394,15 @@ namespace CinemaManagement.Controllers
                     // Cập nhật điểm tích lũy cho khách hàng
                     if (khachHang != null)
                     {
-                        khachHang.DiemTichLuy += (int)(thanhTien / 10000); // 1 điểm = 10,000đ
+                        var diemTichLuyMoi = (int)(thanhTien / 10000); // 1 điểm = 10,000đ
+                        khachHang.DiemTichLuy += diemTichLuyMoi;
                         _context.KhachHangs.Update(khachHang);
+                        
+                        Console.WriteLine($"Cập nhật điểm tích lũy cho khách hàng {khachHang.MaKhachHang}: +{diemTichLuyMoi} điểm");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Khách lẻ - không tích điểm");
                     }
 
                     await _context.SaveChangesAsync();

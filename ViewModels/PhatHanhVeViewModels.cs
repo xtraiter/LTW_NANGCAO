@@ -34,4 +34,21 @@ namespace CinemaManagement.ViewModels
         public int SoVe { get; set; }
         public decimal DoanhThu { get; set; }
     }
+
+    public class SelectListItem
+    {
+        public string Value { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
+    }
+
+    public class PhatHanhVeIndexViewModel
+    {
+        public List<LichChieu> LichChieus { get; set; } = new List<LichChieu>();
+        public List<SelectListItem> DanhSachPhim { get; set; } = new List<SelectListItem>();
+        public List<SelectListItem> DanhSachPhong { get; set; } = new List<SelectListItem>();
+        public string? TuNgay { get; set; }
+        public string? DenNgay { get; set; }
+        public string? MaPhimSelected { get; set; }
+        public string? MaPhongSelected { get; set; }
+    }
 }

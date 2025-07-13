@@ -79,7 +79,20 @@
                                 </li>
                             }
                         }
-                        else
+                        @if (Context.Session.GetString("MaKhachHang") != null)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="KhachHang" asp-action="Index">
+                                    <i class="fas fa-film me-1"></i>Phim đang chiếu
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="KhachHang" asp-action="LichSuDatVe">
+                                    <i class="fas fa-history me-1"></i>Lịch sử đặt vé
+                                </a>
+                            </li>
+                        }
+                        @if (Context.Session.GetString("MaNhanVien") == null && Context.Session.GetString("MaKhachHang") == null)
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Home" asp-action="Index">
@@ -113,6 +126,39 @@
                                         </span></li>
                                     }
                                     <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-controller="Auth" asp-action="Logout">
+                                        <i class="fas fa-sign-out-alt me-1"></i>Đăng Xuất
+                                    </a></li>
+                                </ul>
+                            </li>
+                        }
+                        else if (Context.Session.GetString("MaKhachHang") != null)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user me-1"></i>
+                                    @{
+                                        var tenKhachHang = Context.Session.GetString("TenKhachHang");
+                                        var emailKH = Context.Session.GetString("Email");
+                                        var vaiTroKH = Context.Session.GetString("VaiTro");
+                                    }
+                                    @(tenKhachHang ?? emailKH ?? "Khách hàng")
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><h6 class="dropdown-header">
+                                        <i class="fas fa-info-circle me-1"></i>@(vaiTroKH ?? "Khách hàng")
+                                    </h6></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    @if (!string.IsNullOrEmpty(emailKH))
+                                    {
+                                        <li><span class="dropdown-item-text">
+                                            <small><strong>Email:</strong> @emailKH</small>
+                                        </span></li>
+                                    }
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-controller="KhachHang" asp-action="TaiKhoan">
+                                        <i class="fas fa-user-cog me-1"></i>Thông tin tài khoản
+                                    </a></li>
                                     <li><a class="dropdown-item" asp-controller="Auth" asp-action="Logout">
                                         <i class="fas fa-sign-out-alt me-1"></i>Đăng Xuất
                                     </a></li>
@@ -153,7 +199,13 @@
                     {
                         <small>
                             <i class="fas fa-user me-1"></i>
-                            @Context.Session.GetString("VaiTro") | @Context.Session.GetString("Email")
+                            @{
+                                var displayName = Context.Session.GetString("TenNhanVien") 
+                                               ?? Context.Session.GetString("TenKhachHang") 
+                                               ?? Context.Session.GetString("Email");
+                                var role = Context.Session.GetString("VaiTro") ?? "Người dùng";
+                            }
+                            @role | @displayName
                         </small>
                     }
                     else

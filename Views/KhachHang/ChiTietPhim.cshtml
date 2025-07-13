@@ -62,7 +62,11 @@
     <div class="row mt-4">
         <div class="col-12">
             <div class="card">
+<<<<<<< HEAD
                 <div class="card-header bg-success text-white">
+=======
+                <div class="card-header bg-primary text-white">
+>>>>>>> MuaVe(KhachHang)
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">
                             <i class="fas fa-calendar-alt me-2"></i>Lịch chiếu phim
@@ -121,7 +125,11 @@
             // Show loading state
             $('#scheduleDetailContent').html(`
                 <div class="text-center py-5">
+<<<<<<< HEAD
                     <div class="spinner-border text-success" role="status">
+=======
+                    <div class="spinner-border text-primary" role="status">
+>>>>>>> MuaVe(KhachHang)
                         <span class="visually-hidden">Đang tải...</span>
                     </div>
                     <p class="mt-3 text-muted">Đang tải lịch chiếu...</p>
@@ -164,11 +172,19 @@
 
             var html = `
                 <div class="mb-3 text-center">
+<<<<<<< HEAD
                     <h6 class="text-success mb-2">
                         <i class="fas fa-calendar-day me-2"></i>
                         Lịch chiếu ngày ${formattedDate}
                     </h6>
                     <span class="badge bg-success">${schedules.length} suất chiếu</span>
+=======
+                    <h6 class="text-primary mb-2">
+                        <i class="fas fa-calendar-day me-2"></i>
+                        Lịch chiếu ngày ${formattedDate}
+                    </h6>
+                    <span class="badge bg-primary">${schedules.length} suất chiếu</span>
+>>>>>>> MuaVe(KhachHang)
                 </div>
                 <div class="row g-3">
             `;
@@ -177,7 +193,11 @@
                 var startTime = new Date(schedule.thoiGianBatDau);
                 var endTime = new Date(schedule.thoiGianKetThuc);
                 var isAvailable = startTime > now;
+<<<<<<< HEAD
                 var btnClass = isAvailable ? "btn-success" : "btn-secondary";
+=======
+                var btnClass = isAvailable ? "btn-primary" : "btn-secondary";
+>>>>>>> MuaVe(KhachHang)
                 var btnText = isAvailable ? "Chọn ghế" : "Đã qua";
                 var iconClass = isAvailable ? "fas fa-chair" : "fas fa-clock";
 
@@ -278,6 +298,7 @@
         }
 
         .schedule-item-card:hover {
+<<<<<<< HEAD
             border-color: #28a745;
             transform: translateY(-5px);
             box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
@@ -285,6 +306,15 @@
 
         .schedule-header {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+=======
+            border-color: #007bff;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.2);
+        }
+
+        .schedule-header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+>>>>>>> MuaVe(KhachHang)
             color: white;
             padding: 12px 15px;
         }
@@ -315,7 +345,11 @@
 
         .start-time {
             font-size: 20px;
+<<<<<<< HEAD
             color: #28a745;
+=======
+            color: #007bff;
+>>>>>>> MuaVe(KhachHang)
             margin-bottom: 5px;
         }
 
@@ -338,7 +372,11 @@
 
         .btn-hover-scale {
             transform: scale(1.05) !important;
+<<<<<<< HEAD
             box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4) !important;
+=======
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4) !important;
+>>>>>>> MuaVe(KhachHang)
         }
 
         /* Animation */
@@ -382,14 +420,22 @@
         }
 
         .table-borderless td:last-child {
+<<<<<<< HEAD
             color: #28a745;
+=======
+            color: #007bff;
+>>>>>>> MuaVe(KhachHang)
             font-weight: 500;
         }
 
         /* Date Filter Styles */
         #dateFilterDetail {
             background-color: white;
+<<<<<<< HEAD
             border: 2px solid #28a745;
+=======
+            border: 2px solid #007bff;
+>>>>>>> MuaVe(KhachHang)
             border-radius: 8px;
             color: #495057;
             font-weight: 500;
@@ -397,13 +443,22 @@
         }
 
         #dateFilterDetail:focus {
+<<<<<<< HEAD
             border-color: #20c997;
             box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+=======
+            border-color: #0056b3;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+>>>>>>> MuaVe(KhachHang)
             outline: none;
         }
 
         #dateFilterDetail:hover {
+<<<<<<< HEAD
             border-color: #20c997;
+=======
+            border-color: #0056b3;
+>>>>>>> MuaVe(KhachHang)
         }
 
         /* Loading animation */
@@ -418,7 +473,11 @@
 
         /* Enhanced schedule info header */
         .schedule-info-header {
+<<<<<<< HEAD
             background: rgba(40, 167, 69, 0.1);
+=======
+            background: rgba(0, 123, 255, 0.1);
+>>>>>>> MuaVe(KhachHang)
             border-radius: 8px;
             padding: 10px;
             margin-bottom: 20px;
@@ -426,7 +485,11 @@
         }
 
         .schedule-info-header h6 {
+<<<<<<< HEAD
             color: #155724;
+=======
+            color: #0056b3;
+>>>>>>> MuaVe(KhachHang)
             margin-bottom: 5px;
         }
 

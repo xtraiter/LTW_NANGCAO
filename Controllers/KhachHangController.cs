@@ -197,6 +197,7 @@ namespace CinemaManagement.Controllers
             return View(viewModel);
         }
 
+<<<<<<< HEAD
         // Thêm vé vào giỏ hàng
         [HttpPost]
         public async Task<IActionResult> ThemVaoGio([FromBody] ThemVeRequest request)
@@ -281,12 +282,17 @@ namespace CinemaManagement.Controllers
 
         // Xem giỏ hàng
         public IActionResult GioHang()
+=======
+        // Thanh toán - GET method (chuyển hướng về trang chủ vì không dùng giỏ hàng)
+        public IActionResult ThanhToan()
+>>>>>>> MuaVe(KhachHang)
         {
             if (!IsCustomerLoggedIn())
             {
                 return RedirectToAction("Login", "Auth");
             }
 
+<<<<<<< HEAD
             var gioHang = HttpContext.Session.GetObjectFromJson<List<GioHangItem>>("GioHang") ?? new List<GioHangItem>();
             return View(gioHang);
         }
@@ -306,12 +312,23 @@ namespace CinemaManagement.Controllers
 
         // Thanh toán
         public async Task<IActionResult> ThanhToan()
+=======
+            // Chuyển hướng về trang chủ vì đã không sử dụng giỏ hàng
+            TempData["ErrorMessage"] = "Vui lòng chọn ghế từ trang lịch chiếu để thanh toán";
+            return RedirectToAction("Index");
+        }
+
+        // Thanh toán trực tiếp từ trang chọn ghế - POST method
+        [HttpPost]
+        public async Task<IActionResult> ThanhToan(string maLichChieu, List<SelectedSeatViewModel> selectedSeats, decimal tongTien)
+>>>>>>> MuaVe(KhachHang)
         {
             if (!IsCustomerLoggedIn())
             {
                 return RedirectToAction("Login", "Auth");
             }
 
+<<<<<<< HEAD
             var gioHang = HttpContext.Session.GetObjectFromJson<List<GioHangItem>>("GioHang") ?? new List<GioHangItem>();
             
             if (!gioHang.Any())
@@ -320,6 +337,58 @@ namespace CinemaManagement.Controllers
                 return RedirectToAction("Index");
             }
 
+=======
+            // Log để debug
+            Console.WriteLine($"=== NHẬN DỮ LIỆU THANH TOÁN ===");
+            Console.WriteLine($"Mã lịch chiếu: {maLichChieu}");
+            Console.WriteLine($"Số ghế: {selectedSeats?.Count ?? 0}");
+            Console.WriteLine($"Tổng tiền: {tongTien}");
+
+            if (selectedSeats == null || !selectedSeats.Any())
+            {
+                TempData["ErrorMessage"] = "Không có ghế nào được chọn";
+                return RedirectToAction("ChonGhe", new { maLichChieu });
+            }
+
+            // Kiểm tra lịch chiếu tồn tại
+            var lichChieu = await _context.LichChieus
+                .Include(lc => lc.Phim)
+                .Include(lc => lc.PhongChieu)
+                .FirstOrDefaultAsync(lc => lc.MaLichChieu == maLichChieu);
+
+            if (lichChieu == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy lịch chiếu";
+                return RedirectToAction("Index");
+            }
+
+            // Tạo danh sách ghế cho giỏ hàng tạm thời
+            var gioHangItems = new List<GioHangItem>();
+            foreach (var seat in selectedSeats)
+            {
+                var ghe = await _context.GheNgois
+                    .FirstOrDefaultAsync(g => g.MaGhe == seat.MaGhe);
+
+                if (ghe != null)
+                {
+                    gioHangItems.Add(new GioHangItem
+                    {
+                        MaLichChieu = maLichChieu,
+                        MaGhe = seat.MaGhe,
+                        SoGhe = seat.SoGhe,
+                        Gia = seat.GiaGhe,
+                        TenPhim = lichChieu.Phim.TenPhim,
+                        ThoiGianChieu = lichChieu.ThoiGianBatDau,
+                        TenPhong = lichChieu.PhongChieu.TenPhong,
+                        PhongChieu = lichChieu.PhongChieu.TenPhong
+                    });
+                }
+            }
+
+            // Lưu vào session để sử dụng trong trang thanh toán
+            HttpContext.Session.SetObjectAsJson("TempGioHang", gioHangItems);
+
+>>>>>>> MuaVe(KhachHang)
             // Lấy danh sách voucher có thể sử dụng
             var vouchers = await _context.Vouchers
                 .Where(v => v.ThoiGianBatDau <= DateTime.Now && v.ThoiGianKetThuc >= DateTime.Now)
@@ -327,9 +396,16 @@ namespace CinemaManagement.Controllers
 
             var viewModel = new KhachHangThanhToanViewModel
             {
+<<<<<<< HEAD
                 GioHang = gioHang,
                 Vouchers = vouchers,
                 TongTien = gioHang.Sum(item => item.Gia)
+=======
+                GioHang = gioHangItems,
+                Vouchers = vouchers,
+                TongTien = tongTien,
+                IsDirectPayment = true // Flag để biết đây là thanh toán trực tiếp
+>>>>>>> MuaVe(KhachHang)
             };
 
             return View(viewModel);
@@ -339,24 +415,67 @@ namespace CinemaManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> XuLyThanhToan(string? maVoucher)
         {
+<<<<<<< HEAD
             if (!IsCustomerLoggedIn())
             {
+=======
+            Console.WriteLine("=== BẮT ĐẦU XỬ LÝ THANH TOÁN ===");
+            Console.WriteLine($"Thời gian: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            Console.WriteLine($"Mã voucher nhận được: '{maVoucher}'");
+
+            if (!IsCustomerLoggedIn())
+            {
+                Console.WriteLine("CẢNH BÁO: Khách hàng chưa đăng nhập");
+>>>>>>> MuaVe(KhachHang)
                 return RedirectToAction("Login", "Auth");
             }
 
             var maKhachHang = HttpContext.Session.GetString("MaKhachHang");
+<<<<<<< HEAD
             var gioHang = HttpContext.Session.GetObjectFromJson<List<GioHangItem>>("GioHang") ?? new List<GioHangItem>();
 
             if (!gioHang.Any())
             {
+=======
+            Console.WriteLine($"Mã khách hàng: '{maKhachHang}'");
+
+            // Chỉ sử dụng giỏ hàng tạm thời từ thanh toán trực tiếp
+            var gioHang = HttpContext.Session.GetObjectFromJson<List<GioHangItem>>("TempGioHang") ?? new List<GioHangItem>();
+
+            Console.WriteLine($"Kiểm tra dữ liệu giỏ hàng:");
+            Console.WriteLine($"- TempGioHang items: {gioHang.Count}");
+            Console.WriteLine($"- Sử dụng giỏ hàng tạm thời với {gioHang.Count} items");
+
+            if (!gioHang.Any())
+            {
+                Console.WriteLine("LỖI: Giỏ hàng trống - chuyển hướng về trang chủ");
+>>>>>>> MuaVe(KhachHang)
                 TempData["ErrorMessage"] = "Giỏ hàng trống";
                 return RedirectToAction("Index");
             }
 
+<<<<<<< HEAD
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 // Tạo mã hóa đơn unique
+=======
+            // Log chi tiết từng item trong giỏ hàng
+            Console.WriteLine("Chi tiết giỏ hàng:");
+            for (int i = 0; i < gioHang.Count; i++)
+            {
+                var item = gioHang[i];
+                Console.WriteLine($"  Item {i + 1}: Ghế {item.SoGhe}, Phim: {item.TenPhim}, Giá: {item.Gia:N0}, Lịch chiếu: {item.MaLichChieu}");
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            Console.WriteLine("Đã bắt đầu transaction database");
+            
+            try
+            {
+                // Tạo mã hóa đơn unique
+                Console.WriteLine("Bước 1: Tạo mã hóa đơn");
+>>>>>>> MuaVe(KhachHang)
                 var lastHoaDon = await _context.HoaDons
                     .OrderByDescending(h => h.MaHoaDon)
                     .FirstOrDefaultAsync();
@@ -370,15 +489,31 @@ namespace CinemaManagement.Controllers
                     }
                 }
                 var maHoaDon = $"HD{soThuTu:D3}";
+<<<<<<< HEAD
 
                 var tongTien = gioHang.Sum(item => item.Gia);
+=======
+                Console.WriteLine($"Mã hóa đơn được tạo: {maHoaDon}");
+
+                var tongTien = gioHang.Sum(item => item.Gia);
+                Console.WriteLine($"Tổng tiền gốc: {tongTien:N0} VNĐ");
+
+>>>>>>> MuaVe(KhachHang)
                 decimal tienGiamGia = 0;
                 decimal tongTienSauGiam = tongTien;
 
                 // Áp dụng voucher nếu có
+<<<<<<< HEAD
                 Voucher? voucher = null;
                 if (!string.IsNullOrEmpty(maVoucher))
                 {
+=======
+                Console.WriteLine("Bước 2: Xử lý voucher");
+                Voucher? voucher = null;
+                if (!string.IsNullOrEmpty(maVoucher))
+                {
+                    Console.WriteLine($"Tìm kiếm voucher: {maVoucher}");
+>>>>>>> MuaVe(KhachHang)
                     voucher = await _context.Vouchers
                         .FirstOrDefaultAsync(v => v.MaGiamGia == maVoucher && 
                                                  v.ThoiGianBatDau <= DateTime.Now && 
@@ -387,9 +522,26 @@ namespace CinemaManagement.Controllers
                     {
                         tienGiamGia = tongTien * voucher.PhanTramGiam / 100;
                         tongTienSauGiam = tongTien - tienGiamGia;
+<<<<<<< HEAD
                     }
                 }
 
+=======
+                        Console.WriteLine($"Voucher hợp lệ: Giảm {voucher.PhanTramGiam}% = {tienGiamGia:N0} VNĐ");
+                        Console.WriteLine($"Tổng tiền sau giảm: {tongTienSauGiam:N0} VNĐ");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Voucher không hợp lệ hoặc hết hạn");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Không sử dụng voucher");
+                }
+
+                Console.WriteLine("Bước 3: Tạo hóa đơn");
+>>>>>>> MuaVe(KhachHang)
                 var hoaDon = new HoaDon
                 {
                     MaHoaDon = maHoaDon,
@@ -401,8 +553,15 @@ namespace CinemaManagement.Controllers
                 };
 
                 _context.HoaDons.Add(hoaDon);
+<<<<<<< HEAD
 
                 // Tạo vé và chi tiết hóa đơn
+=======
+                Console.WriteLine($"Đã thêm hóa đơn vào context: {maHoaDon}, Số lượng: {gioHang.Count}, Tổng tiền: {tongTienSauGiam:N0}");
+
+                // Tạo vé và chi tiết hóa đơn
+                Console.WriteLine("Bước 4: Tạo vé và chi tiết hóa đơn");
+>>>>>>> MuaVe(KhachHang)
                 var soThuTuVe = 1;
                 var lastVe = await _context.Ves.OrderByDescending(v => v.MaVe).FirstOrDefaultAsync();
                 if (lastVe != null && lastVe.MaVe.StartsWith("VE"))
@@ -412,6 +571,10 @@ namespace CinemaManagement.Controllers
                         soThuTuVe = soHienTaiVe + 1;
                     }
                 }
+<<<<<<< HEAD
+=======
+                Console.WriteLine($"Bắt đầu tạo vé từ số thứ tự: {soThuTuVe}");
+>>>>>>> MuaVe(KhachHang)
 
                 var soThuTuCTHD = 1;
                 var lastCTHD = await _context.CTHDs.OrderByDescending(c => c.MaCTHD).FirstOrDefaultAsync();
@@ -422,9 +585,18 @@ namespace CinemaManagement.Controllers
                         soThuTuCTHD = soHienTaiCTHD + 1;
                     }
                 }
+<<<<<<< HEAD
 
                 foreach (var item in gioHang)
                 {
+=======
+                Console.WriteLine($"Bắt đầu tạo CTHD từ số thứ tự: {soThuTuCTHD}");
+
+                foreach (var item in gioHang)
+                {
+                    Console.WriteLine($"Xử lý ghế: {item.SoGhe} - Lịch chiếu: {item.MaLichChieu}");
+                    
+>>>>>>> MuaVe(KhachHang)
                     // Kiểm tra ghế có bị đặt trong thời gian này không
                     var gheExist = await _context.Ves
                         .FirstOrDefaultAsync(v => v.MaLichChieu == item.MaLichChieu && 
@@ -433,12 +605,34 @@ namespace CinemaManagement.Controllers
                     
                     if (gheExist != null)
                     {
+<<<<<<< HEAD
+=======
+                        Console.WriteLine($"LỖI: Ghế {item.SoGhe} đã bị đặt (MaVe: {gheExist.MaVe})");
+>>>>>>> MuaVe(KhachHang)
                         throw new Exception($"Ghế {item.SoGhe} đã được đặt bởi khách hàng khác");
                     }
 
                     var maVe = $"VE{soThuTuVe:D3}";
+<<<<<<< HEAD
                     soThuTuVe++;
                     
+=======
+                    Console.WriteLine($"Tạo vé: {maVe} cho ghế {item.SoGhe}");
+                    soThuTuVe++;
+                    
+                    // Lấy thông tin phim và phòng từ lịch chiếu
+                    var lichChieuInfo = await _context.LichChieus
+                        .Include(lc => lc.Phim)
+                        .Include(lc => lc.PhongChieu)
+                        .FirstOrDefaultAsync(lc => lc.MaLichChieu == item.MaLichChieu);
+
+                    if (lichChieuInfo == null)
+                    {
+                        Console.WriteLine($"LỖI: Không tìm thấy lịch chiếu {item.MaLichChieu}");
+                        throw new Exception($"Không tìm thấy lịch chiếu {item.MaLichChieu}");
+                    }
+
+>>>>>>> MuaVe(KhachHang)
                     var ve = new Ve
                     {
                         MaVe = maVe,
@@ -450,6 +644,7 @@ namespace CinemaManagement.Controllers
                         TenPhong = item.TenPhong,
                         MaGhe = item.MaGhe,
                         MaLichChieu = item.MaLichChieu,
+<<<<<<< HEAD
                         MaPhim = await _context.LichChieus
                             .Where(lc => lc.MaLichChieu == item.MaLichChieu)
                             .Select(lc => lc.MaPhim)
@@ -461,6 +656,14 @@ namespace CinemaManagement.Controllers
                     };
 
                     _context.Ves.Add(ve);
+=======
+                        MaPhim = lichChieuInfo.MaPhim,
+                        MaPhong = lichChieuInfo.MaPhong
+                    };
+
+                    _context.Ves.Add(ve);
+                    Console.WriteLine($"Đã thêm vé {maVe} vào context");
+>>>>>>> MuaVe(KhachHang)
 
                     // Tạo chi tiết hóa đơn
                     var maCTHD = $"CT{soThuTuCTHD:D3}";
@@ -475,11 +678,22 @@ namespace CinemaManagement.Controllers
                     };
 
                     _context.CTHDs.Add(cthd);
+<<<<<<< HEAD
                 }
 
                 // Lưu voucher sử dụng nếu có
                 if (voucher != null)
                 {
+=======
+                    Console.WriteLine($"Đã thêm CTHD {maCTHD} vào context (Vé: {maVe}, HĐ: {maHoaDon}, Giá: {item.Gia:N0})");
+                }
+
+                // Lưu voucher sử dụng nếu có
+                Console.WriteLine("Bước 5: Xử lý voucher sử dụng");
+                if (voucher != null)
+                {
+                    Console.WriteLine($"Lưu thông tin sử dụng voucher: {voucher.MaGiamGia}");
+>>>>>>> MuaVe(KhachHang)
                     var hdVoucher = new HDVoucher
                     {
                         MaHoaDon = maHoaDon,
@@ -489,15 +703,24 @@ namespace CinemaManagement.Controllers
                     };
 
                     _context.HDVouchers.Add(hdVoucher);
+<<<<<<< HEAD
                 }
 
                 // Cập nhật điểm tích lũy cho khách hàng
+=======
+                    Console.WriteLine($"Đã thêm HDVoucher vào context");
+                }
+
+                // Cập nhật điểm tích lũy cho khách hàng
+                Console.WriteLine("Bước 6: Cập nhật điểm tích lũy");
+>>>>>>> MuaVe(KhachHang)
                 if (!string.IsNullOrEmpty(maKhachHang))
                 {
                     var khachHang = await _context.KhachHangs.FindAsync(maKhachHang);
                     if (khachHang != null)
                     {
                         var diemTichLuyMoi = (int)(tongTienSauGiam / 10000); // 1 điểm = 10,000 VNĐ
+<<<<<<< HEAD
                         khachHang.DiemTichLuy += diemTichLuyMoi;
                         _context.KhachHangs.Update(khachHang);
 
@@ -510,15 +733,72 @@ namespace CinemaManagement.Controllers
 
                 // Xóa giỏ hàng
                 HttpContext.Session.Remove("GioHang");
+=======
+                        var diemCu = khachHang.DiemTichLuy;
+                        khachHang.DiemTichLuy += diemTichLuyMoi;
+                        _context.KhachHangs.Update(khachHang);
+
+                        Console.WriteLine($"Cập nhật điểm tích lũy cho KH {maKhachHang}: {diemCu} → {khachHang.DiemTichLuy} (+{diemTichLuyMoi} điểm)");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"CẢNH BÁO: Không tìm thấy khách hàng {maKhachHang}");
+                    }
+                }
+
+                Console.WriteLine("Bước 7: Lưu tất cả thay đổi vào database");
+                await _context.SaveChangesAsync();
+                Console.WriteLine("Đã lưu thành công vào database");
+
+                Console.WriteLine("Bước 8: Commit transaction");
+                await transaction.CommitAsync();
+                Console.WriteLine("Transaction đã được commit thành công");
+
+                // Xóa giỏ hàng tạm thời
+                Console.WriteLine("Bước 9: Dọn dẹp session");
+                HttpContext.Session.Remove("TempGioHang");
+                Console.WriteLine("Đã xóa giỏ hàng tạm thời khỏi session");
+
+                Console.WriteLine($"=== THANH TOÁN THÀNH CÔNG ===");
+                Console.WriteLine($"Mã hóa đơn: {maHoaDon}");
+                Console.WriteLine($"Tổng tiền: {tongTienSauGiam:N0} VNĐ");
+                Console.WriteLine($"Số vé: {gioHang.Count}");
+>>>>>>> MuaVe(KhachHang)
 
                 TempData["SuccessMessage"] = "Thanh toán thành công!";
                 return RedirectToAction("ThanhToanThanhCong", new { maHoaDon = maHoaDon });
             }
             catch (Exception ex)
             {
+<<<<<<< HEAD
                 await transaction.RollbackAsync();
                 Console.WriteLine($"Lỗi thanh toán: {ex.Message}");
                 TempData["ErrorMessage"] = "Có lỗi xảy ra khi thanh toán: " + ex.Message;
+=======
+                Console.WriteLine($"=== LỖI TRONG QUÁ TRÌNH THANH TOÁN ===");
+                Console.WriteLine($"Thời gian lỗi: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                Console.WriteLine($"Loại lỗi: {ex.GetType().Name}");
+                Console.WriteLine($"Thông báo lỗi: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+
+                try
+                {
+                    await transaction.RollbackAsync();
+                    Console.WriteLine("Transaction đã được rollback");
+                }
+                catch (Exception rollbackEx)
+                {
+                    Console.WriteLine($"Lỗi khi rollback transaction: {rollbackEx.Message}");
+                }
+
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi thanh toán: " + ex.Message;
+                Console.WriteLine($"Chuyển hướng về trang thanh toán với thông báo lỗi");
+>>>>>>> MuaVe(KhachHang)
                 return RedirectToAction("ThanhToan");
             }
         }

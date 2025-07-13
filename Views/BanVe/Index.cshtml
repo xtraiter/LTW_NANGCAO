@@ -38,7 +38,7 @@
                         </div>
 
                         <!-- Danh sách phim với scroll -->
-                        <div class="flex-grow-1 overflow-auto" style="max-height: calc(70vh - 120px);">
+                        <div class="flex-grow-1 overflow-auto movie-list-container">
                             <div class="list-group" id="movieList">
                                 @foreach (var phim in Model.DanhSachPhim)
                                 {
@@ -81,7 +81,7 @@
                                 <span id="selectedMovieTitle" class="text-muted small"></span>
                             </h5>
                             <!-- Bộ lọc thời gian -->
-                            <div class="d-flex gap-2 align-items-center" id="dateFilter" style="display: none;">
+                            <div class="d-flex gap-2 align-items-center" id="dateFilter">
                                 <small class="text-muted me-2">Lọc theo ngày:</small>
                                 <div class="input-group input-group-sm" style="width: 140px;">
                                     <span class="input-group-text"><i class="fas fa-calendar"></i></span>
@@ -95,11 +95,14 @@
                                 <button type="button" class="btn btn-sm btn-outline-secondary" id="clearFilter" title="Xóa bộ lọc">
                                     <i class="fas fa-times"></i>
                                 </button>
+                                <button type="button" class="btn btn-sm btn-primary" id="applyFilter" title="Áp dụng bộ lọc">
+                                    <i class="fas fa-filter"></i>
+                                </button>
                             </div>
                         </div>
                         
                         <!-- Container lịch chiếu -->
-                        <div class="flex-grow-1">
+                        <div class="flex-grow-1 schedule-container">
                             <div id="scheduleContainer">
                                 <div class="text-center text-muted py-5">
                                     <i class="fas fa-hand-pointer fa-3x mb-3"></i>
@@ -172,6 +175,12 @@
                 
                 $('#selectedMovieTitle').text('- ' + currentMovieName);
                 $('#dateFilter').show();
+                
+                // Thiết lập ngày mặc định nếu chưa có
+                if (!$('#fromDate').val() && !$('#toDate').val()) {
+                    setDefaultDates();
+                }
+                
                 loadSchedule(currentMovieId);
             });
 
@@ -182,10 +191,41 @@
                 }
             });
 
+            // Xử lý nút áp dụng bộ lọc
+            $('#applyFilter').click(function() {
+                if (currentMovieId) {
+                    loadSchedule(currentMovieId);
+                }
+            });
+
             // Xử lý xóa bộ lọc
             $('#clearFilter').click(function() {
                 $('#fromDate').val('');
                 $('#toDate').val('');
+                if (currentMovieId) {
+                    loadSchedule(currentMovieId);
+                }
+            });
+
+            // Thiết lập ngày mặc định (hôm nay và 7 ngày tiếp theo)
+            function setDefaultDates() {
+                var today = new Date();
+                var nextWeek = new Date();
+                nextWeek.setDate(today.getDate() + 7);
+                
+                $('#fromDate').val(today.toISOString().split('T')[0]);
+                $('#toDate').val(nextWeek.toISOString().split('T')[0]);
+            }
+
+            // Xử lý nút mở rộng khoảng thời gian
+            $(document).on('click', '#expandDateRange', function() {
+                var today = new Date();
+                var nextMonth = new Date();
+                nextMonth.setMonth(today.getMonth() + 1);
+                
+                $('#fromDate').val(today.toISOString().split('T')[0]);
+                $('#toDate').val(nextMonth.toISOString().split('T')[0]);
+                
                 if (currentMovieId) {
                     loadSchedule(currentMovieId);
                 }
@@ -211,22 +251,53 @@
                         console.log('Received schedule data:', data);
                         
                         if (!data || data.length === 0) {
-                            var message = 'Không có suất chiếu nào có vé để bán cho phim này';
+                            var message = 'Không có suất chiếu nào';
+                            var suggestion = '';
+                            
                             if (fromDate || toDate) {
                                 message += ' trong khoảng thời gian đã chọn';
+                                suggestion = '<div class="mt-3"><button class="btn btn-outline-primary btn-sm" id="expandDateRange"><i class="fas fa-calendar-plus me-1"></i>Mở rộng khoảng thời gian</button></div>';
+                            } else {
+                                message += ' cho phim này';
+                                suggestion = '<div class="mt-3"><button class="btn btn-outline-primary btn-sm" onclick="setDefaultDates(); loadSchedule(currentMovieId);"><i class="fas fa-calendar-week me-1"></i>Xem lịch chiếu 7 ngày tới</button></div>';
                             }
                             
                             $('#scheduleContainer').html(
                                 '<div class="text-center text-muted py-5">' +
-                                '<i class="fas fa-ticket-alt fa-3x mb-3"></i>' +
-                                '<p>' + message + '</p>' +
-                                '<small class="text-muted">Vé có thể chưa được phát hành hoặc đã bán hết. Hãy thử chọn phim khác hoặc thay đổi thời gian.</small>' +
+                                '<i class="fas fa-calendar-times fa-3x mb-3 text-warning"></i>' +
+                                '<h5 class="text-muted">' + message + '</h5>' +
+                                '<p class="text-muted">Vé có thể chưa được phát hành hoặc đã bán hết.<br>Hãy thử chọn phim khác hoặc thay đổi thời gian.</p>' +
+                                suggestion +
                                 '</div>'
                             );
                             return;
                         }
 
                         var html = '<div class="schedule-grid">';
+                        var totalShows = data.length;
+                        
+                        // Thêm thông tin tổng quan
+                        html += '<div class="mb-3 p-3 bg-light rounded border-start border-primary border-4">';
+                        html += '<div class="d-flex justify-content-between align-items-center">';
+                        html += '<div>';
+                        html += '<h6 class="mb-1 text-primary"><i class="fas fa-info-circle me-2"></i>Tìm thấy ' + totalShows + ' suất chiếu</h6>';
+                        if (fromDate || toDate) {
+                            var rangeText = '';
+                            if (fromDate && toDate) {
+                                rangeText = 'từ ' + formatDateForDisplay(fromDate) + ' đến ' + formatDateForDisplay(toDate);
+                            } else if (fromDate) {
+                                rangeText = 'từ ' + formatDateForDisplay(fromDate);
+                            } else if (toDate) {
+                                rangeText = 'đến ' + formatDateForDisplay(toDate);
+                            }
+                            html += '<small class="text-muted">Khoảng thời gian: ' + rangeText + '</small>';
+                        }
+                        html += '</div>';
+                        html += '<div>';
+                        html += '<button class="btn btn-sm btn-outline-secondary" onclick="$(\'#scheduleContainer\')[0].scrollIntoView({behavior: \'smooth\'});"><i class="fas fa-arrow-down me-1"></i>Xem tất cả</button>';
+                        html += '</div>';
+                        html += '</div>';
+                        html += '</div>';
                         
                         // Group by date
                         var groupedData = {};
@@ -483,6 +554,20 @@
                 }
             }
 
+            // Format date for display (from input date)
+            function formatDateForDisplay(dateString) {
+                try {
+                    var date = new Date(dateString);
+                    var day = date.getDate().toString().padStart(2, '0');
+                    var month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    var year = date.getFullYear();
+                    return day + '/' + month + '/' + year;
+                } catch (error) {
+                    console.error('Error formatting date for display:', dateString, error);
+                    return dateString;
+                }
+            }
+
             // Khởi tạo tooltip
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -535,6 +620,45 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
+        /* Container height synchronization */
+        .movie-list-container,
+        .schedule-container {
+            max-height: calc(70vh - 160px);
+            min-height: calc(70vh - 160px);
+            overflow-y: auto;
+        }
+        
+        .movie-list-container {
+            border-right: 2px solid #dee2e6;
+            padding-right: 15px;
+            background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 8px 0 0 8px;
+        }
+        
+        .schedule-container {
+            padding-left: 15px;
+            background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Enhanced scrollbar for containers */
+        .movie-list-container::-webkit-scrollbar,
+        .schedule-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .movie-list-container::-webkit-scrollbar-thumb,
+        .schedule-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+            border-radius: 3px;
+        }
+        
+        .movie-list-container::-webkit-scrollbar-track,
+        .schedule-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
         /* Search input styling */
         #searchMovie {
             border-radius: 8px;
@@ -548,21 +672,48 @@
         /* Date filter styling */
         #dateFilter {
             font-size: 0.875rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 0.75rem;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+            margin-left: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        #dateFilter:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-1px);
         }
         
         #dateFilter .input-group-text {
             background-color: var(--light-blue);
             border-color: var(--primary-color);
             color: var(--primary-color);
+            font-weight: 500;
         }
         
         #dateFilter .form-control {
             border-color: var(--primary-color);
+            font-size: 0.875rem;
         }
         
         #dateFilter .form-control:focus {
             border-color: var(--primary-color);
             box-shadow: 0 0 0 0.2rem rgba(0, 119, 190, 0.25);
+        }
+        
+        #dateFilter .btn {
+            transition: all 0.3s ease;
+        }
+        
+        #dateFilter .btn:hover {
+            transform: scale(1.05);
+        }
+        
+        #dateFilter small {
+            font-weight: 600;
+            color: var(--primary-color);
         }
         
         /* Schedule grid layout */
@@ -740,6 +891,26 @@
             .movie-poster {
                 width: 50px;
                 height: 75px;
+            }
+            
+            /* Adjust container heights for mobile */
+            .movie-list-container,
+            .schedule-container {
+                max-height: calc(60vh - 100px);
+                min-height: calc(60vh - 100px);
+            }
+            
+            .movie-list-container {
+                border-right: none;
+                border-bottom: 2px solid #dee2e6;
+                padding-right: 0;
+                padding-bottom: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .schedule-container {
+                padding-left: 0;
+                padding-top: 15px;
             }
             
             #dateFilter {
