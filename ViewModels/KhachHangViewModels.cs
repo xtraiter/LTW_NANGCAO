@@ -8,15 +8,10 @@ namespace CinemaManagement.ViewModels
         public string MaGhe { get; set; } = string.Empty;
         public string TenPhim { get; set; } = string.Empty;
         public string TenPhong { get; set; } = string.Empty;
+        public string PhongChieu { get; set; } = string.Empty; // Thêm property này
         public string SoGhe { get; set; } = string.Empty;
         public DateTime ThoiGianChieu { get; set; }
         public decimal Gia { get; set; }
-    }
-
-    public class ThemVeRequest
-    {
-        public string MaLichChieu { get; set; } = string.Empty;
-        public string MaGhe { get; set; } = string.Empty;
     }
 
     public class KhachHangChonGheViewModel
@@ -34,6 +29,7 @@ namespace CinemaManagement.ViewModels
         public List<Voucher> Vouchers { get; set; } = new List<Voucher>();
         public decimal TongTien { get; set; }
         public string? MaVoucherChon { get; set; }
+        public bool IsDirectPayment { get; set; } = false; // Thêm flag cho thanh toán trực tiếp
     }
 
     public class ThanhToanThanhCongViewModel
@@ -72,5 +68,13 @@ namespace CinemaManagement.ViewModels
         {
             public List<HoaDon> LichSuHoaDons { get; set; } = new List<HoaDon>();
         }
+    }
+
+    public class SelectedSeatViewModel
+    {
+        public string MaGhe { get; set; } = string.Empty;
+        public string SoGhe { get; set; } = string.Empty;
+        public decimal GiaGhe { get; set; }
+        public string LoaiGhe { get; set; } = string.Empty;
     }
 }

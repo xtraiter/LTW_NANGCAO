@@ -158,7 +158,7 @@
     <div class="row mt-4">
         <div class="col-12">
             <div class="card">
-                <div class="card-header bg-success text-white">
+                <div class="card-header bg-primary text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">
                             <i class="fas fa-calendar-check me-2"></i>Lịch chiếu theo ngày
@@ -335,11 +335,11 @@
             var html = `
                 <div class="container-fluid p-4">
                     <div class="current-day-header text-center mb-4">
-                        <h5 class="text-success mb-2">
+                        <h5 class="text-primary mb-2">
                             <i class="fas fa-calendar-day me-2"></i>
                             Lịch chiếu ngày ${formattedDate}
                         </h5>
-                        <span class="badge bg-success fs-6">${schedules.length} suất chiếu</span>
+                        <span class="badge bg-primary fs-6">${schedules.length} suất chiếu</span>
                     </div>
                     <div class="row g-3">
             `;
@@ -360,7 +360,7 @@
                     btnText = "Đang chiếu";
                 } else {
                     timeStatus = "Sắp chiếu";
-                    btnClass = "btn-success";
+                    btnClass = "btn-primary";
                     btnText = "Đặt vé ngay";
                 }
 
@@ -383,18 +383,18 @@
                         <div class="today-schedule-card" style="animation-delay: ${index * 0.1}s">
                             <div class="schedule-time-header">
                                 <span class="schedule-time">${formatTime(startTime)}</span>
-                                <small class="text-muted">- ${formatTime(endTime)}</small>
+                                <small class="text-white">- ${formatTime(endTime)}</small>
                             </div>
                             <div class="schedule-content">
                                 <h6 class="movie-title text-primary mb-2">${(phim.TenPhim || phim.tenPhim)}</h6>
                                 <div class="schedule-info">
                                     <div class="info-item">
-                                        <i class="fas fa-map-marker-alt text-success me-2"></i>
+                                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
                                         <span class="small">${(phongChieu.TenPhong || phongChieu.tenPhong)}</span>
                                     </div>
                                     <div class="info-item">
-                                        <i class="fas fa-tag text-success me-2"></i>
-                                        <span class="fw-bold text-success">${formatCurrency(gia)} VNĐ</span>
+                                        <i class="fas fa-tag text-primary me-2"></i>
+                                        <span class="fw-bold text-primary">${formatCurrency(gia)} VNĐ</span>
                                     </div>
                                 </div>
                                 <div class="schedule-action mt-3">
@@ -577,7 +577,7 @@
 
         /* Timeline Styles - Simplified for today's schedule */
         .current-day-header {
-            border-bottom: 3px solid #28a745;
+            border-bottom: 3px solid #007bff;
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
@@ -585,7 +585,7 @@
         .current-day-header h5 {
             text-transform: capitalize;
             font-weight: 700;
-            color: #155724;
+            color: #0056b3;
         }
 
         .today-schedule-card {
@@ -599,13 +599,13 @@
         }
 
         .today-schedule-card:hover {
-            border-color: #28a745;
+            border-color: #007bff;
             transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.2);
         }
 
         .schedule-time-header {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
             color: white;
             padding: 12px 15px;
             text-align: center;
@@ -664,9 +664,9 @@
             transform: scale(1.05);
         }
 
-        .today-schedule-card .btn-success:hover {
-            background-color: #1e7e34;
-            border-color: #1c7430;
+        .today-schedule-card .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
         }
 
         .today-schedule-card .btn-warning:hover {
@@ -716,13 +716,13 @@
 
         .btn-hover-effect {
             transform: scale(1.05) !important;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4) !important;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4) !important;
         }
 
         /* Date Filter Styles */
         #dateFilter {
             background-color: white;
-            border: 2px solid #28a745;
+            border: 2px solid #007bff;
             border-radius: 8px;
             color: #495057;
             font-weight: 500;
@@ -730,13 +730,13 @@
         }
 
         #dateFilter:focus {
-            border-color: #20c997;
-            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+            border-color: #0056b3;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
             outline: none;
         }
 
         #dateFilter:hover {
-            border-color: #20c997;
+            border-color: #0056b3;
         }
 
         /* Loading animation */

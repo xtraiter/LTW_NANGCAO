@@ -37,6 +37,17 @@
                                             </small>
                                         </div>
                                         <div class="col-md-6 text-end">
+                                            @{
+                                                var tongTienGocHoaDon = hoaDon.CTHDs.Sum(ct => ct.Ve.Gia);
+                                                var coVoucher = tongTienGocHoaDon > hoaDon.TongTien;
+                                            }
+                                            @if (coVoucher)
+                                            {
+                                                <div class="mb-1">
+                                                    <small class="text-muted text-decoration-line-through">@tongTienGocHoaDon.ToString("N0") VNĐ</small>
+                                                    <span class="badge bg-warning text-dark ms-1">Voucher</span>
+                                                </div>
+                                            }
                                             <span class="badge bg-success fs-6">
                                                 @hoaDon.TongTien.ToString("N0") VNĐ
                                             </span>
@@ -73,7 +84,19 @@
                                                             </small>
                                                         </div>
                                                         <div class="d-flex justify-content-between align-items-center">
-                                                            <span class="fw-bold text-success">@ve.Gia.ToString("N0") VNĐ</span>
+                                                            @{
+                                                                // Tính giá thực tế đã thanh toán (có áp dụng voucher)
+                                                                var tongTienGoc = hoaDon.CTHDs.Sum(ct => ct.Ve.Gia);
+                                                                var tileGiamGia = tongTienGoc > 0 ? hoaDon.TongTien / tongTienGoc : 1;
+                                                                var giaThucTe = ve.Gia * tileGiamGia;
+                                                            }
+                                                            <span class="fw-bold text-success">@giaThucTe.ToString("N0") VNĐ</span>
+                                                            @if (tileGiamGia < 1)
+                                                            {
+                                                                <div class="text-end">
+                                                                    <small class="text-muted text-decoration-line-through">@ve.Gia.ToString("N0") VNĐ</small>
+                                                                </div>
+                                                            }
                                                             @{
                                                                 var isExpired = ve.HanSuDung < DateTime.Now;
                                                                 var isUpcoming = ve.LichChieu.ThoiGianBatDau > DateTime.Now;

@@ -44,6 +44,19 @@ namespace CinemaManagement.Data
             modelBuilder.Entity<CTHD>().ToTable("CTHD");
             modelBuilder.Entity<HDVoucher>().ToTable("HD_voucher");
 
+            // Configure TaiKhoan relationships with explicit foreign keys
+            modelBuilder.Entity<TaiKhoan>()
+                .HasOne(t => t.NhanVien)
+                .WithMany(n => n.TaiKhoans)
+                .HasForeignKey(t => t.MaNhanVien)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<TaiKhoan>()
+                .HasOne(t => t.KhachHang)
+                .WithMany(k => k.TaiKhoans)
+                .HasForeignKey(t => t.MaKhachHang)
+                .OnDelete(DeleteBehavior.SetNull);
+
             // Configure relationships to prevent cascading deletes where appropriate
             modelBuilder.Entity<Ve>()
                 .HasOne(v => v.PhongChieu)

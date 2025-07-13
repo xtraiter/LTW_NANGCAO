@@ -79,23 +79,23 @@
                 <div class="col-12">
                     <div class="d-flex justify-content-center flex-wrap gap-4">
                         <div class="d-flex align-items-center">
-                            <div class="seat me-2"></div>
+                            <div class="seat-legend available me-2"></div>
                             <small>Ghế có thể chọn</small>
                         </div>
                         <div class="d-flex align-items-center">
-                            <div class="seat selected me-2"></div>
+                            <div class="seat-legend selected me-2"></div>
                             <small>Ghế đã chọn</small>
                         </div>
                         <div class="d-flex align-items-center">
-                            <div class="seat occupied me-2"></div>
+                            <div class="seat-legend occupied me-2"></div>
                             <small>Ghế đã bán</small>
                         </div>
                         <div class="d-flex align-items-center">
-                            <div class="seat not-released me-2"></div>
+                            <div class="seat-legend not-released me-2"></div>
                             <small>Ghế chưa phát hành vé</small>
                         </div>
                         <div class="d-flex align-items-center">
-                            <div class="seat vip me-2"></div>
+                            <div class="seat-legend vip me-2"></div>
                             <small>Ghế VIP</small>
                         </div>
                     </div>
@@ -159,12 +159,12 @@
 
             <!-- Nút tiếp tục -->
             <div class="text-center mt-4">
-                <button type="button" class="btn btn-success btn-lg px-5" id="addToCartBtn" disabled>
-                    <i class="fas fa-shopping-cart me-2"></i>
-                    Thêm vào giỏ hàng
+                <button type="button" class="btn btn-primary btn-lg px-5" id="proceedToPaymentBtn" disabled>
+                    <i class="fas fa-credit-card me-2"></i>
+                    Thanh toán
                 </button>
                 <div class="mt-2">
-                    <small class="text-muted">Ghế sẽ được giữ trong giỏ hàng trong 15 phút</small>
+                    <small class="text-muted">Vé sẽ được đặt và thanh toán ngay lập tức</small>
                 </div>
             </div>
         </div>
@@ -174,10 +174,23 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
+            console.log('=== KHỞI TẠO TRANG CHỌN GHẾ ===');
+            console.log('Thời gian:', new Date().toLocaleString());
+            console.log('Mã lịch chiếu:', '@Model.LichChieu.MaLichChieu');
+            console.log('Tên phim:', '@Model.LichChieu.Phim.TenPhim');
+            console.log('Phòng chiếu:', '@Model.LichChieu.PhongChieu.TenPhong');
+            console.log('Thời gian chiếu:', '@Model.LichChieu.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")');
+            
             var selectedSeats = [];
             var totalAmount = 0;
             var lichChieuId = '@Model.LichChieu.MaLichChieu';
             var refreshInterval;
+
+            console.log('Biến được khởi tạo:', {
+                selectedSeats: selectedSeats,
+                totalAmount: totalAmount,
+                lichChieuId: lichChieuId
+            });
 
             // Khởi tạo
             initializeSeatMap();
@@ -193,6 +206,8 @@
             }
 
             function attachSeatEvents() {
+                console.log('=== ĐÍNH KÈM SỰ KIỆN CHO GHẾ ===');
+                
                 // Xử lý chọn ghế
                 $('.seat:not(.occupied):not(.not-released)').off('click').on('click', function() {
                     var seatId = $(this).data('seat-id');
@@ -200,11 +215,20 @@
                     var seatPrice = parseFloat($(this).data('seat-price'));
                     var seatType = $(this).data('seat-type');
 
+                    console.log('Ghế được click:', {
+                        id: seatId,
+                        number: seatNumber,
+                        price: seatPrice,
+                        type: seatType,
+                        isSelected: $(this).hasClass('selected')
+                    });
+
                     if ($(this).hasClass('selected')) {
                         // Bỏ chọn ghế
                         $(this).removeClass('selected');
                         selectedSeats = selectedSeats.filter(seat => seat.id !== seatId);
                         totalAmount -= seatPrice;
+                        console.log('Đã bỏ chọn ghế:', seatNumber);
                     } else {
                         // Chọn ghế
                         $(this).addClass('selected');
@@ -215,10 +239,19 @@
                             type: seatType
                         });
                         totalAmount += seatPrice;
+                        console.log('Đã chọn ghế:', seatNumber);
                     }
+
+                    console.log('Trạng thái hiện tại:', {
+                        selectedSeatsCount: selectedSeats.length,
+                        totalAmount: totalAmount,
+                        selectedSeatsList: selectedSeats.map(s => s.number)
+                    });
 
                     updateUI();
                 });
+                
+                console.log('Đã đính kèm sự kiện cho', $('.seat:not(.occupied):not(.not-released)').length, 'ghế');
             }
 
             function updateUI() {
@@ -228,11 +261,11 @@
                 // Cập nhật số ghế đã chọn
                 if (selectedSeats.length === 0) {
                     $('#selectedCount').text('Chưa chọn ghế nào');
-                    $('#addToCartBtn').prop('disabled', true);
+                    $('#proceedToPaymentBtn').prop('disabled', true);
                     $('#selectedSeatsDisplay').hide();
                 } else {
                     $('#selectedCount').text('Đã chọn ' + selectedSeats.length + ' ghế');
-                    $('#addToCartBtn').prop('disabled', false);
+                    $('#proceedToPaymentBtn').prop('disabled', false);
                     
                     // Hiển thị danh sách ghế đã chọn
                     var seatsList = selectedSeats.map(seat => 
@@ -243,9 +276,13 @@
                 }
             }
 
-            // Xử lý thêm vào giỏ hàng
-            $('#addToCartBtn').click(function() {
+            // Xử lý thanh toán trực tiếp
+            $('#proceedToPaymentBtn').click(function() {
+                console.log('=== BẮT ĐẦU QUY TRÌNH THANH TOÁN ===');
+                console.log('Thời gian:', new Date().toLocaleString());
+                
                 if (selectedSeats.length === 0) {
+                    console.error('Lỗi: Chưa chọn ghế nào');
                     alert('Vui lòng chọn ít nhất một ghế');
                     return;
                 }
@@ -255,75 +292,127 @@
                 button.html('<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...');
 
                 console.log('Số ghế được chọn:', selectedSeats.length);
-                console.log('Danh sách ghế:', selectedSeats);
+                console.log('Danh sách ghế chi tiết:', JSON.stringify(selectedSeats, null, 2));
+                console.log('Tổng tiền:', totalAmount);
+                console.log('Mã lịch chiếu:', lichChieuId);
 
-                // Thêm từng ghế vào giỏ hàng tuần tự
-                addSeatsToCartSequentially(selectedSeats, 0, button);
+                try {
+                    // Chuyển đến trang thanh toán với thông tin ghế đã chọn
+                    proceedToPaymentWithSeats(selectedSeats, button);
+                } catch (error) {
+                    console.error('Lỗi trong quá trình xử lý thanh toán:', error);
+                    alert('Có lỗi xảy ra: ' + error.message);
+                    
+                    // Reset button
+                    button.prop('disabled', false);
+                    button.html('<i class="fas fa-credit-card me-2"></i>Thanh toán');
+                }
             });
 
-            // Hàm thêm ghế vào giỏ hàng tuần tự
-            function addSeatsToCartSequentially(seats, index, button) {
-                if (index >= seats.length) {
-                    // Hoàn thành tất cả
-                    console.log('Đã thêm tất cả ghế vào giỏ hàng');
+            // Hàm chuyển đến thanh toán trực tiếp
+            function proceedToPaymentWithSeats(seats, button) {
+                console.log('=== BƯỚC 1: TẠO FORM THANH TOÁN ===');
+                
+                try {
+                    // Tạo form ẩn để gửi dữ liệu ghế đến trang thanh toán
+                    var form = $('<form>', {
+                        'method': 'POST',
+                        'action': '@Url.Action("ThanhToan")',
+                        'style': 'display: none;'
+                    });
                     
-                    // Hiển thị thông báo thành công
-                    var successMsg = $('<div class="alert alert-success alert-dismissible fade show" role="alert">' +
-                        '<i class="fas fa-check-circle me-2"></i>' +
-                        'Đã thêm ' + seats.length + ' vé vào giỏ hàng thành công!' +
-                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
-                        '</div>');
+                    console.log('Form action URL:', '@Url.Action("ThanhToan")');
+                    console.log('Form method:', 'POST');
+
+                    // Thêm thông tin lịch chiếu
+                    form.append($('<input>', {
+                        'type': 'hidden',
+                        'name': 'MaLichChieu',
+                        'value': lichChieuId
+                    }));
+                    console.log('Đã thêm MaLichChieu:', lichChieuId);
+
+                    // Thêm thông tin từng ghế đã chọn
+                    seats.forEach(function(seat, index) {
+                        console.log('Đang xử lý ghế', index + 1, ':', seat);
+                        
+                        form.append($('<input>', {
+                            'type': 'hidden',
+                            'name': 'SelectedSeats[' + index + '].MaGhe',
+                            'value': seat.id
+                        }));
+                        form.append($('<input>', {
+                            'type': 'hidden',
+                            'name': 'SelectedSeats[' + index + '].SoGhe',
+                            'value': seat.number
+                        }));
+                        form.append($('<input>', {
+                            'type': 'hidden',
+                            'name': 'SelectedSeats[' + index + '].GiaGhe',
+                            'value': seat.price
+                        }));
+                        form.append($('<input>', {
+                            'type': 'hidden',
+                            'name': 'SelectedSeats[' + index + '].LoaiGhe',
+                            'value': seat.type
+                        }));
+                        
+                        console.log('Đã thêm input cho ghế:', {
+                            MaGhe: seat.id,
+                            SoGhe: seat.number,
+                            GiaGhe: seat.price,
+                            LoaiGhe: seat.type
+                        });
+                    });
+
+                    // Thêm tổng tiền
+                    form.append($('<input>', {
+                        'type': 'hidden',
+                        'name': 'TongTien',
+                        'value': totalAmount
+                    }));
+                    console.log('Đã thêm TongTien:', totalAmount);
+
+                    console.log('=== BƯỚC 2: KIỂM TRA FORM ===');
+                    console.log('Số input trong form:', form.find('input').length);
                     
-                    $('.container-fluid').prepend(successMsg);
+                    // Log tất cả input trong form
+                    form.find('input').each(function(index, input) {
+                        console.log('Input', index + 1, ':', {
+                            name: $(input).attr('name'),
+                            value: $(input).val()
+                        });
+                    });
+
+                    // Thêm form vào body
+                    $('body').append(form);
+                    console.log('Đã thêm form vào body');
                     
-                    button.prop('disabled', false);
-                    button.html('<i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ hàng');
+                    // Hiển thị thông báo đang chuyển hướng
+                    button.html('<i class="fas fa-spinner fa-spin me-2"></i>Đang chuyển đến thanh toán...');
                     
-                    // Chuyển đến trang giỏ hàng sau 2 giây
+                    console.log('=== BƯỚC 3: SUBMIT FORM ===');
+                    console.log('Sẽ submit form sau 1 giây...');
+                    
                     setTimeout(function() {
-                        window.location.href = '@Url.Action("GioHang")';
-                    }, 2000);
-                    
-                    return;
-                }
-
-                var seat = seats[index];
-                console.log('Đang thêm ghế:', seat.number, 'ID:', seat.id);
-
-                // Cập nhật text button
-                button.html('<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý ghế ' + (index + 1) + '/' + seats.length + '...');
-
-                $.ajax({
-                    url: '@Url.Action("ThemVaoGio")',
-                    method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({
-                        MaLichChieu: lichChieuId,
-                        MaGhe: seat.id
-                    }),
-                    success: function(response) {
-                        console.log('Response cho ghế', seat.number, ':', response);
-                        
-                        if (response.success) {
-                            console.log('Thêm ghế', seat.number, 'thành công');
-                            // Tiếp tục với ghế tiếp theo
-                            addSeatsToCartSequentially(seats, index + 1, button);
-                        } else {
-                            console.error('Lỗi thêm ghế', seat.number, ':', response.message);
-                            alert('Lỗi khi thêm ghế ' + seat.number + ': ' + response.message);
+                        console.log('Đang submit form...');
+                        try {
+                            form.submit();
+                            console.log('Form đã được submit thành công');
+                        } catch (submitError) {
+                            console.error('Lỗi khi submit form:', submitError);
+                            alert('Lỗi khi submit form: ' + submitError.message);
                             
+                            // Reset button
                             button.prop('disabled', false);
-                            button.html('<i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ hàng');
+                            button.html('<i class="fas fa-credit-card me-2"></i>Thanh toán');
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Ajax error cho ghế', seat.number, ':', error);
-                        alert('Có lỗi xảy ra khi thêm ghế ' + seat.number + ' vào giỏ hàng');
-                        
-                        button.prop('disabled', false);
-                        button.html('<i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ hàng');
-                    }
-                });
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.error('Lỗi trong proceedToPaymentWithSeats:', error);
+                    throw error;
+                }
             }
 
             // Làm mới trạng thái ghế định kỳ
@@ -450,6 +539,83 @@
             color: #495057;
             position: relative;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Legend seats - non-interactive display only */
+        .seat-legend {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            margin: 0;
+            border-radius: 6px 6px 0 0;
+            font-weight: bold;
+            font-size: 10px;
+            transition: none;
+            border: 2px solid #ddd;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #495057;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .seat-legend::before {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background: #333;
+            border-radius: 2px;
+        }
+
+        /* Legend seat states */
+        .seat-legend.available {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-color: #ddd;
+            color: #495057;
+        }
+
+        .seat-legend.selected {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            border-color: #28a745;
+            color: white;
+        }
+
+        .seat-legend.occupied {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            border-color: #dc3545;
+            color: white;
+        }
+
+        .seat-legend.not-released {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            border-color: #6c757d;
+            color: white;
+        }
+
+        .seat-legend.vip {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            border-color: #ffc107;
+            color: #212529;
+        }
+
+        .seat-legend.vip::after {
+            content: '★';
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #ff6b35;
+            color: white;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            font-size: 8px;
+            line-height: 12px;
+            text-align: center;
         }
 
         .seat::before {
@@ -616,6 +782,16 @@
         .btn-lg:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-primary.btn-lg {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            border: none;
+        }
+
+        .btn-primary.btn-lg:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
         }
 
         /* Badge styling */

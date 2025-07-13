@@ -32,10 +32,6 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXV0aFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ADMIN/Desktop/CMNP/Management/CNPM_TH_BA/Views/Auth/Register.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXV0aFxSZWdpc3Rlci5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
 [C:/Users/ADMIN/Desktop/CMNP/Management/CNPM_TH_BA/Views/BanVe/ChonGhe.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmFuVmVcQ2hvbkdoZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -70,10 +66,6 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/ADMIN/Desktop/CMNP/Management/CNPM_TH_BA/Views/KhachHang/ChonGhe.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcS2hhY2hIYW5nXENob25HaGUuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/ADMIN/Desktop/CMNP/Management/CNPM_TH_BA/Views/KhachHang/GioHang.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcS2hhY2hIYW5nXEdpb0hhbmcuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/ADMIN/Desktop/CMNP/Management/CNPM_TH_BA/Views/KhachHang/Index.cshtml]

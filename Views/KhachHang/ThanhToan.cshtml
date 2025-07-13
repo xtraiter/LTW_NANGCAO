@@ -120,8 +120,8 @@
                     </form>
 
                     <div class="mt-3">
-                        <a href="@Url.Action("GioHang")" class="btn btn-outline-secondary w-100">
-                            <i class="fas fa-arrow-left me-1"></i>Quay lại giỏ hàng
+                        <a href="@Url.Action("Index")" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-arrow-left me-1"></i>Quay lại trang chủ
                         </a>
                     </div>
                 </div>
@@ -365,15 +365,39 @@
 
             // Form validation và loading state
             $('form').on('submit', function(e) {
+                console.log('=== FORM SUBMIT ĐƯỢC TRIGGER ===');
+                console.log('Thời gian:', new Date().toLocaleString());
+                
                 const submitBtn = $(this).find('button[type="submit"]');
+                const form = $(this);
+                
+                // Log thông tin form
+                console.log('Form action:', form.attr('action'));
+                console.log('Form method:', form.attr('method'));
                 
                 // Kiểm tra phương thức thanh toán đã chọn
                 const selectedPayment = $('input[name="paymentMethod"]:checked').val();
+                console.log('Phương thức thanh toán được chọn:', selectedPayment);
+                
                 if (!selectedPayment) {
+                    console.error('LỖI: Chưa chọn phương thức thanh toán');
                     e.preventDefault();
                     showToast('Vui lòng chọn phương thức thanh toán', 'error');
                     return false;
                 }
+                
+                // Kiểm tra voucher
+                const selectedVoucher = $('#voucher').val();
+                console.log('Voucher được chọn:', selectedVoucher);
+                
+                // Log tất cả form data
+                console.log('Tất cả form data:');
+                const formData = new FormData(form[0]);
+                for (let pair of formData.entries()) {
+                    console.log('  ' + pair[0] + ': ' + pair[1]);
+                }
+                
+                console.log('Bắt đầu hiển thị loading state...');
                 
                 // Hiển thị loading
                 submitBtn.prop('disabled', true);
@@ -382,6 +406,7 @@
                 // Hiển thị modal loading
                 showLoadingModal();
                 
+                console.log('Form sẽ được submit với tất cả validation đã pass');
                 return true;
             });
 
