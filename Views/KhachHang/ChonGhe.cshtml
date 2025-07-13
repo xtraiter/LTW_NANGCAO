@@ -254,51 +254,77 @@
                 button.prop('disabled', true);
                 button.html('<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...');
 
-                // Thêm từng ghế vào giỏ hàng
-                var promises = [];
-                selectedSeats.forEach(seat => {
-                    var promise = $.ajax({
-                        url: '@Url.Action("ThemVaoGio")',
-                        method: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({
-                            MaLichChieu: lichChieuId,
-                            MaGhe: seat.id
-                        })
-                    });
-                    promises.push(promise);
-                });
+                console.log('Số ghế được chọn:', selectedSeats.length);
+                console.log('Danh sách ghế:', selectedSeats);
 
-                Promise.all(promises)
-                    .then(responses => {
-                        const failedSeats = responses.filter(response => !response.success);
-                        if (failedSeats.length > 0) {
-                            alert('Một số ghế không thể thêm vào giỏ: ' + failedSeats.map(r => r.message).join(', '));
+                // Thêm từng ghế vào giỏ hàng tuần tự
+                addSeatsToCartSequentially(selectedSeats, 0, button);
+            });
+
+            // Hàm thêm ghế vào giỏ hàng tuần tự
+            function addSeatsToCartSequentially(seats, index, button) {
+                if (index >= seats.length) {
+                    // Hoàn thành tất cả
+                    console.log('Đã thêm tất cả ghế vào giỏ hàng');
+                    
+                    // Hiển thị thông báo thành công
+                    var successMsg = $('<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+                        '<i class="fas fa-check-circle me-2"></i>' +
+                        'Đã thêm ' + seats.length + ' vé vào giỏ hàng thành công!' +
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                        '</div>');
+                    
+                    $('.container-fluid').prepend(successMsg);
+                    
+                    button.prop('disabled', false);
+                    button.html('<i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ hàng');
+                    
+                    // Chuyển đến trang giỏ hàng sau 2 giây
+                    setTimeout(function() {
+                        window.location.href = '@Url.Action("GioHang")';
+                    }, 2000);
+                    
+                    return;
+                }
+
+                var seat = seats[index];
+                console.log('Đang thêm ghế:', seat.number, 'ID:', seat.id);
+
+                // Cập nhật text button
+                button.html('<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý ghế ' + (index + 1) + '/' + seats.length + '...');
+
+                $.ajax({
+                    url: '@Url.Action("ThemVaoGio")',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        MaLichChieu: lichChieuId,
+                        MaGhe: seat.id
+                    }),
+                    success: function(response) {
+                        console.log('Response cho ghế', seat.number, ':', response);
+                        
+                        if (response.success) {
+                            console.log('Thêm ghế', seat.number, 'thành công');
+                            // Tiếp tục với ghế tiếp theo
+                            addSeatsToCartSequentially(seats, index + 1, button);
                         } else {
-                            // Hiển thị thông báo thành công
-                            var successMsg = $('<div class="alert alert-success alert-dismissible fade show" role="alert">' +
-                                '<i class="fas fa-check-circle me-2"></i>' +
-                                'Đã thêm ' + selectedSeats.length + ' vé vào giỏ hàng thành công!' +
-                                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
-                                '</div>');
+                            console.error('Lỗi thêm ghế', seat.number, ':', response.message);
+                            alert('Lỗi khi thêm ghế ' + seat.number + ': ' + response.message);
                             
-                            $('.container-fluid').prepend(successMsg);
-                            
-                            // Chuyển đến trang giỏ hàng sau 2 giây
-                            setTimeout(function() {
-                                window.location.href = '@Url.Action("GioHang")';
-                            }, 2000);
+                            button.prop('disabled', false);
+                            button.html('<i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ hàng');
                         }
-                    })
-                    .catch(error => {
-                        alert('Có lỗi xảy ra khi thêm vào giỏ hàng');
-                        console.error('Error:', error);
-                    })
-                    .finally(() => {
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Ajax error cho ghế', seat.number, ':', error);
+                        alert('Có lỗi xảy ra khi thêm ghế ' + seat.number + ' vào giỏ hàng');
+                        
                         button.prop('disabled', false);
                         button.html('<i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ hàng');
-                    });
-            });
+                    }
+                });
+            }
 
             // Làm mới trạng thái ghế định kỳ
             function startPeriodicRefresh() {

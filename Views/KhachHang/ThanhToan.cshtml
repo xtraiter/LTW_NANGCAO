@@ -77,7 +77,7 @@
                                 <span>Tạm tính:</span>
                                 <span id="subtotal">@Model.TongTien.ToString("N0") VNĐ</span>
                             </div>
-                            <div class="d-flex justify-content-between mb-2" id="discount-row" style="display: none !important;">
+                            <div class="d-flex justify-content-between mb-2" id="discount-row" style="display: none;">
                                 <span>Giảm giá:</span>
                                 <span class="text-danger" id="discount-amount">0 VNĐ</span>
                             </div>
@@ -156,43 +156,250 @@
     </div>
 }
 
+@section Styles {
+    <style>
+        #discount-row {
+            transition: all 0.3s ease;
+        }
+        
+        #discount-row.d-none {
+            display: none !important;
+        }
+        
+        .text-danger {
+            color: #dc3545 !important;
+        }
+        
+        .text-success {
+            color: #198754 !important;
+        }
+        
+        /* Animation for voucher changes */
+        #total-amount, #discount-amount {
+            transition: all 0.3s ease;
+        }
+        
+        .toast {
+            z-index: 9999 !important;
+        }
+    </style>
+}
+
 @section Scripts {
     <script>
-        const originalTotal = @Model.TongTien;
+        // Global variables
+        let originalTotal = @(Model.TongTien.ToString("F0", System.Globalization.CultureInfo.InvariantCulture));
+        let currentDiscount = 0;
+
+        // Function để format số tiền
+        function formatMoney(amount) {
+            if (isNaN(amount)) return '0';
+            return amount.toLocaleString('vi-VN');
+        }
+
+        // Function cập nhật tóm tắt thanh toán
+        function updatePaymentSummary() {
+            try {
+                var finalTotal = originalTotal - currentDiscount;
+                
+                $('#subtotal').text(formatMoney(originalTotal) + ' VNĐ');
+                $('#discount-amount').text('-' + formatMoney(currentDiscount) + ' VNĐ');
+                $('#total-amount').text(formatMoney(finalTotal) + ' VNĐ');
+                
+                if (currentDiscount > 0) {
+                    $('#discount-row').show().removeClass('d-none');
+                } else {
+                    $('#discount-row').hide().addClass('d-none');
+                }
+                
+                console.log('Payment summary updated:', {
+                    original: originalTotal,
+                    discount: currentDiscount,
+                    final: finalTotal,
+                    formattedOriginal: formatMoney(originalTotal),
+                    formattedDiscount: formatMoney(currentDiscount),
+                    formattedFinal: formatMoney(finalTotal)
+                });
+            } catch (error) {
+                console.error('Error updating payment summary:', error);
+            }
+        }
+        function showToast(message, type = 'info') {
+            // Remove existing toasts first
+            $('.toast').remove();
+            
+            const toastHtml = `
+                <div class="toast show position-fixed top-0 end-0 m-3" role="alert" style="z-index: 9999;">
+                    <div class="toast-header bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} text-white">
+                        <strong class="me-auto">${type === 'success' ? 'Thành công' : type === 'error' ? 'Lỗi' : 'Thông báo'}</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            
+            $('body').append(toastHtml);
+            
+            // Initialize Bootstrap toast
+            if (typeof bootstrap !== 'undefined') {
+                const toastElement = $('.toast').last()[0];
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+            }
+            
+            // Auto remove after 3 seconds
+            setTimeout(function() {
+                $('.toast').last().fadeOut(function() {
+                    $(this).remove();
+                });
+            }, 3000);
+        }
+
+        // Function để hiển thị modal loading
+        function showLoadingModal() {
+            const modalHtml = `
+                <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-body text-center py-4">
+                                <div class="spinner-border text-primary mb-3" role="status">
+                                    <span class="visually-hidden">Đang xử lý...</span>
+                                </div>
+                                <h5>Đang xử lý thanh toán...</h5>
+                                <p class="text-muted">Vui lòng đợi trong giây lát</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            if ($('#loadingModal').length === 0) {
+                $('body').append(modalHtml);
+            }
+            
+            if (typeof bootstrap !== 'undefined') {
+                const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+                modal.show();
+            } else {
+                $('#loadingModal').modal('show');
+            }
+        }
+
+        // Function để hiển thị toast
 
         $(document).ready(function() {
+            console.log('=== DEBUG THÔNG TIN API ===');
+            console.log('Trang thanh toán đã load');
+            console.log('Tổng tiền từ API (Model.TongTien):', @(Model.TongTien.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)));
+            console.log('Số lượng voucher từ API:', @Model.Vouchers.Count);
+            console.log('Chi tiết vouchers:');
+            @foreach (var voucher in Model.Vouchers)
+            {
+                @:console.log('- Voucher: @voucher.MaGiamGia, Tên: @voucher.TenGiamGia, Giảm: @voucher.PhanTramGiam%');
+            }
+            console.log('Số items trong giỏ hàng:', @Model.GioHang.Count);
+            console.log('Chi tiết giỏ hàng:');
+            @foreach (var item in Model.GioHang)
+            {
+                @:console.log('- Ghế: @item.SoGhe, Phim: @item.TenPhim, Giá: @(item.Gia.ToString("F0", System.Globalization.CultureInfo.InvariantCulture))');
+            }
+            console.log('=== KẾT THÚC DEBUG ===');
+            
+            // Kiểm tra HTML elements
+            console.log('HTML elements check:');
+            console.log('Voucher select options:', $('#voucher option').length);
+            $('#voucher option').each(function(index) {
+                console.log('Option ' + index + ':', {
+                    value: $(this).val(),
+                    text: $(this).text(),
+                    discount: $(this).data('discount')
+                });
+            });
+            
             // Xử lý thay đổi voucher
-            $('#voucher').change(function() {
+            $('#voucher').on('change', function() {
+                console.log('=== VOUCHER CHANGE EVENT ===');
                 const selectedOption = $(this).find('option:selected');
-                const discountPercent = parseInt(selectedOption.data('discount')) || 0;
+                const discountPercent = parseFloat(selectedOption.data('discount')) || 0;
+                const voucherCode = selectedOption.val();
+                const voucherText = selectedOption.text();
                 
-                if (discountPercent > 0) {
-                    const discountAmount = originalTotal * discountPercent / 100;
-                    const finalAmount = originalTotal - discountAmount;
+                console.log('Selected option:', {
+                    value: voucherCode,
+                    text: voucherText,
+                    dataDiscount: selectedOption.data('discount'),
+                    parsedDiscount: discountPercent
+                });
+                
+                console.log('Original total for calculation:', originalTotal);
+                
+                if (discountPercent > 0 && voucherCode) {
+                    // Tính toán số tiền giảm giá
+                    currentDiscount = Math.round(originalTotal * discountPercent / 100);
                     
-                    $('#discount-row').show();
-                    $('#discount-amount').text('-' + discountAmount.toLocaleString() + ' VNĐ');
-                    $('#total-amount').text(finalAmount.toLocaleString() + ' VNĐ');
+                    console.log('Calculations:', {
+                        discountPercent: discountPercent + '%',
+                        discountAmount: currentDiscount,
+                        finalAmount: originalTotal - currentDiscount
+                    });
+                    
+                    // Cập nhật hiển thị
+                    updatePaymentSummary();
+                    
+                    // Hiển thị thông báo voucher được áp dụng
+                    showToast('Voucher đã được áp dụng! Giảm ' + formatMoney(currentDiscount) + ' VNĐ', 'success');
                 } else {
-                    $('#discount-row').hide();
-                    $('#total-amount').text(originalTotal.toLocaleString() + ' VNĐ');
+                    console.log('Resetting discount (no voucher or invalid discount)');
+                    // Reset về không có giảm giá
+                    currentDiscount = 0;
+                    updatePaymentSummary();
+                    
+                    if (voucherCode === '') {
+                        showToast('Đã bỏ chọn voucher', 'info');
+                    }
                 }
+                console.log('=== END VOUCHER CHANGE ===');
             });
 
-            // Auto hide toast after 5 seconds
-            setTimeout(function() {
-                $('.toast').fadeOut();
-            }, 5000);
-
-            // Form validation
-            $('form').submit(function() {
-                // Hiển thị loading
+            // Form validation và loading state
+            $('form').on('submit', function(e) {
                 const submitBtn = $(this).find('button[type="submit"]');
+                
+                // Kiểm tra phương thức thanh toán đã chọn
+                const selectedPayment = $('input[name="paymentMethod"]:checked').val();
+                if (!selectedPayment) {
+                    e.preventDefault();
+                    showToast('Vui lòng chọn phương thức thanh toán', 'error');
+                    return false;
+                }
+                
+                // Hiển thị loading
                 submitBtn.prop('disabled', true);
                 submitBtn.html('<i class="fas fa-spinner fa-spin me-1"></i>Đang xử lý...');
                 
+                // Hiển thị modal loading
+                showLoadingModal();
+                
                 return true;
             });
+
+            // Trigger change event để khởi tạo state ban đầu
+            setTimeout(function() {
+                console.log('Triggering initial voucher change');
+                $('#voucher').trigger('change');
+                
+                // Khởi tạo payment summary
+                updatePaymentSummary();
+            }, 100);
+            
+            // Debug: Kiểm tra các elements có tồn tại không
+            console.log('Available elements:');
+            console.log('voucher element:', $('#voucher').length);
+            console.log('discount-row element:', $('#discount-row').length);
+            console.log('discount-amount element:', $('#discount-amount').length);
+            console.log('total-amount element:', $('#total-amount').length);
         });
     </script>
 }

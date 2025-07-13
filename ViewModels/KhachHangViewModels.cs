@@ -36,6 +36,28 @@ namespace CinemaManagement.ViewModels
         public string? MaVoucherChon { get; set; }
     }
 
+    public class ThanhToanThanhCongViewModel
+    {
+        public HoaDon HoaDon { get; set; } = new HoaDon();
+        public List<VeChiTietViewModel> ChiTietVe { get; set; } = new List<VeChiTietViewModel>();
+        public Voucher? VoucherSuDung { get; set; }
+        public decimal TienGiamGia { get; set; }
+        public KhachHang? KhachHang { get; set; }
+        public int DiemTichLuyNhan { get; set; }
+    }
+
+    public class VeChiTietViewModel
+    {
+        public string MaVe { get; set; } = string.Empty;
+        public string TenPhim { get; set; } = string.Empty;
+        public string TenPhong { get; set; } = string.Empty;
+        public string SoGhe { get; set; } = string.Empty;
+        public DateTime ThoiGianChieu { get; set; }
+        public DateTime HanSuDung { get; set; }
+        public decimal Gia { get; set; }
+        public string TrangThai { get; set; } = string.Empty;
+    }
+
     public class KhachHangViewModels
     {
         public class PhimViewModel

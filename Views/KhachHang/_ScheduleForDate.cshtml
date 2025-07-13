@@ -1,0 +1,102 @@
+@model List<CinemaManagement.Models.LichChieu>
+@{
+    var selectedDate = DateTime.Today; // Mặc định là hôm nay, sẽ được cập nhật bằng JavaScript
+    var lichChieuNgayDuocChon = Model.Where(lc => lc.ThoiGianBatDau.Date == selectedDate).OrderBy(lc => lc.ThoiGianBatDau).ToList();
+}
+
+@if (lichChieuNgayDuocChon.Any())
+{
+    <div class="container-fluid p-4">
+        <!-- Header ngày được chọn -->
+        <div class="current-day-header text-center mb-4">
+            <h5 class="text-success mb-2" id="selectedDateHeader">
+                <i class="fas fa-calendar-day me-2"></i>
+                Lịch chiếu ngày @selectedDate.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN"))
+            </h5>
+            <span class="badge bg-success fs-6" id="scheduleCount">@lichChieuNgayDuocChon.Count() suất chiếu</span>
+        </div>
+
+        <!-- Hiển thị lịch chiếu theo dạng grid -->
+        <div class="row g-3" id="scheduleGrid">
+            @foreach (var lichChieu in lichChieuNgayDuocChon)
+            {
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="today-schedule-card">
+                        <div class="schedule-time-header">
+                            <span class="schedule-time">@lichChieu.ThoiGianBatDau.ToString("HH:mm")</span>
+                            <small class="text-muted">- @lichChieu.ThoiGianKetThuc.ToString("HH:mm")</small>
+                        </div>
+                        <div class="schedule-content">
+                            <h6 class="movie-title text-primary mb-2">@lichChieu.Phim.TenPhim</h6>
+                            <div class="schedule-info">
+                                <div class="info-item">
+                                    <i class="fas fa-map-marker-alt text-success me-2"></i>
+                                    <span class="small">@lichChieu.PhongChieu.TenPhong</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-tag text-success me-2"></i>
+                                    <span class="fw-bold text-success">@lichChieu.Gia.ToString("N0") VNĐ</span>
+                                </div>
+                            </div>
+                            <div class="schedule-action mt-3">
+                                @{
+                                    var isShowtime = lichChieu.ThoiGianBatDau > DateTime.Now;
+                                    var timeStatus = "";
+                                    var btnClass = "";
+                                    var btnText = "";
+                                    
+                                    if (lichChieu.ThoiGianKetThuc < DateTime.Now)
+                                    {
+                                        timeStatus = "Đã kết thúc";
+                                        btnClass = "btn-secondary";
+                                        btnText = "Đã chiếu";
+                                    }
+                                    else if (lichChieu.ThoiGianBatDau <= DateTime.Now && lichChieu.ThoiGianKetThuc > DateTime.Now)
+                                    {
+                                        timeStatus = "Đang chiếu";
+                                        btnClass = "btn-warning";
+                                        btnText = "Đang chiếu";
+                                    }
+                                    else
+                                    {
+                                        timeStatus = "Sắp chiếu";
+                                        btnClass = "btn-success";
+                                        btnText = "Đặt vé ngay";
+                                    }
+                                }
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="status-badge badge bg-info">@timeStatus</small>
+                                    @if (isShowtime)
+                                    {
+                                        <a href="@Url.Action("ChiTietPhim", new { id = lichChieu.MaPhim })" 
+                                           class="btn @btnClass btn-sm">
+                                            <i class="fas fa-ticket-alt me-1"></i>@btnText
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn @btnClass btn-sm" disabled>
+                                            <i class="fas fa-clock me-1"></i>@btnText
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center py-5">
+        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Không có suất chiếu</h5>
+        <p class="text-muted">Không có lịch chiếu nào trong ngày được chọn.</p>
+        <a href="@Url.Action("Index")" class="btn btn-primary">
+            <i class="fas fa-film me-1"></i>Xem danh sách phim
+        </a>
+    </div>
+}

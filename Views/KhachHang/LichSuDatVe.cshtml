@@ -16,17 +16,22 @@
                 <div class="card-body">
                     @if (Model != null && Model.Any())
                     {
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Mẹo:</strong> Click vào header của hóa đơn để xem chi tiết thanh toán!
+                        </div>
                         @foreach (var hoaDon in Model)
                         {
                             <div class="card mb-3 border-left-primary">
-                                <div class="card-header">
+                                <div class="card-header" style="cursor: pointer;" onclick="window.location.href='@Url.Action("ThanhToanThanhCong", "KhachHang", new { maHoaDon = hoaDon.MaHoaDon })'">
                                     <div class="row align-items-center">
                                         <div class="col-md-6">
                                             <h6 class="mb-0">
                                                 <i class="fas fa-receipt me-2"></i>
                                                 Hóa đơn: <code>@hoaDon.MaHoaDon</code>
+                                                <i class="fas fa-external-link-alt ms-2 text-primary" style="font-size: 0.8em;"></i>
                                             </h6>
-                                            <small class="text-muted">
+                                            <small class="text-dark">
                                                 <i class="fas fa-clock me-1"></i>
                                                 @hoaDon.ThoiGianTao.ToString("dd/MM/yyyy HH:mm")
                                             </small>
@@ -36,7 +41,7 @@
                                                 @hoaDon.TongTien.ToString("N0") VNĐ
                                             </span>
                                             <br>
-                                            <small class="text-muted">@hoaDon.SoLuong vé</small>
+                                            <small class="text-dark">@hoaDon.SoLuong vé</small>
                                         </div>
                                     </div>
                                 </div>
@@ -143,4 +148,17 @@
             $('[data-bs-toggle="tooltip"]').tooltip();
         });
     </script>
+    <style>
+        .card-header[onclick] {
+            transition: all 0.3s ease;
+        }
+        .card-header[onclick]:hover {
+            background-color: #f8f9fa !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .card-header[onclick]:hover .text-primary {
+            color: #0056b3 !important;
+        }
+    </style>
 }

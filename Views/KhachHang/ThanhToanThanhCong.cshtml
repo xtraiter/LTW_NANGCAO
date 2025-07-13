@@ -1,4 +1,4 @@
-@model CinemaManagement.Models.HoaDon
+@model CinemaManagement.ViewModels.ThanhToanThanhCongViewModel
 @{
     ViewData["Title"] = "Thanh toán thành công";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -6,108 +6,187 @@
 
 <div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card border-success">
-                <div class="card-header bg-success text-white text-center">
-                    <h4 class="mb-0">
-                        <i class="fas fa-check-circle me-2"></i>Thanh toán thành công!
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <div class="text-center mb-4">
-                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
-                        <h5 class="mt-3 text-success">Cảm ơn bạn đã đặt vé!</h5>
-                        <p class="text-muted">Vé của bạn đã được đặt thành công. Dưới đây là thông tin chi tiết.</p>
-                    </div>
+        <div class="col-lg-10">
+            <!-- Success Alert với Animation -->
+            <div class="alert alert-success alert-dismissible fade show animate__animated animate__bounceIn" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Chúc mừng!</strong> Bạn đã đặt vé thành công. 
+                @if (Model.DiemTichLuyNhan > 0)
+                {
+                    <span class="badge bg-warning text-dark ms-2">+@Model.DiemTichLuyNhan điểm</span>
+                }
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
 
+            <div class="card border-success shadow-lg">
+                <div class="card-header bg-gradient text-dark text-center" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                    <h3 class="mb-0">
+                        <i class="fas fa-check-circle me-2"></i>Thanh toán thành công!
+                    </h3>
+                    <p class="mb-0 mt-2">Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi</p>
+                </div>
+                <div class="card-body p-4">
+                    
                     <!-- Thông tin hóa đơn -->
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <h6><i class="fas fa-receipt me-2"></i>Thông tin hóa đơn</h6>
-                            <table class="table table-borderless table-sm">
-                                <tr>
-                                    <td><strong>Mã hóa đơn:</strong></td>
-                                    <td>@Model.MaHoaDon</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Thời gian:</strong></td>
-                                    <td>@Model.ThoiGianTao.ToString("dd/MM/yyyy HH:mm")</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Số lượng vé:</strong></td>
-                                    <td>@Model.SoLuong vé</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Tổng tiền:</strong></td>
-                                    <td class="text-success fw-bold">@Model.TongTien.ToString("N0") VNĐ</td>
-                                </tr>
-                            </table>
+                            <div class="info-card">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-receipt me-2"></i>Thông tin hóa đơn
+                                </h5>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td class="fw-bold">Mã hóa đơn:</td>
+                                        <td><span class="badge bg-primary">@Model.HoaDon.MaHoaDon</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Thời gian đặt:</td>
+                                        <td>@Model.HoaDon.ThoiGianTao.ToString("dd/MM/yyyy HH:mm")</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Số lượng vé:</td>
+                                        <td><span class="badge bg-info">@Model.HoaDon.SoLuong vé</span></td>
+                                    </tr>
+                                    @if (Model.VoucherSuDung != null)
+                                    {
+                                        <tr>
+                                            <td class="fw-bold">Voucher:</td>
+                                            <td><span class="badge bg-warning text-dark">@Model.VoucherSuDung.TenGiamGia</span></td>
+                                        </tr>
+                                    }
+                                    <tr>
+                                        <td class="fw-bold">Tổng tiền:</td>
+                                        <td class="text-success fw-bold fs-5">@Model.HoaDon.TongTien.ToString("N0") VNĐ</td>
+                                    </tr>
+                                </table>
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <h6><i class="fas fa-qrcode me-2"></i>Mã QR</h6>
-                            <div class="text-center">
-                                <div class="border rounded p-3" style="display: inline-block;">
-                                    <i class="fas fa-qrcode" style="font-size: 80px; color: #666;"></i>
-                                    <br>
-                                    <small class="text-muted">@Model.MaHoaDon</small>
+                            <div class="info-card text-center">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-qrcode me-2"></i>Mã QR Code
+                                </h5>
+                                <div class="qr-code-container">
+                                    <div class="border rounded-3 p-4 bg-light" style="display: inline-block;">
+                                        <i class="fas fa-qrcode text-secondary" style="font-size: 100px;"></i>
+                                        <div class="mt-2">
+                                            <small class="text-muted">Mã hóa đơn</small>
+                                            <br>
+                                            <strong>@Model.HoaDon.MaHoaDon</strong>
+                                        </div>
+                                    </div>
                                 </div>
+                                <p class="text-muted mt-2 small">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Xuất trình mã này tại quầy để nhận vé
+                                </p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Chi tiết vé -->
-                    <h6><i class="fas fa-ticket-alt me-2"></i>Chi tiết vé</h6>
+                    <!-- Thông tin khách hàng và điểm tích lũy -->
+                    @if (Model.KhachHang != null && Model.KhachHang.MaKhachHang != "GUEST")
+                    {
+                        <div class="customer-info-section">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h6 class="mb-1">
+                                        <i class="fas fa-user-circle me-2"></i>Thông tin khách hàng
+                                    </h6>
+                                    <p class="mb-1">
+                                        <strong>Họ tên:</strong> @Model.KhachHang.HoTen |
+                                        <strong>SĐT:</strong> @Model.KhachHang.SDT
+                                    </p>
+                                    <p class="mb-0">
+                                        <strong>Điểm tích lũy hiện tại:</strong> 
+                                        <span class="badge bg-warning text-dark">@Model.KhachHang.DiemTichLuy điểm</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    @if (Model.DiemTichLuyNhan > 0)
+                                    {
+                                        <div class="reward-info">
+                                            <i class="fas fa-gift text-warning fs-2"></i>
+                                            <br>
+                                            <span class="badge bg-success">+@Model.DiemTichLuyNhan điểm</span>
+                                            <br>
+                                            <small class="text-muted">Điểm nhận được</small>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Chi tiết vé đã đặt -->
+                    <h5 class="text-primary mb-3">
+                        <i class="fas fa-ticket-alt me-2"></i>Chi tiết vé đã đặt
+                    </h5>
                     <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
+                        <table class="table table-hover">
+                            <thead class="table-dark">
                                 <tr>
                                     <th>Mã vé</th>
                                     <th>Phim</th>
                                     <th>Phòng</th>
                                     <th>Ghế</th>
                                     <th>Thời gian chiếu</th>
+                                    <th>Trạng thái</th>
                                     <th>Giá</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var cthd in Model.CTHDs)
+                                @foreach (var ve in Model.ChiTietVe)
                                 {
-                                    var ve = cthd.Ve;
                                     <tr>
-                                        <td><code>@ve.MaVe</code></td>
-                                        <td><strong>@ve.TenPhim</strong></td>
+                                        <td><code class="bg-light p-1">@ve.MaVe</code></td>
+                                        <td><strong class="text-primary">@ve.TenPhim</strong></td>
                                         <td>@ve.TenPhong</td>
-                                        <td><span class="badge bg-primary">@ve.SoGhe</span></td>
-                                        <td>@ve.LichChieu.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")</td>
-                                        <td class="text-success fw-bold">@ve.Gia.ToString("N0") VNĐ</td>
+                                        <td><span class="badge bg-primary fs-6">@ve.SoGhe</span></td>
+                                        <td>
+                                            <div>
+                                                <i class="fas fa-calendar me-1"></i>@ve.ThoiGianChieu.ToString("dd/MM/yyyy")
+                                                <br>
+                                                <i class="fas fa-clock me-1"></i>@ve.ThoiGianChieu.ToString("HH:mm")
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">@ve.TrangThai</span>
+                                        </td>
+                                        <td class="text-success fw-bold">@Model.HoaDon.TongTien.ToString("N0") VNĐ</td>
                                     </tr>
                                 }
                             </tbody>
                         </table>
                     </div>
 
-                    <!-- Hướng dẫn -->
-                    <div class="alert alert-info">
-                        <h6><i class="fas fa-info-circle me-2"></i>Hướng dẫn sử dụng vé</h6>
+                    <!-- Hướng dẫn sử dụng -->
+                    <div class="instructions-section">
+                        <h6 class="instructions-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Lưu ý quan trọng
+                        </h6>
                         <ul class="mb-0">
-                            <li>Vui lòng đến rạp trước giờ chiếu 15-30 phút</li>
-                            <li>Xuất trình mã QR hoặc mã vé để kiểm tra</li>
-                            <li>Vé có hiệu lực đến: <strong>@Model.CTHDs.First().Ve.HanSuDung.ToString("dd/MM/yyyy HH:mm")</strong></li>
-                            <li>Liên hệ hotline nếu có vấn đề: <strong>1900-xxxx</strong></li>
+                            <li>Vui lòng đến rạp <strong>trước giờ chiếu 15-30 phút</strong> để làm thủ tục</li>
+                            <li>Xuất trình <strong>mã QR hoặc mã vé</strong> tại quầy để nhận vé giấy</li>
+                            <li>Vé có hiệu lực đến: <strong class="text-danger">@Model.ChiTietVe.FirstOrDefault()?.HanSuDung.ToString("dd/MM/yyyy HH:mm")</strong></li>
+                            <li>Mang theo <strong>giấy tờ tùy thân</strong> khi đến rạp</li>
+                            <li>Liên hệ hotline <strong class="text-primary">1900-1234</strong> nếu cần hỗ trợ</li>
                         </ul>
                     </div>
 
                     <!-- Các nút hành động -->
-                    <div class="text-center">
-                        <a href="@Url.Action("LichSuDatVe")" class="btn btn-primary me-2">
-                            <i class="fas fa-history me-1"></i>Xem lịch sử đặt vé
-                        </a>
-                        <a href="@Url.Action("Index")" class="btn btn-outline-primary me-2">
-                            <i class="fas fa-film me-1"></i>Đặt vé khác
-                        </a>
-                        <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
-                            <i class="fas fa-print me-1"></i>In vé
-                        </button>
+                    <div class="text-center mt-4">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <a href="@Url.Action("LichSuDatVe")" class="btn btn-primary btn-lg me-md-2">
+                                <i class="fas fa-history me-2"></i>Xem lịch sử đặt vé
+                            </a>
+                            <a href="@Url.Action("Index")" class="btn btn-outline-primary btn-lg me-md-2">
+                                <i class="fas fa-film me-2"></i>Đặt vé khác
+                            </a>
+                            <button type="button" class="btn btn-outline-secondary btn-lg" onclick="window.print()">
+                                <i class="fas fa-print me-2"></i>In thông tin vé
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -118,14 +197,264 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Confetti effect
-            if (typeof confetti !== 'undefined') {
-                confetti({
-                    particleCount: 100,
-                    spread: 70,
-                    origin: { y: 0.6 }
-                });
+            // Function để hiển thị toast (không tự động ẩn)
+            function showToast(message, type = 'info') {
+                const toastHtml = `
+                    <div class="toast show position-fixed top-0 end-0 m-3" role="alert" style="z-index: 9999;">
+                        <div class="toast-header bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} text-white">
+                            <strong class="me-auto">${type === 'success' ? 'Thành công' : type === 'error' ? 'Lỗi' : 'Thông báo'}</strong>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                    </div>
+                `;
+                
+                $('body').append(toastHtml);
+                
+                // Initialize Bootstrap toast nhưng KHÔNG tự động ẩn
+                if (typeof bootstrap !== 'undefined') {
+                    const toastElement = $('.toast').last()[0];
+                    const toast = new bootstrap.Toast(toastElement, {
+                        autohide: false  // Không tự động ẩn
+                    });
+                    toast.show();
+                }
             }
+
+            // Hiệu ứng confetti khi trang load
+            if (typeof confetti !== 'undefined') {
+                // Confetti burst
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#28a745', '#20c997', '#ffc107', '#17a2b8']
+                });
+                
+                // Confetti từ hai bên
+                setTimeout(function() {
+                    confetti({
+                        particleCount: 50,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 }
+                    });
+                    confetti({
+                        particleCount: 50,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 }
+                    });
+                }, 500);
+            }
+
+            // Animation cho các phần tử
+            $('.info-card').addClass('animate__animated animate__fadeInUp');
+            $('.table').addClass('animate__animated animate__fadeInUp');
+            
+            // Smooth scroll cho các liên kết
+            $('a[href^="#"]').on('click', function(event) {
+                var target = $(this.getAttribute('href'));
+                if( target.length ) {
+                    event.preventDefault();
+                    $('html, body').stop().animate({
+                        scrollTop: target.offset().top - 100
+                    }, 1000);
+                }
+            });
+
+            // Copy mã hóa đơn khi click
+            $('.badge:contains("@Model.HoaDon.MaHoaDon")').css('cursor', 'pointer').click(function() {
+                var textToCopy = $(this).text();
+                navigator.clipboard.writeText(textToCopy).then(function() {
+                    showToast('Đã sao chép mã hóa đơn: ' + textToCopy, 'success');
+                });
+            });
+
         });
+
+        // Print function with custom styling
+        function printTicket() {
+            var printContent = document.querySelector('.card').innerHTML;
+            var printWindow = window.open('', '', 'height=600,width=800');
+            
+            var printCSS = 'body { font-family: Arial, sans-serif; } .btn { display: none !important; } .alert-dismissible .btn-close { display: none !important; }';
+            
+            printWindow.document.write('<html><head>');
+            printWindow.document.write('<title>Vé xem phim - @Model.HoaDon.MaHoaDon</title>');
+            printWindow.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">');
+            printWindow.document.write('<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">');
+            printWindow.document.write('<style>' + printCSS + '</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write('<div class="container">' + printContent + '</div>');
+            printWindow.document.write('</body></html>');
+            
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        }
     </script>
+}
+
+@section Styles {
+    <style>
+        .info-card {
+            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .qr-code-container {
+            position: relative;
+        }
+
+        .qr-code-container::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            border-radius: 15px;
+            z-index: -1;
+        }
+
+        .reward-info {
+            background: linear-gradient(145deg, #fff3cd, #ffeaa7);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        /* Custom styling for customer info and instructions */
+        .customer-info-section {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #0c5460;
+        }
+
+        .instructions-section {
+            background-color: #fff3cd;
+            border: 1px solid #ffecb5;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #664d03;
+        }
+
+        .instructions-heading {
+            color: #664d03;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+            transform: scale(1.02);
+            transition: all 0.2s ease;
+        }
+
+        .badge {
+            transition: all 0.2s ease;
+        }
+
+        .badge:hover {
+            transform: scale(1.1);
+        }
+
+        .btn {
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .card {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            border-radius: 15px 15px 0 0 !important;
+        }
+
+        /* Animation classes */
+        .animate__animated {
+            animation-duration: 1s;
+            animation-fill-mode: both;
+        }
+
+        .animate__bounceIn {
+            animation-name: bounceIn;
+        }
+
+        .animate__fadeInUp {
+            animation-name: fadeInUp;
+        }
+
+        @@keyframes bounceIn {
+            from, 20%, 40%, 60%, 80%, to {
+                animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+            }
+            0% {
+                opacity: 0;
+                transform: scale3d(.3, .3, .3);
+            }
+            20% {
+                transform: scale3d(1.1, 1.1, 1.1);
+            }
+            40% {
+                transform: scale3d(.9, .9, .9);
+            }
+            60% {
+                opacity: 1;
+                transform: scale3d(1.03, 1.03, 1.03);
+            }
+            80% {
+                transform: scale3d(.97, .97, .97);
+            }
+            to {
+                opacity: 1;
+                transform: scale3d(1, 1, 1);
+            }
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 40px, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        /* Print styles */
+        @@media print {
+            .btn, .alert-dismissible .btn-close {
+                display: none !important;
+            }
+            
+            .card {
+                border: 2px solid #000 !important;
+                box-shadow: none !important;
+            }
+            
+            .text-primary {
+                color: #000 !important;
+            }
+        }
+    </style>
 }

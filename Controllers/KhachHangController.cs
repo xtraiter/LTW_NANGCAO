@@ -54,6 +54,41 @@ namespace CinemaManagement.Controllers
                 .Distinct()
                 .ToListAsync();
 
+            // Lấy lịch chiếu trong 7 ngày tới
+            var lichChieuSapToi = await _context.LichChieus
+                .Include(lc => lc.Phim)
+                .Include(lc => lc.PhongChieu)
+                .Where(lc => lc.ThoiGianBatDau >= DateTime.Now && 
+                            lc.ThoiGianBatDau <= DateTime.Now.AddDays(7))
+                .OrderBy(lc => lc.ThoiGianBatDau)
+                .ToListAsync();
+
+            // Chuyển đổi sang DTO để tránh vòng lặp serialization
+            var lichChieuDto = lichChieuSapToi.Select(lc => new ScheduleDto
+            {
+                MaLichChieu = lc.MaLichChieu,
+                ThoiGianBatDau = lc.ThoiGianBatDau,
+                ThoiGianKetThuc = lc.ThoiGianKetThuc,
+                Gia = lc.Gia,
+                MaPhim = lc.MaPhim,
+                Phim = new PhimDto
+                {
+                    MaPhim = lc.Phim.MaPhim,
+                    TenPhim = lc.Phim.TenPhim,
+                    TheLoai = lc.Phim.TheLoai,
+                    ThoiLuong = lc.Phim.ThoiLuong,
+                    DoTuoiPhanAnh = lc.Phim.DoTuoiPhanAnh
+                },
+                PhongChieu = new PhongChieuDto
+                {
+                    MaPhong = lc.PhongChieu.MaPhong,
+                    TenPhong = lc.PhongChieu.TenPhong,
+                    SoChoNgoi = lc.PhongChieu.SoChoNgoi
+                }
+            }).ToList();
+
+            ViewBag.LichChieuSapToi = lichChieuSapToi; // Cho server-side rendering
+            ViewBag.LichChieuDto = lichChieuDto; // Cho JavaScript serialization
             ViewBag.CurrentTheLoai = theLoai;
             ViewBag.CurrentSearch = searchTerm;
 
@@ -89,7 +124,23 @@ namespace CinemaManagement.Controllers
                 .OrderBy(lc => lc.ThoiGianBatDau)
                 .ToList();
 
-            ViewBag.LichChieus = lichChieuTuHienTai;
+            // Chuyển đổi sang object đơn giản để tránh vòng lặp serialization
+            var lichChieuSimple = lichChieuTuHienTai.Select(lc => new
+            {
+                maLichChieu = lc.MaLichChieu,
+                thoiGianBatDau = lc.ThoiGianBatDau,
+                thoiGianKetThuc = lc.ThoiGianKetThuc,
+                gia = lc.Gia,
+                maPhim = lc.MaPhim,
+                phongChieu = new
+                {
+                    maPhong = lc.PhongChieu.MaPhong,
+                    tenPhong = lc.PhongChieu.TenPhong,
+                    soChoNgoi = lc.PhongChieu.SoChoNgoi
+                }
+            }).ToList();
+
+            ViewBag.LichChieus = lichChieuSimple;
 
             return View(phim);
         }
@@ -157,6 +208,9 @@ namespace CinemaManagement.Controllers
 
             try
             {
+                // Log request
+                Console.WriteLine($"ThemVaoGio - MaLichChieu: {request.MaLichChieu}, MaGhe: {request.MaGhe}");
+
                 var lichChieu = await _context.LichChieus
                     .Include(lc => lc.Phim)
                     .Include(lc => lc.PhongChieu)
@@ -164,6 +218,7 @@ namespace CinemaManagement.Controllers
 
                 if (lichChieu == null)
                 {
+                    Console.WriteLine($"Không tìm thấy lịch chiếu: {request.MaLichChieu}");
                     return Json(new { success = false, message = "Không tìm thấy lịch chiếu" });
                 }
 
@@ -172,6 +227,7 @@ namespace CinemaManagement.Controllers
 
                 if (ghe == null)
                 {
+                    Console.WriteLine($"Không tìm thấy ghế: {request.MaGhe}");
                     return Json(new { success = false, message = "Không tìm thấy ghế" });
                 }
 
@@ -183,15 +239,18 @@ namespace CinemaManagement.Controllers
 
                 if (veDaDat != null)
                 {
+                    Console.WriteLine($"Ghế đã được đặt: {request.MaGhe}");
                     return Json(new { success = false, message = "Ghế đã được đặt" });
                 }
 
                 // Lưu vào session giỏ hàng
                 var gioHang = HttpContext.Session.GetObjectFromJson<List<GioHangItem>>("GioHang") ?? new List<GioHangItem>();
+                Console.WriteLine($"Số item hiện tại trong giỏ hàng: {gioHang.Count}");
 
                 // Kiểm tra ghế đã có trong giỏ chưa
                 if (gioHang.Any(item => item.MaGhe == request.MaGhe && item.MaLichChieu == request.MaLichChieu))
                 {
+                    Console.WriteLine($"Ghế đã có trong giỏ hàng: {request.MaGhe}");
                     return Json(new { success = false, message = "Ghế đã có trong giỏ hàng" });
                 }
 
@@ -208,11 +267,14 @@ namespace CinemaManagement.Controllers
 
                 gioHang.Add(gioHangItem);
                 HttpContext.Session.SetObjectAsJson("GioHang", gioHang);
+                
+                Console.WriteLine($"Đã thêm ghế {ghe.SoGhe} vào giỏ hàng. Tổng số item: {gioHang.Count}");
 
                 return Json(new { success = true, message = "Đã thêm vé vào giỏ hàng" });
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Lỗi ThemVaoGio: {ex.Message}");
                 return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
             }
         }
@@ -294,19 +356,37 @@ namespace CinemaManagement.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // Tạo hóa đơn
-                var maHoaDon = "HD" + DateTime.Now.ToString("yyyyMMddHHmmss");
+                // Tạo mã hóa đơn unique
+                var lastHoaDon = await _context.HoaDons
+                    .OrderByDescending(h => h.MaHoaDon)
+                    .FirstOrDefaultAsync();
+
+                var soThuTu = 1;
+                if (lastHoaDon != null && lastHoaDon.MaHoaDon.StartsWith("HD"))
+                {
+                    if (int.TryParse(lastHoaDon.MaHoaDon.Substring(2), out var soHienTai))
+                    {
+                        soThuTu = soHienTai + 1;
+                    }
+                }
+                var maHoaDon = $"HD{soThuTu:D3}";
+
                 var tongTien = gioHang.Sum(item => item.Gia);
+                decimal tienGiamGia = 0;
                 decimal tongTienSauGiam = tongTien;
 
                 // Áp dụng voucher nếu có
                 Voucher? voucher = null;
                 if (!string.IsNullOrEmpty(maVoucher))
                 {
-                    voucher = await _context.Vouchers.FirstOrDefaultAsync(v => v.MaGiamGia == maVoucher);
+                    voucher = await _context.Vouchers
+                        .FirstOrDefaultAsync(v => v.MaGiamGia == maVoucher && 
+                                                 v.ThoiGianBatDau <= DateTime.Now && 
+                                                 v.ThoiGianKetThuc >= DateTime.Now);
                     if (voucher != null)
                     {
-                        tongTienSauGiam = tongTien * (100 - voucher.PhanTramGiam) / 100;
+                        tienGiamGia = tongTien * voucher.PhanTramGiam / 100;
+                        tongTienSauGiam = tongTien - tienGiamGia;
                     }
                 }
 
@@ -317,23 +397,55 @@ namespace CinemaManagement.Controllers
                     ThoiGianTao = DateTime.Now,
                     SoLuong = gioHang.Count,
                     MaKhachHang = maKhachHang ?? string.Empty,
-                    MaNhanVien = string.Empty // Khách hàng tự thanh toán
+                    MaNhanVien = "GUEST" // Khách hàng tự thanh toán
                 };
 
                 _context.HoaDons.Add(hoaDon);
 
-                // Tạo vé
+                // Tạo vé và chi tiết hóa đơn
+                var soThuTuVe = 1;
+                var lastVe = await _context.Ves.OrderByDescending(v => v.MaVe).FirstOrDefaultAsync();
+                if (lastVe != null && lastVe.MaVe.StartsWith("VE"))
+                {
+                    if (int.TryParse(lastVe.MaVe.Substring(2), out var soHienTaiVe))
+                    {
+                        soThuTuVe = soHienTaiVe + 1;
+                    }
+                }
+
+                var soThuTuCTHD = 1;
+                var lastCTHD = await _context.CTHDs.OrderByDescending(c => c.MaCTHD).FirstOrDefaultAsync();
+                if (lastCTHD != null && lastCTHD.MaCTHD.StartsWith("CT"))
+                {
+                    if (int.TryParse(lastCTHD.MaCTHD.Substring(2), out var soHienTaiCTHD))
+                    {
+                        soThuTuCTHD = soHienTaiCTHD + 1;
+                    }
+                }
+
                 foreach (var item in gioHang)
                 {
-                    var maVe = "VE" + DateTime.Now.ToString("yyyyMMddHHmmss") + item.MaGhe;
+                    // Kiểm tra ghế có bị đặt trong thời gian này không
+                    var gheExist = await _context.Ves
+                        .FirstOrDefaultAsync(v => v.MaLichChieu == item.MaLichChieu && 
+                                                 v.MaGhe == item.MaGhe && 
+                                                 v.TrangThai == "Đã đặt");
+                    
+                    if (gheExist != null)
+                    {
+                        throw new Exception($"Ghế {item.SoGhe} đã được đặt bởi khách hàng khác");
+                    }
+
+                    var maVe = $"VE{soThuTuVe:D3}";
+                    soThuTuVe++;
                     
                     var ve = new Ve
                     {
                         MaVe = maVe,
-                        TrangThai = "Đã đặt",
+                        TrangThai = "Đã bán",
                         SoGhe = item.SoGhe,
                         TenPhim = item.TenPhim,
-                        HanSuDung = item.ThoiGianChieu.AddHours(2), // Hết hạn 2h sau giờ chiếu
+                        HanSuDung = item.ThoiGianChieu.AddHours(2),
                         Gia = item.Gia,
                         TenPhong = item.TenPhong,
                         MaGhe = item.MaGhe,
@@ -351,9 +463,12 @@ namespace CinemaManagement.Controllers
                     _context.Ves.Add(ve);
 
                     // Tạo chi tiết hóa đơn
+                    var maCTHD = $"CT{soThuTuCTHD:D3}";
+                    soThuTuCTHD++;
+
                     var cthd = new CTHD
                     {
-                        MaCTHD = "CTHD" + DateTime.Now.ToString("yyyyMMddHHmmss") + item.MaGhe,
+                        MaCTHD = maCTHD,
                         DonGia = item.Gia,
                         MaVe = maVe,
                         MaHoaDon = maHoaDon
@@ -376,6 +491,20 @@ namespace CinemaManagement.Controllers
                     _context.HDVouchers.Add(hdVoucher);
                 }
 
+                // Cập nhật điểm tích lũy cho khách hàng
+                if (!string.IsNullOrEmpty(maKhachHang))
+                {
+                    var khachHang = await _context.KhachHangs.FindAsync(maKhachHang);
+                    if (khachHang != null)
+                    {
+                        var diemTichLuyMoi = (int)(tongTienSauGiam / 10000); // 1 điểm = 10,000 VNĐ
+                        khachHang.DiemTichLuy += diemTichLuyMoi;
+                        _context.KhachHangs.Update(khachHang);
+
+                        Console.WriteLine($"Cập nhật điểm tích lũy cho KH {maKhachHang}: +{diemTichLuyMoi} điểm");
+                    }
+                }
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
@@ -388,6 +517,7 @@ namespace CinemaManagement.Controllers
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+                Console.WriteLine($"Lỗi thanh toán: {ex.Message}");
                 TempData["ErrorMessage"] = "Có lỗi xảy ra khi thanh toán: " + ex.Message;
                 return RedirectToAction("ThanhToan");
             }
@@ -401,9 +531,13 @@ namespace CinemaManagement.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
+            if (string.IsNullOrEmpty(maHoaDon))
+            {
+                return RedirectToAction("Index");
+            }
+
             var hoaDon = await _context.HoaDons
-                .Include(hd => hd.CTHDs)
-                    .ThenInclude(ct => ct.Ve)
+                .Include(hd => hd.KhachHang)
                 .FirstOrDefaultAsync(hd => hd.MaHoaDon == maHoaDon);
 
             if (hoaDon == null)
@@ -411,7 +545,56 @@ namespace CinemaManagement.Controllers
                 return NotFound();
             }
 
-            return View(hoaDon);
+            // Lấy chi tiết hóa đơn và vé
+            var chiTietHoaDon = await _context.CTHDs
+                .Include(ct => ct.Ve)
+                .Where(ct => ct.MaHoaDon == maHoaDon)
+                .ToListAsync();
+
+            // Lấy thông tin lịch chiếu cho từng vé
+            var chiTietVe = new List<VeChiTietViewModel>();
+            foreach (var cthd in chiTietHoaDon)
+            {
+                var ve = cthd.Ve;
+                if (ve != null)
+                {
+                    // Lấy thông tin lịch chiếu
+                    var lichChieu = await _context.LichChieus
+                        .FirstOrDefaultAsync(lc => lc.MaLichChieu == ve.MaLichChieu);
+
+                    chiTietVe.Add(new VeChiTietViewModel
+                    {
+                        MaVe = ve.MaVe,
+                        TenPhim = ve.TenPhim,
+                        TenPhong = ve.TenPhong,
+                        SoGhe = ve.SoGhe,
+                        ThoiGianChieu = lichChieu?.ThoiGianBatDau ?? DateTime.Now,
+                        HanSuDung = ve.HanSuDung,
+                        Gia = ve.Gia,
+                        TrangThai = ve.TrangThai
+                    });
+                }
+            }
+
+            // Lấy thông tin voucher nếu có
+            var hdVoucher = await _context.HDVouchers
+                .Include(hv => hv.Voucher)
+                .FirstOrDefaultAsync(hv => hv.MaHoaDon == maHoaDon);
+
+            // Tính điểm tích lũy nhận được
+            var diemTichLuyNhan = (int)(hoaDon.TongTien / 10000);
+
+            var viewModel = new ThanhToanThanhCongViewModel
+            {
+                HoaDon = hoaDon,
+                ChiTietVe = chiTietVe,
+                VoucherSuDung = hdVoucher?.Voucher,
+                TienGiamGia = hdVoucher?.TongTien ?? 0,
+                KhachHang = hoaDon.KhachHang,
+                DiemTichLuyNhan = diemTichLuyNhan
+            };
+
+            return View(viewModel);
         }
 
         // Lịch sử đặt vé

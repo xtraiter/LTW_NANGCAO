@@ -5,9 +5,9 @@
 }
 
 <div class="container-fluid mt-4">
+    <!-- Thông tin phim -->
     <div class="row">
-        <!-- Thông tin phim -->
-        <div class="col-lg-8">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
@@ -56,50 +56,31 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Lịch chiếu -->
-        <div class="col-lg-4">
+    <!-- Lịch chiếu -->
+    <div class="row mt-4">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-calendar-alt me-2"></i>Lịch chiếu
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-calendar-alt me-2"></i>Lịch chiếu phim
+                        </h4>
+                        <div class="d-flex align-items-center">
+                            <label class="text-white me-2 mb-0">Chọn ngày:</label>
+                            <input type="date" id="dateFilterDetail" class="form-control form-control-sm" 
+                                   style="width: auto; min-width: 150px;" 
+                                   value="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                   max="@DateTime.Today.AddDays(30).ToString("yyyy-MM-dd")">
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    @if (ViewBag.LichChieus != null && ((List<CinemaManagement.Models.LichChieu>)ViewBag.LichChieus).Any())
-                    {
-                        <div class="list-group">
-                            @foreach (var lichChieu in (List<CinemaManagement.Models.LichChieu>)ViewBag.LichChieus)
-                            {
-                                <div class="list-group-item">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h6 class="mb-1">@lichChieu.PhongChieu.TenPhong</h6>
-                                        <small class="text-success fw-bold">@lichChieu.Gia.ToString("N0") VNĐ</small>
-                                    </div>
-                                    <p class="mb-1">
-                                        <i class="fas fa-clock me-1"></i>
-                                        @lichChieu.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")
-                                    </p>
-                                    <small>
-                                        Kết thúc: @lichChieu.ThoiGianKetThuc.ToString("HH:mm")
-                                    </small>
-                                    <div class="mt-2">
-                                        <a href="@Url.Action("ChonGhe", new { maLichChieu = lichChieu.MaLichChieu })" 
-                                           class="btn btn-primary btn-sm w-100">
-                                            <i class="fas fa-chair me-1"></i>Chọn ghế
-                                        </a>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-4">
-                            <i class="fas fa-calendar-times fa-2x text-muted mb-2"></i>
-                            <p class="text-muted">Hiện tại chưa có lịch chiếu</p>
-                        </div>
-                    }
+                <div class="card-body" id="scheduleDetailContainer">
+                    <div id="scheduleDetailContent">
+                        <!-- Nội dung sẽ được load bằng JavaScript -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -120,6 +101,337 @@
         $(document).ready(function() {
             // Tooltip cho các nút
             $('[data-bs-toggle="tooltip"]').tooltip();
+            
+            // Get schedule data from server
+            var allSchedules = @Html.Raw(Json.Serialize(ViewBag.LichChieus ?? new List<object>()));
+            
+            // Date filter functionality
+            $('#dateFilterDetail').on('change', function() {
+                var selectedDate = $(this).val();
+                if (selectedDate) {
+                    loadScheduleForDateDetail(selectedDate);
+                }
+            });
+
+            // Load schedule for today on page load
+            loadScheduleForDateDetail($('#dateFilterDetail').val());
         });
+
+        function loadScheduleForDateDetail(selectedDate) {
+            // Show loading state
+            $('#scheduleDetailContent').html(`
+                <div class="text-center py-5">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Đang tải lịch chiếu...</p>
+                </div>
+            `);
+
+            // Get schedule data from server
+            var allSchedules = @Html.Raw(Json.Serialize(ViewBag.LichChieus ?? new List<object>()));
+            
+            // Filter schedules for selected date
+            var selectedDateObj = new Date(selectedDate);
+            var filteredSchedules = allSchedules.filter(function(schedule) {
+                var scheduleDate = new Date(schedule.thoiGianBatDau);
+                return scheduleDate.toDateString() === selectedDateObj.toDateString();
+            });
+
+            // Generate schedule HTML
+            setTimeout(function() {
+                if (filteredSchedules.length > 0) {
+                    generateScheduleDetailHTML(filteredSchedules, selectedDate);
+                } else {
+                    $('#scheduleDetailContent').html(`
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Không có suất chiếu</h5>
+                            <p class="text-muted">Không có lịch chiếu nào trong ngày được chọn.</p>
+                        </div>
+                    `);
+                }
+            }, 500);
+        }
+
+        function generateScheduleDetailHTML(schedules, selectedDate) {
+            var selectedDateObj = new Date(selectedDate);
+            var now = new Date();
+            var dayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+            var dayName = dayNames[selectedDateObj.getDay()];
+            var formattedDate = dayName + ', ' + selectedDateObj.getDate().toString().padStart(2, '0') + '/' + 
+                               (selectedDateObj.getMonth() + 1).toString().padStart(2, '0') + '/' + selectedDateObj.getFullYear();
+
+            var html = `
+                <div class="mb-3 text-center">
+                    <h6 class="text-success mb-2">
+                        <i class="fas fa-calendar-day me-2"></i>
+                        Lịch chiếu ngày ${formattedDate}
+                    </h6>
+                    <span class="badge bg-success">${schedules.length} suất chiếu</span>
+                </div>
+                <div class="row g-3">
+            `;
+
+            schedules.forEach(function(schedule, index) {
+                var startTime = new Date(schedule.thoiGianBatDau);
+                var endTime = new Date(schedule.thoiGianKetThuc);
+                var isAvailable = startTime > now;
+                var btnClass = isAvailable ? "btn-success" : "btn-secondary";
+                var btnText = isAvailable ? "Chọn ghế" : "Đã qua";
+                var iconClass = isAvailable ? "fas fa-chair" : "fas fa-clock";
+
+                var formatTime = function(date) {
+                    return date.getHours().toString().padStart(2, '0') + ':' + 
+                           date.getMinutes().toString().padStart(2, '0');
+                };
+
+                var formatCurrency = function(amount) {
+                    return new Intl.NumberFormat('vi-VN').format(amount);
+                };
+
+                html += `
+                    <div class="col-md-6 col-lg-4 col-xl-3">
+                        <div class="schedule-item-card" style="animation-delay: ${index * 0.1}s">
+                            <div class="schedule-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="room-name mb-0">
+                                        <i class="fas fa-map-marker-alt me-1"></i>${schedule.phongChieu.tenPhong}
+                                    </h6>
+                                    <span class="price-badge">${formatCurrency(schedule.gia)} VNĐ</span>
+                                </div>
+                            </div>
+                            <div class="schedule-body">
+                                <div class="time-info">
+                                    <div class="start-time">
+                                        <i class="fas fa-clock me-1"></i>
+                                        <span class="fw-bold">${formatTime(startTime)}</span>
+                                    </div>
+                                    <div class="date-info">
+                                        ${selectedDateObj.getDate().toString().padStart(2, '0')}/${(selectedDateObj.getMonth() + 1).toString().padStart(2, '0')}/${selectedDateObj.getFullYear()}
+                                    </div>
+                                    <div class="end-time text-muted">
+                                        Kết thúc: ${formatTime(endTime)}
+                                    </div>
+                                </div>
+                                <div class="action-btn mt-3">
+                `;
+
+                if (isAvailable) {
+                    html += `
+                                    <a href="/KhachHang/ChonGhe?maLichChieu=${schedule.maLichChieu}" class="btn ${btnClass} btn-sm w-100">
+                                        <i class="${iconClass} me-1"></i>${btnText}
+                                    </a>
+                    `;
+                } else {
+                    html += `
+                                    <button class="btn ${btnClass} btn-sm w-100" disabled>
+                                        <i class="${iconClass} me-1"></i>${btnText}
+                                    </button>
+                    `;
+                }
+
+                html += `
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                </div>
+            `;
+
+            $('#scheduleDetailContent').html(html);
+
+            // Apply animations and hover effects
+            $('.schedule-item-card').each(function(index) {
+                $(this).css('animation-delay', (index * 0.1) + 's');
+            });
+            
+            // Hover effects
+            $('.schedule-item-card').hover(
+                function() {
+                    $(this).find('.btn:not(:disabled)').addClass('btn-hover-scale');
+                },
+                function() {
+                    $(this).find('.btn').removeClass('btn-hover-scale');
+                }
+            );
+        }
     </script>
+    
+    <style>
+        /* Schedule Item Card Styles */
+        .schedule-item-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: 100%;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideInUp 0.6s ease forwards;
+        }
+
+        .schedule-item-card:hover {
+            border-color: #28a745;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+        }
+
+        .schedule-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 12px 15px;
+        }
+
+        .room-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .price-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .schedule-body {
+            padding: 15px;
+        }
+
+        .time-info {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .start-time {
+            font-size: 20px;
+            color: #28a745;
+            margin-bottom: 5px;
+        }
+
+        .date-info {
+            font-size: 14px;
+            color: #495057;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .end-time {
+            font-size: 12px;
+        }
+
+        .action-btn .btn {
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-hover-scale {
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4) !important;
+        }
+
+        /* Animation */
+        @@keyframes slideInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .schedule-item-card:nth-child(1) { animation-delay: 0.1s; }
+        .schedule-item-card:nth-child(2) { animation-delay: 0.2s; }
+        .schedule-item-card:nth-child(3) { animation-delay: 0.3s; }
+        .schedule-item-card:nth-child(4) { animation-delay: 0.4s; }
+        .schedule-item-card:nth-child(5) { animation-delay: 0.5s; }
+        .schedule-item-card:nth-child(6) { animation-delay: 0.6s; }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .schedule-item-card {
+                margin-bottom: 15px;
+            }
+            
+            .start-time {
+                font-size: 18px;
+            }
+            
+            .room-name {
+                font-size: 13px;
+            }
+        }
+
+        /* Movie info improvements */
+        .card-header h4 {
+            font-weight: 700;
+        }
+
+        .table-borderless td:first-child {
+            width: 120px;
+            color: #495057;
+        }
+
+        .table-borderless td:last-child {
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        /* Date Filter Styles */
+        #dateFilterDetail {
+            background-color: white;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            color: #495057;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        #dateFilterDetail:focus {
+            border-color: #20c997;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+            outline: none;
+        }
+
+        #dateFilterDetail:hover {
+            border-color: #20c997;
+        }
+
+        /* Loading animation */
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .schedule-loading {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* Enhanced schedule info header */
+        .schedule-info-header {
+            background: rgba(40, 167, 69, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .schedule-info-header h6 {
+            color: #155724;
+            margin-bottom: 5px;
+        }
+
+        .schedule-info-header .badge {
+            font-size: 13px;
+        }
+    </style>
 }
