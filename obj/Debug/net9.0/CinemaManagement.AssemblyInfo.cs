@@ -13,11 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CinemaManagement")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-<<<<<<< HEAD
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+47aa60316a07df34086ee10f7e4a8f9aa8c19bb9")]
-=======
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2aebf7813efac6268e01b0d60a84f54988ba5caa")]
->>>>>>> MuaVe(KhachHang)
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4fbd0f9f149fef841b708098b2404942d14173f3")]
 [assembly: System.Reflection.AssemblyProductAttribute("CinemaManagement")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CinemaManagement")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
