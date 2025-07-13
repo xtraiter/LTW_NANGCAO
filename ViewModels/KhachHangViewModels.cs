@@ -8,24 +8,12 @@ namespace CinemaManagement.ViewModels
         public string MaGhe { get; set; } = string.Empty;
         public string TenPhim { get; set; } = string.Empty;
         public string TenPhong { get; set; } = string.Empty;
-<<<<<<< HEAD
-=======
         public string PhongChieu { get; set; } = string.Empty; // Thêm property này
->>>>>>> MuaVe(KhachHang)
         public string SoGhe { get; set; } = string.Empty;
         public DateTime ThoiGianChieu { get; set; }
         public decimal Gia { get; set; }
     }
 
-<<<<<<< HEAD
-    public class ThemVeRequest
-    {
-        public string MaLichChieu { get; set; } = string.Empty;
-        public string MaGhe { get; set; } = string.Empty;
-    }
-
-=======
->>>>>>> MuaVe(KhachHang)
     public class KhachHangChonGheViewModel
     {
         public LichChieu LichChieu { get; set; } = null!;
@@ -41,10 +29,7 @@ namespace CinemaManagement.ViewModels
         public List<Voucher> Vouchers { get; set; } = new List<Voucher>();
         public decimal TongTien { get; set; }
         public string? MaVoucherChon { get; set; }
-<<<<<<< HEAD
-=======
         public bool IsDirectPayment { get; set; } = false; // Thêm flag cho thanh toán trực tiếp
->>>>>>> MuaVe(KhachHang)
     }
 
     public class ThanhToanThanhCongViewModel
@@ -84,8 +69,6 @@ namespace CinemaManagement.ViewModels
             public List<HoaDon> LichSuHoaDons { get; set; } = new List<HoaDon>();
         }
     }
-<<<<<<< HEAD
-=======
 
     public class SelectedSeatViewModel
     {
@@ -94,5 +77,4 @@ namespace CinemaManagement.ViewModels
         public decimal GiaGhe { get; set; }
         public string LoaiGhe { get; set; } = string.Empty;
     }
->>>>>>> MuaVe(KhachHang)
 }
