@@ -53,6 +53,18 @@
                                             <td class="fw-bold">Voucher:</td>
                                             <td><span class="badge bg-warning text-dark">@Model.VoucherSuDung.TenGiamGia</span></td>
                                         </tr>
+                                        
+                                        var tongTienGocHD = Model.ChiTietVe.Sum(v => v.Gia);
+                                        var tienGiamGiaHD = tongTienGocHD - Model.HoaDon.TongTien;
+                                        
+                                        <tr>
+                                            <td class="fw-bold">Tạm tính:</td>
+                                            <td class="text-muted">@tongTienGocHD.ToString("N0") VNĐ</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Giảm giá:</td>
+                                            <td class="text-danger">-@tienGiamGiaHD.ToString("N0") VNĐ</td>
+                                        </tr>
                                     }
                                     <tr>
                                         <td class="fw-bold">Tổng tiền:</td>
@@ -153,9 +165,30 @@
                                         <td>
                                             <span class="badge bg-success">@ve.TrangThai</span>
                                         </td>
-                                        <td class="text-success fw-bold">@Model.HoaDon.TongTien.ToString("N0") VNĐ</td>
+                                        <td>
+                                            @{
+                                                // Tính giá thực tế đã thanh toán (có áp dụng voucher)
+                                                var tongTienGocVe = Model.ChiTietVe.Sum(v => v.Gia);
+                                                var tileGiamGiaVe = tongTienGocVe > 0 ? Model.HoaDon.TongTien / tongTienGocVe : 1;
+                                                var giaThucTeVe = ve.Gia * tileGiamGiaVe;
+                                            }
+                                            <div class="text-success fw-bold">@giaThucTeVe.ToString("N0") VNĐ</div>
+                                            @if (tileGiamGiaVe < 1)
+                                            {
+                                                <small class="text-muted text-decoration-line-through">@ve.Gia.ToString("N0") VNĐ</small>
+                                            }
+                                        </td>
                                     </tr>
                                 }
+                                <!-- Dòng tổng kết -->
+                                <tr class="table-warning">
+                                    <td colspan="6" class="text-end fw-bold">
+                                        <i class="fas fa-calculator me-2"></i>Tổng cộng:
+                                    </td>
+                                    <td class="text-success fw-bold fs-5">
+                                        @Model.HoaDon.TongTien.ToString("N0") VNĐ
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
