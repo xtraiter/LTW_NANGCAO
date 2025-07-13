@@ -21,6 +21,52 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
+<<<<<<< HEAD
+=======
+// Tạo khách hàng GUEST nếu chưa tồn tại
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<CinemaDbContext>();
+    try
+    {
+        // Tạo nhân viên GUEST
+        var guestEmployee = await context.NhanViens.FindAsync("GUEST");
+        if (guestEmployee == null)
+        {
+            context.NhanViens.Add(new CinemaManagement.Models.NhanVien
+            {
+                MaNhanVien = "GUEST",
+                TenNhanVien = "Hệ thống",
+                ChucVu = "Tự động",
+                SDT = "0000000000",
+                NgaySinh = DateTime.Now
+            });
+            await context.SaveChangesAsync();
+            Console.WriteLine("Đã tạo nhân viên GUEST cho hệ thống");
+        }
+
+        // Tạo khách hàng GUEST
+        var guestCustomer = await context.KhachHangs.FindAsync("GUEST");
+        if (guestCustomer == null)
+        {
+            context.KhachHangs.Add(new CinemaManagement.Models.KhachHang
+            {
+                MaKhachHang = "GUEST",
+                HoTen = "Khách lẻ",
+                SDT = "0000000000",
+                DiemTichLuy = 0
+            });
+            await context.SaveChangesAsync();
+            Console.WriteLine("Đã tạo khách hàng GUEST cho khách lẻ");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Lỗi khi tạo dữ liệu GUEST: {ex.Message}");
+    }
+}
+
+>>>>>>> 2aebf78 (Hoàn thành các giao diện, chức năng mua vé dành cho Khách Hàng)
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {

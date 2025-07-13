@@ -1,0 +1,633 @@
+@model CinemaManagement.ViewModels.KhachHangChonGheViewModel
+@{
+    ViewData["Title"] = "Chọn ghế - " + Model.LichChieu.Phim.TenPhim;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid mt-4">
+    <!-- Thông tin phim và lịch chiếu -->
+    <div class="card mb-4 fade-in">
+        <div class="card-header bg-primary text-white">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h4 class="mb-0">
+                        <i class="fas fa-couch me-2"></i>
+                        Chọn Ghế
+                    </h4>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Action("ChiTietPhim", new { id = Model.LichChieu.MaPhim })" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-1"></i>Quay lại
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 class="text-primary">@Model.LichChieu.Phim.TenPhim</h5>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-door-open me-2 text-primary"></i>
+                                <strong>Phòng:</strong> @Model.LichChieu.PhongChieu.TenPhong (@Model.LichChieu.PhongChieu.LoaiPhong)
+                            </p>
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-calendar me-2 text-primary"></i>
+                                <strong>Ngày:</strong> @Model.LichChieu.ThoiGianBatDau.ToString("dd/MM/yyyy")
+                            </p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-clock me-2 text-primary"></i>
+                                <strong>Giờ chiếu:</strong> @Model.LichChieu.ThoiGianBatDau.ToString("HH:mm") - @Model.LichChieu.ThoiGianKetThuc.ToString("HH:mm")
+                            </p>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-money-bill-wave me-2 text-primary"></i>
+                                <strong>Giá vé:</strong> <span class="text-success fw-bold">@Model.LichChieu.Gia.ToString("N0") VNĐ</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="bg-light p-3 rounded border">
+                        <h6 class="text-center mb-2">
+                            <i class="fas fa-calculator me-1"></i>Tổng tiền:
+                        </h6>
+                        <h4 class="text-primary mb-1 text-center" id="totalAmount">0 ₫</h4>
+                        <small class="text-muted d-block text-center" id="selectedCount">Chưa chọn ghế nào</small>
+                        <div class="mt-2" id="selectedSeatsDisplay" style="display: none;">
+                            <small class="text-muted">Ghế đã chọn:</small>
+                            <div id="selectedSeatsList" class="mt-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sơ đồ ghế -->
+    <div class="card fade-in">
+        <div class="card-body">
+            <!-- Màn hình -->
+            <div class="screen mb-4">
+                <i class="fas fa-video me-2"></i>MÀN HÌNH
+            </div>
+
+            <!-- Chú thích -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-center flex-wrap gap-4">
+                        <div class="d-flex align-items-center">
+                            <div class="seat me-2"></div>
+                            <small>Ghế có thể chọn</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="seat selected me-2"></div>
+                            <small>Ghế đã chọn</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="seat occupied me-2"></div>
+                            <small>Ghế đã bán</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="seat not-released me-2"></div>
+                            <small>Ghế chưa phát hành vé</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="seat vip me-2"></div>
+                            <small>Ghế VIP</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading indicator -->
+            <div id="loadingSeats" class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Đang tải sơ đồ ghế...</span>
+                </div>
+                <p class="mt-2 text-muted">Đang tải sơ đồ ghế...</p>
+            </div>
+
+            <!-- Sơ đồ ghế -->
+            <div class="text-center" id="seatMap" style="display: none;">
+                @{
+                    var occupiedSeats = Model.DanhSachVeDaBan.Select(v => v.MaGhe).ToList();
+                    var releasedSeats = Model.DanhSachVeDaPhatHanh.Select(v => v.MaGhe).ToList();
+                    var seatsByRow = Model.DanhSachGhe.GroupBy(g => g.SoGhe.Substring(0, 1)).OrderBy(g => g.Key);
+                }
+
+                @foreach (var row in seatsByRow)
+                {
+                    <div class="seat-row mb-3">
+                        <span class="row-label me-3">@row.Key</span>
+                        @foreach (var seat in row.OrderBy(s => int.Parse(s.SoGhe.Substring(1))))
+                        {
+                            var isOccupied = occupiedSeats.Contains(seat.MaGhe);
+                            var isReleased = releasedSeats.Contains(seat.MaGhe);
+                            var seatClass = "seat";
+                            var isDisabled = false;
+                            
+                            if (isOccupied)
+                            {
+                                seatClass += " occupied";
+                                isDisabled = true;
+                            }
+                            else if (!isReleased)
+                            {
+                                seatClass += " not-released";
+                                isDisabled = true;
+                            }
+                            else if (seat.LoaiGhe == "VIP")
+                            {
+                                seatClass += " vip";
+                            }
+
+                            <span class="@seatClass" 
+                                  data-seat-id="@seat.MaGhe" 
+                                  data-seat-number="@seat.SoGhe"
+                                  data-seat-price="@seat.GiaGhe"
+                                  data-seat-type="@seat.LoaiGhe"
+                                  @(isDisabled ? "disabled" : "")>
+                                @seat.SoGhe.Substring(1)
+                            </span>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Nút tiếp tục -->
+            <div class="text-center mt-4">
+                <button type="button" class="btn btn-success btn-lg px-5" id="addToCartBtn" disabled>
+                    <i class="fas fa-shopping-cart me-2"></i>
+                    Thêm vào giỏ hàng
+                </button>
+                <div class="mt-2">
+                    <small class="text-muted">Ghế sẽ được giữ trong giỏ hàng trong 15 phút</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            var selectedSeats = [];
+            var totalAmount = 0;
+            var lichChieuId = '@Model.LichChieu.MaLichChieu';
+            var refreshInterval;
+
+            // Khởi tạo
+            initializeSeatMap();
+            startPeriodicRefresh();
+
+            function initializeSeatMap() {
+                // Hiển thị sơ đồ ghế sau khi load
+                setTimeout(function() {
+                    $('#loadingSeats').hide();
+                    $('#seatMap').fadeIn();
+                    attachSeatEvents();
+                }, 500);
+            }
+
+            function attachSeatEvents() {
+                // Xử lý chọn ghế
+                $('.seat:not(.occupied):not(.not-released)').off('click').on('click', function() {
+                    var seatId = $(this).data('seat-id');
+                    var seatNumber = $(this).data('seat-number');
+                    var seatPrice = parseFloat($(this).data('seat-price'));
+                    var seatType = $(this).data('seat-type');
+
+                    if ($(this).hasClass('selected')) {
+                        // Bỏ chọn ghế
+                        $(this).removeClass('selected');
+                        selectedSeats = selectedSeats.filter(seat => seat.id !== seatId);
+                        totalAmount -= seatPrice;
+                    } else {
+                        // Chọn ghế
+                        $(this).addClass('selected');
+                        selectedSeats.push({
+                            id: seatId,
+                            number: seatNumber,
+                            price: seatPrice,
+                            type: seatType
+                        });
+                        totalAmount += seatPrice;
+                    }
+
+                    updateUI();
+                });
+            }
+
+            function updateUI() {
+                // Cập nhật tổng tiền
+                $('#totalAmount').text(formatCurrency(totalAmount));
+                
+                // Cập nhật số ghế đã chọn
+                if (selectedSeats.length === 0) {
+                    $('#selectedCount').text('Chưa chọn ghế nào');
+                    $('#addToCartBtn').prop('disabled', true);
+                    $('#selectedSeatsDisplay').hide();
+                } else {
+                    $('#selectedCount').text('Đã chọn ' + selectedSeats.length + ' ghế');
+                    $('#addToCartBtn').prop('disabled', false);
+                    
+                    // Hiển thị danh sách ghế đã chọn
+                    var seatsList = selectedSeats.map(seat => 
+                        '<span class="badge bg-primary me-1">' + seat.number + '</span>'
+                    ).join('');
+                    $('#selectedSeatsList').html(seatsList);
+                    $('#selectedSeatsDisplay').show();
+                }
+            }
+
+            // Xử lý thêm vào giỏ hàng
+            $('#addToCartBtn').click(function() {
+                if (selectedSeats.length === 0) {
+                    alert('Vui lòng chọn ít nhất một ghế');
+                    return;
+                }
+
+                var button = $(this);
+                button.prop('disabled', true);
+                button.html('<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...');
+
+                console.log('Số ghế được chọn:', selectedSeats.length);
+                console.log('Danh sách ghế:', selectedSeats);
+
+                // Thêm từng ghế vào giỏ hàng tuần tự
+                addSeatsToCartSequentially(selectedSeats, 0, button);
+            });
+
+            // Hàm thêm ghế vào giỏ hàng tuần tự
+            function addSeatsToCartSequentially(seats, index, button) {
+                if (index >= seats.length) {
+                    // Hoàn thành tất cả
+                    console.log('Đã thêm tất cả ghế vào giỏ hàng');
+                    
+                    // Hiển thị thông báo thành công
+                    var successMsg = $('<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+                        '<i class="fas fa-check-circle me-2"></i>' +
+                        'Đã thêm ' + seats.length + ' vé vào giỏ hàng thành công!' +
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                        '</div>');
+                    
+                    $('.container-fluid').prepend(successMsg);
+                    
+                    button.prop('disabled', false);
+                    button.html('<i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ hàng');
+                    
+                    // Chuyển đến trang giỏ hàng sau 2 giây
+                    setTimeout(function() {
+                        window.location.href = '@Url.Action("GioHang")';
+                    }, 2000);
+                    
+                    return;
+                }
+
+                var seat = seats[index];
+                console.log('Đang thêm ghế:', seat.number, 'ID:', seat.id);
+
+                // Cập nhật text button
+                button.html('<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý ghế ' + (index + 1) + '/' + seats.length + '...');
+
+                $.ajax({
+                    url: '@Url.Action("ThemVaoGio")',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        MaLichChieu: lichChieuId,
+                        MaGhe: seat.id
+                    }),
+                    success: function(response) {
+                        console.log('Response cho ghế', seat.number, ':', response);
+                        
+                        if (response.success) {
+                            console.log('Thêm ghế', seat.number, 'thành công');
+                            // Tiếp tục với ghế tiếp theo
+                            addSeatsToCartSequentially(seats, index + 1, button);
+                        } else {
+                            console.error('Lỗi thêm ghế', seat.number, ':', response.message);
+                            alert('Lỗi khi thêm ghế ' + seat.number + ': ' + response.message);
+                            
+                            button.prop('disabled', false);
+                            button.html('<i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ hàng');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Ajax error cho ghế', seat.number, ':', error);
+                        alert('Có lỗi xảy ra khi thêm ghế ' + seat.number + ' vào giỏ hàng');
+                        
+                        button.prop('disabled', false);
+                        button.html('<i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ hàng');
+                    }
+                });
+            }
+
+            // Làm mới trạng thái ghế định kỳ
+            function startPeriodicRefresh() {
+                refreshInterval = setInterval(function() {
+                    refreshSeatStatus();
+                }, 30000); // Refresh mỗi 30 giây
+            }
+
+            function refreshSeatStatus() {
+                $.ajax({
+                    url: '@Url.Action("GetTrangThaiGhe")',
+                    method: 'GET',
+                    data: { maLichChieu: lichChieuId },
+                    success: function(response) {
+                        if (response.success) {
+                            updateSeatStatus(response.data);
+                        }
+                    },
+                    error: function() {
+                        console.warn('Không thể làm mới trạng thái ghế');
+                    }
+                });
+            }
+
+            function updateSeatStatus(data) {
+                // Reset tất cả ghế về trạng thái ban đầu
+                $('.seat').removeClass('occupied not-released').removeAttr('disabled');
+                
+                // Cập nhật ghế đã bán
+                data.gheDaBan.forEach(function(seatId) {
+                    var seat = $('[data-seat-id="' + seatId + '"]');
+                    if (!seat.hasClass('selected')) {
+                        seat.addClass('occupied').attr('disabled', true);
+                    }
+                });
+                
+                // Cập nhật ghế chưa phát hành vé
+                $('.seat').each(function() {
+                    var seatId = $(this).data('seat-id');
+                    if (!data.gheDaPhatHanh.includes(seatId) && !$(this).hasClass('selected')) {
+                        $(this).addClass('not-released').attr('disabled', true);
+                    }
+                });
+
+                // Reattach events
+                attachSeatEvents();
+            }
+
+            // Format currency
+            function formatCurrency(amount) {
+                return new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(amount);
+            }
+
+            // Cleanup khi rời khỏi trang
+            $(window).on('beforeunload', function() {
+                if (refreshInterval) {
+                    clearInterval(refreshInterval);
+                }
+            });
+        });
+    </script>
+
+    <style>
+        /* Animation cho fade in */
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Screen styling */
+        .screen {
+            background: linear-gradient(135deg, #333 0%, #666 100%);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            max-width: 400px;
+            margin: 0 auto;
+            border: 3px solid #444;
+        }
+
+        /* Seat row styling */
+        .seat-row {
+            line-height: 50px;
+            margin-bottom: 15px;
+        }
+        
+        .row-label {
+            display: inline-block;
+            width: 40px;
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+        
+        /* Base seat styling */
+        .seat {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            margin: 0 3px;
+            text-align: center;
+            line-height: 40px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            border: 2px solid #ddd;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #495057;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .seat::before {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+        }
+
+        /* Available seat */
+        .seat:not(.occupied):not(.not-released):not(.selected):hover {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            border-color: #007bff;
+            color: white;
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.4);
+        }
+
+        /* Selected seat */
+        .seat.selected {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            border-color: #28a745;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(40,167,69,0.4);
+            animation: pulse 0.6s ease-in-out;
+        }
+
+        /* Occupied seat */
+        .seat.occupied {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            border-color: #dc3545;
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        /* Not released seat */
+        .seat.not-released {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            border-color: #6c757d;
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* VIP seat */
+        .seat.vip {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            border-color: #ffc107;
+            color: #212529;
+            font-weight: bold;
+        }
+
+        .seat.vip::after {
+            content: '★';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff6b35;
+            color: white;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            font-size: 10px;
+            line-height: 16px;
+            text-align: center;
+        }
+
+        .seat.vip:not(.occupied):not(.not-released):not(.selected):hover {
+            background: linear-gradient(135deg, #ffcd39 0%, #ffc107 100%);
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255,193,7,0.4);
+        }
+
+        /* Pulse animation */
+        @@keyframes pulse {
+            0% { transform: scale(1.1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1.1); }
+        }
+
+        /* Loading animation */
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 768px) {
+            .seat {
+                width: 35px;
+                height: 35px;
+                line-height: 35px;
+                margin: 0 2px;
+                font-size: 11px;
+            }
+
+            .seat::before {
+                width: 25px;
+                height: 3px;
+            }
+
+            .row-label {
+                width: 35px;
+                font-size: 1rem;
+            }
+
+            .screen {
+                font-size: 1rem;
+                padding: 12px;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .seat {
+                width: 30px;
+                height: 30px;
+                line-height: 30px;
+                margin: 0 1px;
+                font-size: 10px;
+            }
+
+            .seat::before {
+                width: 20px;
+                height: 2px;
+            }
+
+            .row-label {
+                width: 30px;
+                font-size: 0.9rem;
+            }
+
+            .seat-row {
+                margin-bottom: 10px;
+            }
+        }
+
+        /* Card enhancements */
+        .card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .card-header {
+            border-radius: 10px 10px 0 0 !important;
+        }
+
+        /* Button enhancements */
+        .btn-lg {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .btn-lg:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        /* Badge styling */
+        .badge {
+            font-size: 0.8rem;
+            padding: 0.4em 0.6em;
+        }
+
+        /* Alert styling */
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+    </style>
+}
