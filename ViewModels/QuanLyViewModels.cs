@@ -35,10 +35,9 @@ namespace CinemaManagement.ViewModels
         public int TongSoPhong { get; set; }
         public int TongSoGhe { get; set; }
 
-        // Thống kê trạng thái vé
-        public int VeConHan { get; set; }
-        public int VeHetHan { get; set; }
-        public int VeDaBan { get; set; }
+        // Thống kê vé tổng quan mới
+        public int TongVeDaTao { get; set; }
+        public int TongVeDaBanTheoHoaDon { get; set; }
 
         // Top phim bán chạy
         public List<TopPhimViewModel> TopPhimBanChay { get; set; } = new List<TopPhimViewModel>();
@@ -46,7 +45,7 @@ namespace CinemaManagement.ViewModels
         // Lịch chiếu gần nhất
         public List<LichChieu> LichChieuGanNhat { get; set; } = new List<LichChieu>();
 
-        // Doanh thu theo ngày
+        // Doanh thu theo ngày (từ hóa đơn)
         public List<DoanhThuTheoNgayViewModel> DoanhThuTheoNgay { get; set; } = new List<DoanhThuTheoNgayViewModel>();
 
         // Doanh thu theo tháng

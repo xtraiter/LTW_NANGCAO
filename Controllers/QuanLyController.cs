@@ -75,21 +75,23 @@ namespace CinemaManagement.Controllers
                 TongSoPhong = await _context.PhongChieus.CountAsync(),
                 TongSoGhe = await _context.GheNgois.CountAsync(),
 
-                // Thống kê trạng thái vé
-                VeConHan = await _context.Ves.CountAsync(v => v.TrangThai == "Còn hạn"),
-                VeHetHan = await _context.Ves.CountAsync(v => v.TrangThai == "Hết hạn"),
-                VeDaBan = await _context.Ves.CountAsync(v => v.TrangThai == "Đã sử dụng"),
+                // Thống kê vé tổng quan
+                TongVeDaTao = await _context.Ves.CountAsync(),
+                TongVeDaBanTheoHoaDon = await _context.CTHDs.CountAsync(),
 
-                // Top phim bán chạy
-                TopPhimBanChay = await _context.Ves
-                    .Include(v => v.Phim)
-                    .GroupBy(v => new { v.MaPhim, v.TenPhim })
+                // Top phim bán chạy (từ hóa đơn)
+                TopPhimBanChay = await _context.CTHDs
+                    .Include(c => c.Ve)
+                    .ThenInclude(v => v.Phim)
+                    .Include(c => c.HoaDon)
+                    .Where(c => c.Ve.Phim != null)
+                    .GroupBy(c => new { c.Ve.MaPhim, c.Ve.TenPhim })
                     .Select(g => new TopPhimViewModel
                     {
                         MaPhim = g.Key.MaPhim,
                         TenPhim = g.Key.TenPhim,
                         SoVe = g.Count(),
-                        DoanhThu = g.Sum(v => v.Gia)
+                        DoanhThu = g.Sum(c => c.DonGia)
                     })
                     .OrderByDescending(t => t.SoVe)
                     .Take(5)
@@ -104,8 +106,8 @@ namespace CinemaManagement.Controllers
                     .Take(5)
                     .ToListAsync(),
 
-                // Doanh thu theo ngày (7 ngày gần nhất)
-                DoanhThuTheoNgay = await GetDoanhThuTheoNgay(7),
+                // Doanh thu theo ngày (7 ngày gần nhất từ hóa đơn)
+                DoanhThuTheoNgay = await GetDoanhThuHoaDonTheoNgay(7),
 
                 // Thống kê theo tháng (12 tháng gần nhất)
                 DoanhThuTheoThang = await GetDoanhThuTheoThang(12)
@@ -212,6 +214,33 @@ namespace CinemaManagement.Controllers
 
                 var soVe = await _context.Ves
                     .CountAsync(v => v.HanSuDung.Date == date);
+
+                result.Add(new DoanhThuTheoNgayViewModel
+                {
+                    Ngay = date,
+                    DoanhThu = doanhThu,
+                    SoVe = soVe
+                });
+            }
+
+            return result;
+        }
+
+        private async Task<List<DoanhThuTheoNgayViewModel>> GetDoanhThuHoaDonTheoNgay(int days)
+        {
+            var result = new List<DoanhThuTheoNgayViewModel>();
+            var startDate = DateTime.Today.AddDays(-days + 1);
+
+            for (int i = 0; i < days; i++)
+            {
+                var date = startDate.AddDays(i);
+                var doanhThu = await _context.HoaDons
+                    .Where(h => h.ThoiGianTao.Date == date)
+                    .SumAsync(h => h.TongTien);
+
+                var soVe = await _context.HoaDons
+                    .Where(h => h.ThoiGianTao.Date == date)
+                    .SumAsync(h => h.SoLuong);
 
                 result.Add(new DoanhThuTheoNgayViewModel
                 {

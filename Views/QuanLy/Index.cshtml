@@ -117,29 +117,16 @@
 
     <!-- Biểu đồ doanh thu -->
     <div class="row mb-4">
-        <div class="col-md-8">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
                         <i class="fas fa-chart-line me-2"></i>
-                        Biểu đồ doanh thu 7 ngày gần nhất
+                        Biểu đồ tổng tiền vé đã bán 7 ngày gần nhất
                     </h5>
                 </div>
                 <div class="card-body">
                     <canvas id="doanhThuChart" width="400" height="200"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-chart-pie me-2"></i>
-                        Phân bố trạng thái vé
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="trangThaiChart" width="400" height="400"></canvas>
                 </div>
             </div>
         </div>
@@ -149,7 +136,7 @@
     <div class="row mb-4">
         <div class="col-md-6">
             <div class="card">
-                <div class="card-header bg-warning text-dark">
+                <div class="card-header bg-warning text-white">
                     <h5 class="mb-0">
                         <i class="fas fa-trophy me-2"></i>
                         Top 5 phim bán chạy
@@ -193,7 +180,7 @@
                                             </td>
                                             <td>@phim.TenPhim</td>
                                             <td><span class="badge bg-primary">@phim.SoVe</span></td>
-                                            <td><span class="fw-bold text-success">@phim.DoanhThu.ToString("C0")</span></td>
+                                            <td><span class="fw-bold text-success">@phim.DoanhThu.ToString("N0", new System.Globalization.CultureInfo("vi-VN")) ₫</span></td>
                                         </tr>
                                     }
                                 </tbody>
@@ -241,78 +228,13 @@
         </div>
     </div>
 
-    <!-- Thống kê chi tiết -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card border-primary">
-                <div class="card-header bg-primary text-white">
-                    <h6 class="mb-0">Thống kê vé</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-4">
-                            <div class="fw-bold text-success">@Model.VeConHan</div>
-                            <small class="text-muted">Còn hạn</small>
-                        </div>
-                        <div class="col-4">
-                            <div class="fw-bold text-info">@Model.VeDaBan</div>
-                            <small class="text-muted">Đã sử dụng</small>
-                        </div>
-                        <div class="col-4">
-                            <div class="fw-bold text-danger">@Model.VeHetHan</div>
-                            <small class="text-muted">Hết hạn</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card border-success">
-                <div class="card-header bg-success text-white">
-                    <h6 class="mb-0">Cơ sở hạ tầng</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <div class="fw-bold text-primary">@Model.TongSoPhong</div>
-                            <small class="text-muted">Phòng chiếu</small>
-                        </div>
-                        <div class="col-6">
-                            <div class="fw-bold text-info">@Model.TongSoGhe</div>
-                            <small class="text-muted">Ghế ngồi</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card border-info">
-                <div class="card-header bg-info text-white">
-                    <h6 class="mb-0">Trung bình</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <div class="fw-bold text-success">@(Model.TongSoVe > 0 ? (Model.DoanhThuThangNay / Model.VeThangNay).ToString("C0") : "0 ₫")</div>
-                            <small class="text-muted">Giá vé TB</small>
-                        </div>
-                        <div class="col-6">
-                            <div class="fw-bold text-primary">@(Model.TongSoPhong > 0 ? (Model.TongSoGhe / Model.TongSoPhong) : 0)</div>
-                            <small class="text-muted">Ghế/Phòng</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     
 </div>
 
-@@section Scripts {
+@section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Biểu đồ doanh thu
+        // Biểu đồ doanh thu từ hóa đơn
         const doanhThuData = @Html.Raw(Json.Serialize(Model.DoanhThuTheoNgay));
         const doanhThuCtx = document.getElementById('doanhThuChart').getContext('2d');
         const doanhThuChart = new Chart(doanhThuCtx, {
@@ -320,7 +242,7 @@
             data: {
                 labels: doanhThuData.map(d => new Date(d.ngay).toLocaleDateString('vi-VN')),
                 datasets: [{
-                    label: 'Doanh thu',
+                    label: 'Tổng tiền vé đã bán',
                     data: doanhThuData.map(d => d.doanhThu),
                     borderColor: 'rgb(75, 192, 192)',
                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -332,7 +254,7 @@
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        display: false
+                        display: true
                     }
                 },
                 scales: {
@@ -343,32 +265,6 @@
                                 return value.toLocaleString('vi-VN') + ' ₫';
                             }
                         }
-                    }
-                }
-            }
-        });
-
-        // Biểu đồ trạng thái vé
-        const trangThaiCtx = document.getElementById('trangThaiChart').getContext('2d');
-        const trangThaiChart = new Chart(trangThaiCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Còn hạn', 'Đã sử dụng', 'Hết hạn'],
-                datasets: [{
-                    data: [@Model.VeConHan, @Model.VeDaBan, @Model.VeHetHan],
-                    backgroundColor: [
-                        '#28a745',
-                        '#17a2b8',
-                        '#dc3545'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
                     }
                 }
             }
