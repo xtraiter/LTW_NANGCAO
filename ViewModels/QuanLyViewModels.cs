@@ -50,6 +50,9 @@ namespace CinemaManagement.ViewModels
 
         // Doanh thu theo tháng
         public List<DoanhThuTheoThangViewModel> DoanhThuTheoThang { get; set; } = new List<DoanhThuTheoThangViewModel>();
+        public DateTime? TuNgay { get; set; }
+        public DateTime? DenNgay { get; set; }
+        public string? TenPhim { get; set; }
     }
 
     public class TopPhimViewModel
@@ -81,7 +84,11 @@ namespace CinemaManagement.ViewModels
         public decimal TongDoanhThu { get; set; }
         public int TongSoPhim { get; set; }
         public int TongSoLichChieu { get; set; }
-        
+
+        public DateTime? TuNgay { get; set; }
+        public DateTime? DenNgay { get; set; }
+        public string? TenPhim { get; set; }
+
         public List<ThongKePhimChiTietViewModel> ThongKeTheoPhim { get; set; } = new List<ThongKePhimChiTietViewModel>();
         public List<ThongKePhongViewModel> ThongKeTheoPhong { get; set; } = new List<ThongKePhongViewModel>();
         public List<DoanhThuTheoNgayViewModel> DoanhThuTheoNgay { get; set; } = new List<DoanhThuTheoNgayViewModel>();

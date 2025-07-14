@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using CinemaManagement.Data;
 using CinemaManagement.Models;
 using CinemaManagement.ViewModels;
@@ -27,7 +26,7 @@ namespace CinemaManagement.Controllers
             return vaiTro == "Quản lý" || vaiTro == "Nhân viên";
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(DateTime? tuNgay, DateTime? denNgay, string? tenPhim)
         {
             if (!IsManagerOrStaff())
             {
@@ -38,14 +37,33 @@ namespace CinemaManagement.Controllers
             var thisWeek = today.AddDays(-(int)today.DayOfWeek);
             var thisMonth = new DateTime(today.Year, today.Month, 1);
 
+            // Khởi tạo query gốc
+            var veQuery = _context.Ves
+                .Include(v => v.LichChieu)
+                    .ThenInclude(lc => lc.Phim)
+                .AsQueryable();
+
+            // Áp dụng bộ lọc nếu có
+            if (tuNgay.HasValue)
+                veQuery = veQuery.Where(v => v.HanSuDung.Date >= tuNgay.Value.Date);
+            if (denNgay.HasValue)
+                veQuery = veQuery.Where(v => v.HanSuDung.Date <= denNgay.Value.Date);
+            if (!string.IsNullOrEmpty(tenPhim))
+                veQuery = veQuery.Where(v => v.LichChieu.Phim.TenPhim.Contains(tenPhim));
+
+            // Gán vào ViewModel
             var dashboard = new DashboardViewModel
             {
+                TuNgay = tuNgay,
+                DenNgay = denNgay,
+                TenPhim = tenPhim,
+
                 // Thống kê cơ bản
                 TongSoVe = await _context.Ves.CountAsync(),
                 VeHomNay = await _context.Ves.CountAsync(v => v.HanSuDung.Date == today),
                 VeTuanNay = await _context.Ves.CountAsync(v => v.HanSuDung >= thisWeek),
                 VeThangNay = await _context.Ves.CountAsync(v => v.HanSuDung >= thisMonth),
-                
+
                 // Thống kê vé đã bán trong hóa đơn
                 TongSoVeDaBanTrongHoaDon = await _context.HoaDons.SumAsync(h => h.SoLuong),
                 VeDaBanTrongHoaDonHomNay = await _context.HoaDons.Where(h => h.ThoiGianTao.Date == today).SumAsync(h => h.SoLuong),
@@ -59,33 +77,24 @@ namespace CinemaManagement.Controllers
                 TongTienHoaDon = await _context.HoaDons.SumAsync(h => h.TongTien),
                 TienHoaDonHomNay = await _context.HoaDons.Where(h => h.ThoiGianTao.Date == today).SumAsync(h => h.TongTien),
 
-                // Thống kê lịch chiếu
+                // Lịch chiếu (không áp dụng bộ lọc)
                 LichChieuHomNay = await _context.LichChieus.CountAsync(l => l.ThoiGianBatDau.Date == today),
                 LichChieuTuanNay = await _context.LichChieus.CountAsync(l => l.ThoiGianBatDau >= thisWeek),
 
-                // Thống kê phim
+                // Phim, phòng, ghế (không lọc)
                 TongSoPhim = await _context.Phims.CountAsync(),
                 PhimDangChieu = await _context.LichChieus
                     .Where(l => l.ThoiGianBatDau >= DateTime.Now)
                     .Select(l => l.MaPhim)
                     .Distinct()
                     .CountAsync(),
-
-                // Thống kê phòng chiếu
                 TongSoPhong = await _context.PhongChieus.CountAsync(),
                 TongSoGhe = await _context.GheNgois.CountAsync(),
 
-                // Thống kê vé tổng quan
-                TongVeDaTao = await _context.Ves.CountAsync(),
-                TongVeDaBanTheoHoaDon = await _context.CTHDs.CountAsync(),
 
-                // Top phim bán chạy (từ hóa đơn)
-                TopPhimBanChay = await _context.CTHDs
-                    .Include(c => c.Ve)
-                    .ThenInclude(v => v.Phim)
-                    .Include(c => c.HoaDon)
-                    .Where(c => c.Ve.Phim != null)
-                    .GroupBy(c => new { c.Ve.MaPhim, c.Ve.TenPhim })
+                // Top phim theo bộ lọc
+                TopPhimBanChay = await veQuery
+                    .GroupBy(v => new { v.MaPhim, v.TenPhim })
                     .Select(g => new TopPhimViewModel
                     {
                         MaPhim = g.Key.MaPhim,
@@ -106,34 +115,45 @@ namespace CinemaManagement.Controllers
                     .Take(5)
                     .ToListAsync(),
 
-                // Doanh thu theo ngày (7 ngày gần nhất từ hóa đơn)
-                DoanhThuTheoNgay = await GetDoanhThuHoaDonTheoNgay(7),
-
-                // Thống kê theo tháng (12 tháng gần nhất)
+                // Dữ liệu biểu đồ (chưa áp dụng lọc vì phụ thuộc yêu cầu)
+                DoanhThuTheoNgay = await GetDoanhThuTheoNgay(7),
                 DoanhThuTheoThang = await GetDoanhThuTheoThang(12)
             };
 
             return View(dashboard);
         }
 
-        public async Task<IActionResult> ThongKeChiTiet()
+
+        public async Task<IActionResult> ThongKeChiTiet(DateTime? tuNgay, DateTime? denNgay, string? tenPhim)
         {
             if (!IsManagerOrStaff())
-            {
                 return RedirectToAction("Login", "Auth");
-            }
+
+            // Query vé có lọc
+            var veQuery = _context.Ves
+                .Include(v => v.Phim)
+                .Include(v => v.PhongChieu)
+                .AsQueryable();
+
+            if (tuNgay.HasValue)
+                veQuery = veQuery.Where(v => v.HanSuDung >= tuNgay.Value.Date);
+            if (denNgay.HasValue)
+                veQuery = veQuery.Where(v => v.HanSuDung <= denNgay.Value.Date);
+            if (!string.IsNullOrEmpty(tenPhim))
+                veQuery = veQuery.Where(v => v.TenPhim.Contains(tenPhim));
 
             var thongKe = new ThongKeChiTietViewModel
             {
-                // Thống kê tổng quan
-                TongSoVe = await _context.Ves.CountAsync(),
-                TongDoanhThu = await _context.Ves.SumAsync(v => v.Gia),
+                TuNgay = tuNgay,
+                DenNgay = denNgay,
+                TenPhim = tenPhim,
+
+                TongSoVe = await veQuery.CountAsync(),
+                TongDoanhThu = await veQuery.SumAsync(v => v.Gia),
                 TongSoPhim = await _context.Phims.CountAsync(),
                 TongSoLichChieu = await _context.LichChieus.CountAsync(),
 
-                // Thống kê theo phim
-                ThongKeTheoPhim = await _context.Ves
-                    .Include(v => v.Phim)
+                ThongKeTheoPhim = await veQuery
                     .GroupBy(v => new { v.MaPhim, v.TenPhim })
                     .Select(g => new ThongKePhimChiTietViewModel
                     {
@@ -146,9 +166,7 @@ namespace CinemaManagement.Controllers
                     .OrderByDescending(t => t.DoanhThu)
                     .ToListAsync(),
 
-                // Thống kê theo phòng
-                ThongKeTheoPhong = await _context.Ves
-                    .Include(v => v.PhongChieu)
+                ThongKeTheoPhong = await veQuery
                     .GroupBy(v => new { v.MaPhong, v.TenPhong })
                     .Select(g => new ThongKePhongViewModel
                     {
@@ -156,18 +174,18 @@ namespace CinemaManagement.Controllers
                         TenPhong = g.Key.TenPhong,
                         SoVe = g.Count(),
                         DoanhThu = g.Sum(v => v.Gia),
-                        TiLeLapDay = 0 // Sẽ tính toán sau
+                        TiLeLapDay = 0 // Có thể tính sau
                     })
                     .OrderByDescending(t => t.DoanhThu)
                     .ToListAsync(),
 
-                // Thống kê theo thời gian
                 DoanhThuTheoNgay = await GetDoanhThuTheoNgay(30),
                 DoanhThuTheoThang = await GetDoanhThuTheoThang(12)
             };
 
             return View(thongKe);
         }
+
 
         [HttpGet]
         public async Task<IActionResult> GetDoanhThuData(string type = "day", int days = 7)
