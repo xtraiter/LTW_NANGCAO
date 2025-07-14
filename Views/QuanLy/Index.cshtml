@@ -75,6 +75,31 @@
             </div>
         </div>
     </div>
+    <!-- Bộ lọc thống kê -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="tuNgay" class="form-label">Từ ngày</label>
+                    <input type="date" name="tuNgay" id="tuNgay" class="form-control" value="@Model.TuNgay?.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-md-3">
+                    <label for="denNgay" class="form-label">Đến ngày</label>
+                    <input type="date" name="denNgay" id="denNgay" class="form-control" value="@Model.DenNgay?.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-md-4">
+                    <label for="tenPhim" class="form-label">Tên phim</label>
+                    <input type="text" name="tenPhim" id="tenPhim" class="form-control" placeholder="Nhập tên phim..." value="@Model.TenPhim">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-1"></i> Lọc
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Thống kê tổng quan -->
     <div class="row mb-4 mt-4">
         <div class="col-md-3">

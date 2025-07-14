@@ -12,6 +12,27 @@
                     <i class="fas fa-chart-bar me-2"></i>
                     Thống kê chi tiết
                 </h2>
+                <form method="get" asp-action="ThongKeChiTiet" class="row g-3 align-items-end mb-4">
+                    <div class="col-md-3">
+                        <label for="tuNgay" class="form-label">Từ ngày</label>
+                        <input type="date" class="form-control" id="tuNgay" name="tuNgay" value="@Model.TuNgay?.ToString("yyyy-MM-dd")" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="denNgay" class="form-label">Đến ngày</label>
+                        <input type="date" class="form-control" id="denNgay" name="denNgay" value="@Model.DenNgay?.ToString("yyyy-MM-dd")" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="tenPhim" class="form-label">Tên phim</label>
+                        <input type="text" class="form-control" id="tenPhim" name="tenPhim" value="@Model.TenPhim" placeholder="Nhập tên phim..." />
+                    </div>
+
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Lọc</button>
+                    </div>
+                </form>
+
                 <div>
                     <a asp-action="Index" class="btn btn-secondary me-2">
                         <i class="fas fa-arrow-left me-1"></i>
