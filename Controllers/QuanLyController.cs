@@ -60,15 +60,23 @@ namespace CinemaManagement.Controllers
                 TenPhim = tenPhim,
 
                 // Thống kê cơ bản
-                TongSoVe = await veQuery.CountAsync(),
-                VeHomNay = await veQuery.CountAsync(v => v.HanSuDung.Date == today),
-                VeTuanNay = await veQuery.CountAsync(v => v.HanSuDung >= thisWeek),
-                VeThangNay = await veQuery.CountAsync(v => v.HanSuDung >= thisMonth),
+                TongSoVe = await _context.Ves.CountAsync(),
+                VeHomNay = await _context.Ves.CountAsync(v => v.HanSuDung.Date == today),
+                VeTuanNay = await _context.Ves.CountAsync(v => v.HanSuDung >= thisWeek),
+                VeThangNay = await _context.Ves.CountAsync(v => v.HanSuDung >= thisMonth),
+
+                // Thống kê vé đã bán trong hóa đơn
+                TongSoVeDaBanTrongHoaDon = await _context.HoaDons.SumAsync(h => h.SoLuong),
+                VeDaBanTrongHoaDonHomNay = await _context.HoaDons.Where(h => h.ThoiGianTao.Date == today).SumAsync(h => h.SoLuong),
 
                 // Thống kê doanh thu
-                DoanhThuHomNay = await veQuery.Where(v => v.HanSuDung.Date == today).SumAsync(v => v.Gia),
-                DoanhThuTuanNay = await veQuery.Where(v => v.HanSuDung >= thisWeek).SumAsync(v => v.Gia),
-                DoanhThuThangNay = await veQuery.Where(v => v.HanSuDung >= thisMonth).SumAsync(v => v.Gia),
+                DoanhThuHomNay = await _context.Ves.Where(v => v.HanSuDung.Date == today).SumAsync(v => v.Gia),
+                DoanhThuTuanNay = await _context.Ves.Where(v => v.HanSuDung >= thisWeek).SumAsync(v => v.Gia),
+                DoanhThuThangNay = await _context.Ves.Where(v => v.HanSuDung >= thisMonth).SumAsync(v => v.Gia),
+
+                // Thống kê tổng tiền hóa đơn
+                TongTienHoaDon = await _context.HoaDons.SumAsync(h => h.TongTien),
+                TienHoaDonHomNay = await _context.HoaDons.Where(h => h.ThoiGianTao.Date == today).SumAsync(h => h.TongTien),
 
                 // Lịch chiếu (không áp dụng bộ lọc)
                 LichChieuHomNay = await _context.LichChieus.CountAsync(l => l.ThoiGianBatDau.Date == today),

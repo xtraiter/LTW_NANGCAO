@@ -105,18 +105,18 @@
         <div class="col-md-3">
             <div class="card border-primary">
                 <div class="card-body text-center">
-                    <div class="display-4 fw-bold text-primary">@Model.TongSoVe</div>
-                    <p class="card-text">Tổng số vé</p>
-                    <small class="text-muted">Hôm nay: @Model.VeHomNay vé</small>
+                    <div class="display-4 fw-bold text-primary">@Model.TongSoVeDaBanTrongHoaDon</div>
+                    <p class="card-text">Tổng số vé đã bán</p>
+                    <small class="text-muted">Hôm nay: @Model.VeDaBanTrongHoaDonHomNay vé</small>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card border-success">
                 <div class="card-body text-center">
-                    <div class="display-4 fw-bold text-success">@Model.DoanhThuThangNay.ToString("C0")</div>
-                    <p class="card-text">Doanh thu tháng</p>
-                    <small class="text-muted">Hôm nay: @Model.DoanhThuHomNay.ToString("C0")</small>
+                    <div class="display-4 fw-bold text-success">@Model.TongTienHoaDon.ToString("N0", new System.Globalization.CultureInfo("vi-VN")) ₫</div>
+                    <p class="card-text">Tổng tiền hóa đơn</p>
+                    <small class="text-muted">Hôm nay: @Model.TienHoaDonHomNay.ToString("N0", new System.Globalization.CultureInfo("vi-VN")) ₫</small>
                 </div>
             </div>
         </div>
@@ -334,7 +334,7 @@
     
 </div>
 
-@section Scripts {
+@@section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Biểu đồ doanh thu

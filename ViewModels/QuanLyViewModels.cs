@@ -9,11 +9,19 @@ namespace CinemaManagement.ViewModels
         public int VeHomNay { get; set; }
         public int VeTuanNay { get; set; }
         public int VeThangNay { get; set; }
+        
+        // Thống kê vé đã bán trong hóa đơn
+        public int TongSoVeDaBanTrongHoaDon { get; set; }
+        public int VeDaBanTrongHoaDonHomNay { get; set; }
 
         // Thống kê doanh thu
         public decimal DoanhThuHomNay { get; set; }
         public decimal DoanhThuTuanNay { get; set; }
         public decimal DoanhThuThangNay { get; set; }
+
+        // Thống kê tổng tiền hóa đơn
+        public decimal TongTienHoaDon { get; set; }
+        public decimal TienHoaDonHomNay { get; set; }
 
         // Thống kê lịch chiếu
         public int LichChieuHomNay { get; set; }
