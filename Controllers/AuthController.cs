@@ -86,6 +86,99 @@ namespace CinemaManagement.Controllers
             return RedirectToAction("Login");
         }
 
+        // GET: Auth/Register
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        // POST: Auth/Register
+        [HttpPost]
+        public async Task<IActionResult> Register(string email, string password, string confirmPassword, string hoTen, string sdt)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(confirmPassword) || string.IsNullOrEmpty(hoTen) || string.IsNullOrEmpty(sdt))
+            {
+                ViewBag.ErrorMessage = "Vui lòng nhập đầy đủ thông tin";
+                return View();
+            }
+
+            if (password != confirmPassword)
+            {
+                ViewBag.ErrorMessage = "Mật khẩu xác nhận không khớp";
+                return View();
+            }
+
+            if (password.Length < 6)
+            {
+                ViewBag.ErrorMessage = "Mật khẩu phải có ít nhất 6 ký tự";
+                return View();
+            }
+
+            // Kiểm tra email đã tồn tại
+            var existingAccount = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.Email == email);
+            if (existingAccount != null)
+            {
+                ViewBag.ErrorMessage = "Email đã được sử dụng";
+                return View();
+            }
+
+            try
+            {
+                // Tạo mã khách hàng mới
+                var lastCustomer = await _context.KhachHangs.OrderByDescending(k => k.MaKhachHang).FirstOrDefaultAsync();
+                var newMaKhachHang = "KH001";
+                if (lastCustomer != null)
+                {
+                    var lastNumber = int.Parse(lastCustomer.MaKhachHang.Substring(2));
+                    newMaKhachHang = $"KH{(lastNumber + 1):D3}";
+                }
+
+                // Tạo khách hàng mới
+                var khachHang = new KhachHang
+                {
+                    MaKhachHang = newMaKhachHang,
+                    HoTen = hoTen,
+                    SDT = sdt,
+                    DiemTichLuy = 0
+                };
+
+                _context.KhachHangs.Add(khachHang);
+                await _context.SaveChangesAsync();
+
+                // Tạo mã tài khoản mới
+                var lastAccount = await _context.TaiKhoans.OrderByDescending(t => t.MaTK).FirstOrDefaultAsync();
+                var newMaTK = "TK001";
+                if (lastAccount != null)
+                {
+                    var lastNumber = int.Parse(lastAccount.MaTK.Substring(2));
+                    newMaTK = $"TK{(lastNumber + 1):D3}";
+                }
+
+                // Tạo tài khoản mới
+                var taiKhoan = new TaiKhoan
+                {
+                    MaTK = newMaTK,
+                    Email = email,
+                    MatKhau = password, // Trong thực tế nên hash password
+                    Role = "Khách hàng",
+                    TrangThai = "Hoạt động",
+                    MaKhachHang = newMaKhachHang,
+                    MaNhanVien = null
+                };
+
+                _context.TaiKhoans.Add(taiKhoan);
+                await _context.SaveChangesAsync();
+
+                ViewBag.SuccessMessage = "Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.";
+                return View();
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = $"Có lỗi xảy ra khi đăng ký: {ex.Message}";
+                return View();
+            }
+        }
+
         // GET: Auth/TestAccounts - Debug purpose only
         public async Task<IActionResult> TestAccounts()
         {
