@@ -5173,23 +5173,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\thanh\\.nuget\\packages\\": {},
+    "C:\\Users\\leuti\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\thanh\\Desktop\\CNPM_TH_BA\\CinemaManagement.csproj",
+      "projectUniqueName": "C:\\Users\\leuti\\Desktop\\CNPM_TH\\CNPM_TH_BA\\CinemaManagement.csproj",
       "projectName": "CinemaManagement",
-      "projectPath": "C:\\Users\\thanh\\Desktop\\CNPM_TH_BA\\CinemaManagement.csproj",
-      "packagesPath": "C:\\Users\\thanh\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\thanh\\Desktop\\CNPM_TH_BA\\obj\\",
+      "projectPath": "C:\\Users\\leuti\\Desktop\\CNPM_TH\\CNPM_TH_BA\\CinemaManagement.csproj",
+      "packagesPath": "C:\\Users\\leuti\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\leuti\\Desktop\\CNPM_TH\\CNPM_TH_BA\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\thanh\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\leuti\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -5262,7 +5262,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

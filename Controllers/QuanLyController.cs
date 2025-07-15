@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using CinemaManagement.Data;
 using CinemaManagement.Models;
 using CinemaManagement.ViewModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace CinemaManagement.Controllers
 {
@@ -100,7 +101,7 @@ namespace CinemaManagement.Controllers
                         MaPhim = g.Key.MaPhim,
                         TenPhim = g.Key.TenPhim,
                         SoVe = g.Count(),
-                        DoanhThu = g.Sum(c => c.DonGia)
+                        DoanhThu = g.Sum(c => c.Gia)
                     })
                     .OrderByDescending(t => t.SoVe)
                     .Take(5)
