@@ -95,6 +95,17 @@
                         </div>
                     </div>
 
+                    <!-- Thông báo lọc mặc định -->
+                    @if (Model.TuNgay == DateTime.Today.ToString("yyyy-MM-dd") && Model.DenNgay == DateTime.Today.ToString("yyyy-MM-dd"))
+                    {
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Lọc mặc định:</strong> Đang hiển thị lịch chiếu hôm nay (@DateTime.Today.ToString("dd/MM/yyyy")). 
+                            Bạn có thể thay đổi bộ lọc ở trên để xem lịch chiếu khác.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
                     <!-- Thông tin tổng quan -->
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -113,11 +124,18 @@
                                     <i class="fas fa-calendar-alt me-1"></i>
                                     Tổng: @Model.LichChieus.Count lịch chiếu
                                 </span>
-                                @if (ViewBag.TuNgay != null || ViewBag.DenNgay != null)
+                                @if (!string.IsNullOrEmpty(Model.TuNgay) || !string.IsNullOrEmpty(Model.DenNgay))
                                 {
-                                    <span class="badge bg-info">
+                                    <span class="badge bg-info me-2">
                                         <i class="fas fa-filter me-1"></i>
-                                        Đã lọc
+                                        @if (Model.TuNgay == DateTime.Today.ToString("yyyy-MM-dd") && Model.DenNgay == DateTime.Today.ToString("yyyy-MM-dd"))
+                                        {
+                                            <text>Hôm nay</text>
+                                        }
+                                        else
+                                        {
+                                            <text>Đã lọc</text>
+                                        }
                                     </span>
                                 }
                             </div>
@@ -232,6 +250,13 @@
         $(document).ready(function() {
             // Khởi tạo tooltip
             $('[data-bs-toggle="tooltip"]').tooltip();
+
+            // Nếu chưa có ngày nào được set, tự động set ngày hiện tại
+            if (!$('#tuNgay').val() && !$('#denNgay').val()) {
+                const today = new Date().toISOString().split('T')[0];
+                $('#tuNgay').val(today);
+                $('#denNgay').val(today);
+            }
 
             // Auto submit form khi thay đổi select
             $('#maPhim, #maPhong').change(function() {

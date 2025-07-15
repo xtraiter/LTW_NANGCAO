@@ -28,6 +28,13 @@ namespace CinemaManagement.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
+            // Mặc định lọc theo ngày hiện tại nếu không có bộ lọc nào
+            if (!tuNgay.HasValue && !denNgay.HasValue && string.IsNullOrEmpty(maPhim) && string.IsNullOrEmpty(maPhong))
+            {
+                tuNgay = DateTime.Today;
+                denNgay = DateTime.Today;
+            }
+
             var lichChieusQuery = _context.LichChieus
                 .Include(l => l.Phim)
                 .Include(l => l.PhongChieu)
