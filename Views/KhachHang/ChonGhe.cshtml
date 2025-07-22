@@ -102,7 +102,7 @@
                     <div class="text-center mt-3">
                         <div class="alert alert-info d-inline-block mb-0">
                             <i class="fas fa-info-circle me-2"></i>
-                            <strong>Lưu ý:</strong> Khi mua từ 2 vé trở lên, vui lòng chọn các ghế liền nhau trong cùng một hàng.
+                            <strong>Lưu ý:</strong> Khi mua từ 2 vé trở lên, các ghế trong cùng một hàng phải liền nhau.
                         </div>
                     </div>
                 </div>
@@ -282,43 +282,34 @@
                 }
             }
 
-            // Kiểm tra tất cả ghế đã chọn có liền nhau không
+            // Kiểm tra tất cả ghế đã chọn có liền nhau theo hàng không
             function validateAdjacentSeats() {
                 if (selectedSeats.length <= 1) return true;
 
-                // Sắp xếp ghế theo hàng và số ghế
-                var sortedSeats = [...selectedSeats].sort((a, b) => {
-                    var rowA = a.number.substring(0, 1);
-                    var rowB = b.number.substring(0, 1);
-                    if (rowA !== rowB) return rowA.localeCompare(rowB);
-                    return parseInt(a.number.substring(1)) - parseInt(b.number.substring(1));
+                // Nhóm ghế theo hàng
+                var seatsByRow = {};
+                selectedSeats.forEach(function(seat) {
+                    var row = seat.number.substring(0, 1);
+                    if (!seatsByRow[row]) {
+                        seatsByRow[row] = [];
+                    }
+                    seatsByRow[row].push(parseInt(seat.number.substring(1)));
                 });
 
-                // Kiểm tra tất cả ghế có trong cùng một hàng không
-                var currentRow = sortedSeats[0].number.substring(0, 1);
-                for (var i = 0; i < sortedSeats.length; i++) {
-                    var seat = sortedSeats[i];
-                    var seatRow = seat.number.substring(0, 1);
-
-                    // Tất cả ghế phải cùng hàng
-                    if (seatRow !== currentRow) {
-                        console.log('Ghế không cùng hàng:', seat.number, 'vs', currentRow);
-                        return false;
-                    }
-                }
-
-                // Kiểm tra ghế có liên tiếp không
-                for (var i = 1; i < sortedSeats.length; i++) {
-                    var currentSeatNum = parseInt(sortedSeats[i].number.substring(1));
-                    var prevSeatNum = parseInt(sortedSeats[i-1].number.substring(1));
+                // Kiểm tra từng hàng có liên tiếp không
+                for (var row in seatsByRow) {
+                    var seatNumbers = seatsByRow[row].sort((a, b) => a - b);
                     
-                    if (currentSeatNum - prevSeatNum !== 1) {
-                        console.log('Ghế không liên tiếp:', sortedSeats[i-1].number, 'và', sortedSeats[i].number);
-                        return false;
+                    // Kiểm tra các ghế trong hàng có liên tiếp không
+                    for (var i = 1; i < seatNumbers.length; i++) {
+                        if (seatNumbers[i] - seatNumbers[i-1] !== 1) {
+                            console.log('Ghế không liên tiếp trong hàng', row + ':', seatNumbers[i-1], 'và', seatNumbers[i]);
+                            return false;
+                        }
                     }
                 }
 
-                console.log('Tất cả ghế đều liền nhau:', sortedSeats.map(s => s.number));
+                console.log('Tất cả ghế đều liền nhau theo từng hàng:', seatsByRow);
                 return true;
             }
 
@@ -397,7 +388,7 @@
                 // Kiểm tra ghế liền nhau trước khi thanh toán (kiểm tra lần cuối)
                 if (selectedSeats.length > 1) {
                     if (!validateAdjacentSeats()) {
-                        alert('Khi mua từ 2 vé trở lên, vui lòng chọn các ghế liền nhau trong cùng một hàng. Vui lòng chọn lại ghế.');
+                        alert('Các ghế trong cùng một hàng phải liền nhau. Vui lòng chọn lại ghế.');
                         return;
                     }
                 }
