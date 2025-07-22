@@ -170,14 +170,6 @@
                     selectedSeats = selectedSeats.filter(seat => seat.id !== seatId);
                     totalAmount -= seatPrice;
                 } else {
-                    // Kiểm tra ghế liền nhau khi chọn ghế thứ 2 trở đi
-                    if (selectedSeats.length > 0) {
-                        if (!isAdjacentSeat(seatNumber)) {
-                            alert('Khi mua từ 2 vé trở lên, vui lòng chọn các ghế liền nhau trong cùng một hàng.');
-                            return;
-                        }
-                    }
-
                     // Chọn ghế
                     $(this).addClass('selected');
                     selectedSeats.push({
@@ -206,7 +198,47 @@
                 }
             }
 
-            // Kiểm tra ghế có liền nhau không
+            // Kiểm tra tất cả ghế đã chọn có liền nhau không
+            function validateAdjacentSeats() {
+                if (selectedSeats.length <= 1) return true;
+
+                // Sắp xếp ghế theo hàng và số ghế
+                var sortedSeats = [...selectedSeats].sort((a, b) => {
+                    var rowA = a.number.substring(0, 1);
+                    var rowB = b.number.substring(0, 1);
+                    if (rowA !== rowB) return rowA.localeCompare(rowB);
+                    return parseInt(a.number.substring(1)) - parseInt(b.number.substring(1));
+                });
+
+                // Kiểm tra tất cả ghế có trong cùng một hàng không
+                var currentRow = sortedSeats[0].number.substring(0, 1);
+                for (var i = 0; i < sortedSeats.length; i++) {
+                    var seat = sortedSeats[i];
+                    var seatRow = seat.number.substring(0, 1);
+
+                    // Tất cả ghế phải cùng hàng
+                    if (seatRow !== currentRow) {
+                        console.log('Ghế không cùng hàng:', seat.number, 'vs', currentRow);
+                        return false;
+                    }
+                }
+
+                // Kiểm tra ghế có liên tiếp không
+                for (var i = 1; i < sortedSeats.length; i++) {
+                    var currentSeatNum = parseInt(sortedSeats[i].number.substring(1));
+                    var prevSeatNum = parseInt(sortedSeats[i-1].number.substring(1));
+                    
+                    if (currentSeatNum - prevSeatNum !== 1) {
+                        console.log('Ghế không liên tiếp:', sortedSeats[i-1].number, 'và', sortedSeats[i].number);
+                        return false;
+                    }
+                }
+
+                console.log('Tất cả ghế đều liền nhau:', sortedSeats.map(s => s.number));
+                return true;
+            }
+
+            // Kiểm tra ghế có liền nhau không (dùng cho việc chọn ghế real-time - đã bỏ)
             function isAdjacentSeat(newSeatNumber) {
                 if (selectedSeats.length === 0) return true;
 
@@ -272,6 +304,14 @@
                 if (selectedSeats.length === 0) {
                     alert('Vui lòng chọn ít nhất một ghế');
                     return;
+                }
+
+                // Kiểm tra ghế liền nhau trước khi thanh toán (kiểm tra lần cuối)
+                if (selectedSeats.length > 1) {
+                    if (!validateAdjacentSeats()) {
+                        alert('Khi mua từ 2 vé trở lên, vui lòng chọn các ghế liền nhau trong cùng một hàng. Vui lòng chọn lại ghế.');
+                        return;
+                    }
                 }
 
                 var seatIds = selectedSeats.map(seat => seat.id);
