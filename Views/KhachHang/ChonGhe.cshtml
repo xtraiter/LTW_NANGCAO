@@ -99,6 +99,12 @@
                             <small>Ghế VIP</small>
                         </div>
                     </div>
+                    <div class="text-center mt-3">
+                        <div class="alert alert-info d-inline-block mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Lưu ý:</strong> Khi mua từ 2 vé trở lên, vui lòng chọn các ghế liền nhau trong cùng một hàng.
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -230,6 +236,14 @@
                         totalAmount -= seatPrice;
                         console.log('Đã bỏ chọn ghế:', seatNumber);
                     } else {
+                        // Kiểm tra ghế liền nhau khi chọn ghế thứ 2 trở đi
+                        if (selectedSeats.length > 0) {
+                            if (!isAdjacentSeat(seatNumber)) {
+                                alert('Khi mua từ 2 vé trở lên, vui lòng chọn các ghế liền nhau trong cùng một hàng.');
+                                return;
+                            }
+                        }
+
                         // Chọn ghế
                         $(this).addClass('selected');
                         selectedSeats.push({
@@ -274,6 +288,67 @@
                     $('#selectedSeatsList').html(seatsList);
                     $('#selectedSeatsDisplay').show();
                 }
+            }
+
+            // Kiểm tra ghế có liền nhau không
+            function isAdjacentSeat(newSeatNumber) {
+                if (selectedSeats.length === 0) return true;
+
+                // Lấy hàng và số của ghế mới
+                var newRow = newSeatNumber.substring(0, 1);
+                var newSeatNum = parseInt(newSeatNumber.substring(1));
+
+                // Kiểm tra với từng ghế đã chọn
+                for (var i = 0; i < selectedSeats.length; i++) {
+                    var selectedSeat = selectedSeats[i];
+                    var selectedRow = selectedSeat.number.substring(0, 1);
+                    var selectedSeatNum = parseInt(selectedSeat.number.substring(1));
+
+                    // Phải cùng hàng
+                    if (newRow !== selectedRow) {
+                        continue;
+                    }
+
+                    // Kiểm tra liền nhau (cách nhau 1 số)
+                    if (Math.abs(newSeatNum - selectedSeatNum) === 1) {
+                        return true;
+                    }
+                }
+
+                // Nếu không có ghế nào liền nhau, kiểm tra xem có tạo thành dãy liên tiếp không
+                var allSeats = [...selectedSeats];
+                allSeats.push({ number: newSeatNumber });
+                
+                // Sắp xếp theo hàng và số ghế
+                allSeats.sort((a, b) => {
+                    var rowA = a.number.substring(0, 1);
+                    var rowB = b.number.substring(0, 1);
+                    if (rowA !== rowB) return rowA.localeCompare(rowB);
+                    return parseInt(a.number.substring(1)) - parseInt(b.number.substring(1));
+                });
+
+                // Kiểm tra tất cả ghế có trong cùng một hàng và liên tiếp không
+                var currentRow = allSeats[0].number.substring(0, 1);
+                for (var i = 0; i < allSeats.length; i++) {
+                    var seat = allSeats[i];
+                    var seatRow = seat.number.substring(0, 1);
+                    var seatNum = parseInt(seat.number.substring(1));
+
+                    // Tất cả ghế phải cùng hàng
+                    if (seatRow !== currentRow) {
+                        return false;
+                    }
+
+                    // Kiểm tra liên tiếp (trừ ghế đầu tiên)
+                    if (i > 0) {
+                        var prevSeatNum = parseInt(allSeats[i-1].number.substring(1));
+                        if (seatNum - prevSeatNum !== 1) {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
             }
 
             // Xử lý thanh toán trực tiếp
