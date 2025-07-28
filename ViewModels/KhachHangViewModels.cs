@@ -1,4 +1,5 @@
 using CinemaManagement.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace CinemaManagement.ViewModels
 {
@@ -30,6 +31,7 @@ namespace CinemaManagement.ViewModels
         public decimal TongTien { get; set; }
         public string? MaVoucherChon { get; set; }
         public bool IsDirectPayment { get; set; } = false; // Thêm flag cho thanh toán trực tiếp
+        public int DiemTichLuy { get; set; } // Điểm tích lũy của khách hàng
     }
 
     public class ThanhToanThanhCongViewModel
@@ -76,5 +78,45 @@ namespace CinemaManagement.ViewModels
         public string SoGhe { get; set; } = string.Empty;
         public decimal GiaGhe { get; set; }
         public string LoaiGhe { get; set; } = string.Empty;
+    }
+
+    public class KhachHangProfileViewModel
+    {
+        public KhachHang KhachHang { get; set; } = null!;
+        public TaiKhoan TaiKhoan { get; set; } = null!;
+        public decimal TongChiTieu { get; set; }
+        public List<HoaDon> LichSuGanDay { get; set; } = new List<HoaDon>();
+        public bool IsGoogleAccount { get; set; } = false;
+    }
+
+    public class UpdateProfileViewModel
+    {
+        [Required(ErrorMessage = "Họ tên không được để trống")]
+        [StringLength(100, ErrorMessage = "Họ tên không được vượt quá 100 ký tự")]
+        public string HoTen { get; set; } = string.Empty;
+
+        [StringLength(15, ErrorMessage = "Số điện thoại không được vượt quá 15 ký tự")]
+        [RegularExpression(@"^[0-9]{10,11}$", ErrorMessage = "Số điện thoại không hợp lệ (10-11 chữ số)")]
+        public string SDT { get; set; } = string.Empty;
+
+        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        public string Email { get; set; } = string.Empty;
+
+        [StringLength(255, ErrorMessage = "Địa chỉ giao hàng không được vượt quá 255 ký tự")]
+        public string? DiaChiGiaoHang { get; set; }
+    }
+
+    public class ChangePasswordViewModel
+    {
+        [Required(ErrorMessage = "Mật khẩu hiện tại không được để trống")]
+        public string CurrentPassword { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Mật khẩu mới không được để trống")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Mật khẩu mới phải có ít nhất 6 ký tự")]
+        public string NewPassword { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Xác nhận mật khẩu không được để trống")]
+        [Compare("NewPassword", ErrorMessage = "Xác nhận mật khẩu không khớp")]
+        public string ConfirmPassword { get; set; } = string.Empty;
     }
 }

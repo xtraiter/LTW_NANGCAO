@@ -6,7 +6,7 @@ namespace CinemaManagement.Models
     public class GheNgoi
     {
         [Key]
-        [StringLength(10)]
+        [StringLength(50)]
         public string MaGhe { get; set; } = string.Empty;
 
         [StringLength(30)]
@@ -21,7 +21,7 @@ namespace CinemaManagement.Models
         [StringLength(20)]
         public string TrangThai { get; set; } = string.Empty;
 
-        [StringLength(10)]
+        [StringLength(50)]
         public string MaPhong { get; set; } = string.Empty;
 
         // Navigation properties

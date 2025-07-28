@@ -6,13 +6,13 @@ namespace CinemaManagement.Models
     public class Ve
     {
         [Key]
-        [StringLength(10)]
+        [StringLength(50)]
         public string MaVe { get; set; } = string.Empty;
 
         [StringLength(20)]
         public string TrangThai { get; set; } = string.Empty;
 
-        [StringLength(10)]
+        [StringLength(50)]
         public string SoGhe { get; set; } = string.Empty;
 
         [StringLength(255)]
@@ -26,16 +26,16 @@ namespace CinemaManagement.Models
         [StringLength(50)]
         public string TenPhong { get; set; } = string.Empty;
 
-        [StringLength(10)]
+        [StringLength(50)]
         public string MaGhe { get; set; } = string.Empty;
 
-        [StringLength(10)]
+        [StringLength(50)]
         public string MaLichChieu { get; set; } = string.Empty;
 
-        [StringLength(10)]
+        [StringLength(50)]
         public string MaPhim { get; set; } = string.Empty;
 
-        [StringLength(10)]
+        [StringLength(50)]
         public string MaPhong { get; set; } = string.Empty;
 
         // Navigation properties

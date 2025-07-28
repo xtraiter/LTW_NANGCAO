@@ -1,0 +1,304 @@
+@model ShoppingViewModel
+
+@{
+    ViewData["Title"] = "Cửa hàng sản phẩm";
+}
+
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <div class="jumbotron bg-gradient-primary text-white mb-4">
+        <div class="container">
+            <h1 class="display-4">Cửa hàng sản phẩm</h1>
+            <p class="lead">Khám phá những sản phẩm tuyệt vời dành cho bạn</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-filter"></i> Bộ lọc</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Shopping" method="get">
+                        <div class="form-group">
+                            <label>Tìm kiếm</label>
+                            <input asp-for="SearchTerm" class="form-control" placeholder="Tên sản phẩm..." />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Khoảng giá</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input asp-for="GiaMin" type="number" class="form-control" placeholder="Từ" />
+                                </div>
+                                <div class="col-6">
+                                    <input asp-for="GiaMax" type="number" class="form-control" placeholder="Đến" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Sắp xếp theo</label>
+                            <select asp-for="SortBy" class="form-control">
+                                <option value="name_asc">Tên A-Z</option>
+                                <option value="name_desc">Tên Z-A</option>
+                                <option value="price_asc">Giá thấp đến cao</option>
+                                <option value="price_desc">Giá cao đến thấp</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-search"></i> Tìm kiếm
+                        </button>
+                        <a asp-action="Shopping" class="btn btn-secondary btn-block">
+                            <i class="fas fa-redo"></i> Đặt lại
+                        </a>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Cart Summary -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-shopping-cart"></i> Giỏ hàng</h5>
+                </div>
+                <div class="card-body text-center">
+                    <a asp-action="GioHang" class="btn btn-success btn-block">
+                        <i class="fas fa-shopping-cart"></i> Xem giỏ hàng
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <!-- Featured Products -->
+            @if (Model.SanPhamMoi.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-star"></i> Sản phẩm mới</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (var product in Model.SanPhamMoi.Take(3))
+                            {
+                                <div class="col-md-4 mb-3">
+                                    <div class="card product-card h-100">
+                                        <div class="position-relative">
+                                            @if (!string.IsNullOrEmpty(product.HinhAnh))
+                                            {
+                                                <img src="@product.HinhAnh" class="card-img-top product-image" alt="@product.TenSanPham" />
+                                            }
+                                            else
+                                            {
+                                                <div class="card-img-top product-image d-flex align-items-center justify-content-center bg-light">
+                                                    <i class="fas fa-image fa-3x text-muted"></i>
+                                                </div>
+                                            }
+                                            <span class="badge badge-success position-absolute" style="top: 10px; right: 10px;">Mới</span>
+                                        </div>
+                                        <div class="card-body d-flex flex-column">
+                                            <h6 class="card-title">@product.TenSanPham</h6>
+                                            <p class="card-text text-muted small flex-grow-1">@(product.MoTa?.Length > 80 ? product.MoTa.Substring(0, 80) + "..." : product.MoTa)</p>
+                                            <div class="mt-auto">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="h5 text-success mb-0">@product.Gia.ToString("N0") ₫</span>
+                                                    <small class="text-muted">Còn @product.SoLuongTon</small>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <a asp-action="ChiTietSanPham" asp-route-id="@product.MaSanPham" class="btn btn-outline-primary btn-sm">
+                                                        <i class="fas fa-eye"></i> Xem
+                                                    </a>
+                                                    <button class="btn btn-success btn-sm add-to-cart-btn" 
+                                                            data-product-id="@product.MaSanPham"
+                                                            data-product-name="@product.TenSanPham">
+                                                        <i class="fas fa-cart-plus"></i> Thêm
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- All Products -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-shopping-bag"></i> Tất cả sản phẩm (@Model.SanPhams.Count)</h5>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary active" id="grid-view">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="list-view">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="products-container">
+                        @if (Model.SanPhams.Any())
+                        {
+                            <div class="row" id="products-grid">
+                                @foreach (var product in Model.SanPhams)
+                                {
+                                    <div class="col-md-4 col-sm-6 mb-4 product-item">
+                                        <div class="card product-card h-100">
+                                            <div class="position-relative">
+                                                @if (!string.IsNullOrEmpty(product.HinhAnh))
+                                                {
+                                                    <img src="@product.HinhAnh" class="card-img-top product-image" alt="@product.TenSanPham" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="card-img-top product-image d-flex align-items-center justify-content-center bg-light">
+                                                        <i class="fas fa-image fa-3x text-muted"></i>
+                                                    </div>
+                                                }
+                                                @if (product.SoLuongTon <= 5)
+                                                {
+                                                    <span class="badge badge-warning position-absolute" style="top: 10px; left: 10px;">Sắp hết</span>
+                                                }
+                                            </div>
+                                            <div class="card-body d-flex flex-column">
+                                                <h6 class="card-title">@product.TenSanPham</h6>
+                                                <p class="card-text text-muted small flex-grow-1">@(product.MoTa?.Length > 100 ? product.MoTa.Substring(0, 100) + "..." : product.MoTa)</p>
+                                                <div class="mt-auto">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="h5 text-success mb-0">@product.Gia.ToString("N0") ₫</span>
+                                                        <small class="text-muted">Còn @product.SoLuongTon</small>
+                                                    </div>
+                                                    <div class="d-flex gap-2">
+                                                        <a asp-action="ChiTietSanPham" asp-route-id="@product.MaSanPham" 
+                                                           class="btn btn-outline-primary btn-sm flex-fill">
+                                                            <i class="fas fa-eye"></i> Chi tiết
+                                                        </a>
+                                                        <button class="btn btn-success btn-sm flex-fill add-to-cart-btn" 
+                                                                data-product-id="@product.MaSanPham"
+                                                                data-product-name="@product.TenSanPham">
+                                                            <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                                <h4 class="text-muted">Không tìm thấy sản phẩm nào</h4>
+                                <p class="text-muted">Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+                                <a asp-action="Shopping" class="btn btn-primary">
+                                    <i class="fas fa-redo"></i> Xem tất cả sản phẩm
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.product-image {
+    height: 200px;
+    object-fit: cover;
+}
+
+.product-card {
+    transition: transform 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Add to cart functionality
+            $('.add-to-cart-btn').click(function() {
+                var productId = $(this).data('product-id');
+                var productName = $(this).data('product-name');
+                var button = $(this);
+                
+                // Show loading state
+                button.prop('disabled', true);
+                button.html('<i class="fas fa-spinner fa-spin"></i> Đang thêm...');
+                
+                $.ajax({
+                    url: '@Url.Action("ThemVaoGioHang", "KhachHang")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        maSanPham: productId,
+                        soLuong: 1
+                    }),
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            toastr.success('Đã thêm ' + productName + ' vào giỏ hàng!');
+                            
+                            // Show success animation
+                            button.removeClass('btn-success').addClass('btn-info');
+                            button.html('<i class="fas fa-check"></i> Đã thêm');
+                            
+                            // Reset button after 2 seconds
+                            setTimeout(function() {
+                                button.removeClass('btn-info').addClass('btn-success');
+                                button.html('<i class="fas fa-cart-plus"></i> Thêm vào giỏ');
+                                button.prop('disabled', false);
+                            }, 2000);
+                        } else {
+                            toastr.error(response.message);
+                            button.prop('disabled', false);
+                            button.html('<i class="fas fa-cart-plus"></i> Thêm vào giỏ');
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Có lỗi xảy ra khi thêm vào giỏ hàng');
+                        button.prop('disabled', false);
+                        button.html('<i class="fas fa-cart-plus"></i> Thêm vào giỏ');
+                    }
+                });
+            });
+
+            // View toggle functionality
+            $('#grid-view').click(function() {
+                $(this).addClass('active');
+                $('#list-view').removeClass('active');
+                $('#products-grid').removeClass('list-view').addClass('row');
+                $('.product-item').removeClass('col-12').addClass('col-md-4 col-sm-6');
+            });
+
+            $('#list-view').click(function() {
+                $(this).addClass('active');
+                $('#grid-view').removeClass('active');
+                $('#products-grid').removeClass('row').addClass('list-view');
+                $('.product-item').removeClass('col-md-4 col-sm-6').addClass('col-12');
+            });
+
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+} 

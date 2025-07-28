@@ -1,0 +1,238 @@
+@model CinemaManagement.Models.KhachHang
+@{
+    ViewData["Title"] = "Chi tiết khách hàng";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user"></i> Chi tiết khách hàng: @Model.HoTen
+                    </h3>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Thông tin cơ bản -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h5><i class="fas fa-info-circle"></i> Thông tin cơ bản</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Mã khách hàng:</strong></td>
+                                            <td><span class="badge bg-primary">@Model.MaKhachHang</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Họ tên:</strong></td>
+                                            <td>@Model.HoTen</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Số điện thoại:</strong></td>
+                                            <td><i class="fas fa-phone text-muted"></i> @Model.SDT</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Điểm tích lũy:</strong></td>
+                                            <td>
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="fas fa-star"></i> @Model.DiemTichLuy điểm
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Hạng thành viên:</strong></td>
+                                            <td>
+                                                @{
+                                                    var hangThanhVien = Model.DiemTichLuy >= 1000 ? "VIP" : 
+                                                                       Model.DiemTichLuy >= 500 ? "Vàng" : 
+                                                                       Model.DiemTichLuy >= 100 ? "Bạc" : "Đồng";
+                                                    var badgeClass = Model.DiemTichLuy >= 1000 ? "bg-danger" : 
+                                                                   Model.DiemTichLuy >= 500 ? "bg-warning" : 
+                                                                   Model.DiemTichLuy >= 100 ? "bg-info" : "bg-secondary";
+                                                }
+                                                <span class="badge @badgeClass">
+                                                    <i class="fas fa-crown"></i> @hangThanhVien
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thống kê -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h5><i class="fas fa-chart-bar"></i> Thống kê giao dịch</h5>
+                                </div>
+                                <div class="card-body">
+                                    @{
+                                        var tongHoaDon = Model.HoaDons?.Count ?? 0;
+                                        var tongTien = Model.HoaDons?.Sum(h => h.TongTien) ?? 0;
+                                        var tongVe = Model.HoaDons?.SelectMany(h => h.CTHDs).Count() ?? 0;
+                                    }
+                                    
+                                    <div class="row text-center">
+                                        <div class="col-md-4">
+                                            <div class="info-box bg-info">
+                                                <span class="info-box-icon">
+                                                    <i class="fas fa-receipt"></i>
+                                                </span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Tổng hóa đơn</span>
+                                                    <span class="info-box-number">@tongHoaDon</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="info-box bg-success">
+                                                <span class="info-box-icon">
+                                                    <i class="fas fa-ticket-alt"></i>
+                                                </span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Tổng vé</span>
+                                                    <span class="info-box-number">@tongVe</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="info-box bg-warning">
+                                                <span class="info-box-icon">
+                                                    <i class="fas fa-dollar-sign"></i>
+                                                </span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Tổng chi tiêu</span>
+                                                    <span class="info-box-number">@tongTien.ToString("N0")đ</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lịch sử giao dịch -->
+                    @if (Model.HoaDons != null && Model.HoaDons.Any())
+                    {
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header bg-info text-white">
+                                        <h5><i class="fas fa-history"></i> Lịch sử giao dịch</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-striped">
+                                                <thead class="table-dark">
+                                                    <tr>
+                                                        <th>Mã HĐ</th>
+                                                        <th>Ngày tạo</th>
+                                                        <th>Số lượng vé</th>
+                                                        <th>Tổng tiền</th>
+                                                        <th>Chi tiết</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var hoaDon in Model.HoaDons.OrderByDescending(h => h.ThoiGianTao))
+                                                    {
+                                                        <tr>
+                                                            <td>
+                                                                <span class="badge bg-primary">@hoaDon.MaHoaDon</span>
+                                                            </td>
+                                                            <td>@hoaDon.ThoiGianTao.ToString("dd/MM/yyyy HH:mm")</td>
+                                                            <td>
+                                                                <span class="badge bg-info">@hoaDon.CTHDs.Count vé</span>
+                                                            </td>
+                                                            <td>
+                                                                <strong class="text-success">@hoaDon.TongTien.ToString("N0")đ</strong>
+                                                            </td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-info" 
+                                                                        onclick="showHoaDonDetails('@hoaDon.MaHoaDon')">
+                                                                    <i class="fas fa-eye"></i> Xem
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="alert alert-info text-center">
+                                    <i class="fas fa-info-circle fa-2x mb-2"></i>
+                                    <p>Khách hàng chưa có giao dịch nào.</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Tài khoản liên kết -->
+                    @if (Model.TaiKhoans != null && Model.TaiKhoans.Any())
+                    {
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h5><i class="fas fa-user-cog"></i> Tài khoản liên kết</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        @foreach (var taiKhoan in Model.TaiKhoans)
+                                        {
+                                            <div class="alert alert-light border">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-3">
+                                                        <strong>Email:</strong> @taiKhoan.Email
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <strong>Role:</strong> <span class="badge bg-secondary">@taiKhoan.Role</span>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <strong>Trạng thái:</strong> 
+                                                        <span class="badge @(taiKhoan.TrangThai == "Hoạt động" ? "bg-success" : "bg-danger")">
+                                                            @taiKhoan.TrangThai
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                        </a>
+                        <a asp-action="Edit" asp-route-id="@Model.MaKhachHang" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Sửa thông tin
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showHoaDonDetails(maHoaDon) {
+    alert('Chức năng xem chi tiết hóa đơn sẽ được bổ sung sau!');
+}
+</script>

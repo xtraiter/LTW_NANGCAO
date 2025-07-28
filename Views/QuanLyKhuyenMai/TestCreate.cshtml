@@ -1,0 +1,87 @@
+@model CinemaManagement.Models.Voucher
+@{
+    ViewData["Title"] = "Test Tạo khuyến mãi";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-flask"></i> 🧪 Test Tạo khuyến mãi
+                    </h3>
+                    @if (ViewBag.TestMessage != null)
+                    {
+                        <div class="alert alert-info mt-2">
+                            <i class="fas fa-info-circle"></i> @ViewBag.TestMessage
+                        </div>
+                    }
+                </div>
+
+                <form asp-action="TestCreate" method="post">
+                    <div class="card-body">
+                        <!-- Hiển thị tất cả lỗi -->
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger">
+                                <h6>Validation Errors:</h6>
+                                <div asp-validation-summary="All"></div>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label asp-for="TenGiamGia" class="form-label">Tên khuyến mãi</label>
+                            <input asp-for="TenGiamGia" class="form-control" />
+                            <span asp-validation-for="TenGiamGia" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PhanTramGiam" class="form-label">Phần trăm giảm</label>
+                            <input asp-for="PhanTramGiam" class="form-control" type="number" min="1" max="100" />
+                            <span asp-validation-for="PhanTramGiam" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ThoiGianBatDau" class="form-label">Thời gian bắt đầu</label>
+                            <input asp-for="ThoiGianBatDau" class="form-control" type="datetime-local" />
+                            <span asp-validation-for="ThoiGianBatDau" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ThoiGianKetThuc" class="form-label">Thời gian kết thúc</label>
+                            <input asp-for="ThoiGianKetThuc" class="form-control" type="datetime-local" />
+                            <span asp-validation-for="ThoiGianKetThuc" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MaNhanVien" class="form-label">Nhân viên</label>
+                            <select asp-for="MaNhanVien" class="form-select">
+                                <option value="">-- Chọn nhân viên --</option>
+                                @foreach (var nhanVien in (List<CinemaManagement.Models.NhanVien>)ViewBag.NhanViens)
+                                {
+                                    <option value="@nhanVien.MaNhanVien">@nhanVien.TenNhanVien</option>
+                                }
+                            </select>
+                            <span asp-validation-for="MaNhanVien" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MoTa" class="form-label">Mô tả</label>
+                            <textarea asp-for="MoTa" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">Tạo khuyến mãi</button>
+                        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

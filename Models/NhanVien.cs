@@ -6,7 +6,7 @@ namespace CinemaManagement.Models
     public class NhanVien
     {
         [Key]
-        [StringLength(10)]
+        [StringLength(50)]
         public string MaNhanVien { get; set; } = string.Empty;
 
         [StringLength(100)]

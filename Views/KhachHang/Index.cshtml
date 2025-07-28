@@ -14,33 +14,158 @@
                     </h4>
                 </div>
                 <div class="card-body">
-                    <!-- Bộ lọc và tìm kiếm -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <form method="get" class="d-flex">
-                                <input type="text" name="searchTerm" class="form-control me-2" 
-                                       placeholder="Tìm kiếm phim..." value="@ViewBag.CurrentSearch">
-                                <button type="submit" class="btn btn-outline-primary">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </form>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="dropdown">
-                                <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" 
-                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                    @(ViewBag.CurrentTheLoai ?? "Tất cả thể loại")
-                                </button>
-                                <ul class="dropdown-menu w-100">
-                                    <li><a class="dropdown-item" href="@Url.Action("Index")">Tất cả thể loại</a></li>
-                                    @if (ViewBag.TheLoais != null)
-                                    {
-                                        @foreach (string theLoai in ViewBag.TheLoais)
-                                        {
-                                            <li><a class="dropdown-item" href="@Url.Action("Index", new { theLoai = theLoai })">@theLoai</a></li>
-                                        }
-                                    }
-                                </ul>
+                    <!-- Bộ lọc và tìm kiếm nâng cao -->
+                    <div class="advanced-filter-section mb-4">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-gradient-primary text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-filter me-2"></i>Bộ lọc và tìm kiếm
+                                    </h5>
+                                    <button type="button" class="btn btn-outline-light btn-sm" id="toggleFilters">
+                                        <i class="fas fa-chevron-up" id="filterToggleIcon"></i>
+                                        Thu gọn
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body" id="filterContent">
+                                <form method="get" id="filterForm">
+                                    <!-- Tìm kiếm chính -->
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <div class="input-group input-group-lg">
+                                                <span class="input-group-text bg-primary text-white">
+                                                    <i class="fas fa-search"></i>
+                                                </span>
+                                                <input type="text" name="searchTerm" class="form-control" 
+                                                       placeholder="Tìm kiếm phim theo tên, mô tả..." 
+                                                       value="@ViewBag.CurrentSearch">
+                                                @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch))
+                                                {
+                                                    <button type="button" class="btn btn-outline-secondary" onclick="clearSearch()">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bộ lọc nâng cao -->
+                                    <div class="row g-3">
+                                        <!-- Thể loại -->
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-semibold">
+                                                <i class="fas fa-tags text-primary me-1"></i>Thể loại
+                                            </label>
+                                            <select name="theLoai" class="form-select">
+                                                <option value="">Tất cả thể loại</option>
+                                                @if (ViewBag.TheLoais != null)
+                                                {
+                                                    @foreach (string theLoai in ViewBag.TheLoais)
+                                                    {
+                                                        <option value="@theLoai" selected="@(ViewBag.CurrentTheLoai == theLoai)">@theLoai</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <!-- Độ tuổi -->
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-semibold">
+                                                <i class="fas fa-users text-info me-1"></i>Độ tuổi
+                                            </label>
+                                            <select name="doTuoi" class="form-select">
+                                                <option value="">Tất cả độ tuổi</option>
+                                                @if (ViewBag.DoTuoiOptions != null)
+                                                {
+                                                    @foreach (string doTuoi in ViewBag.DoTuoiOptions)
+                                                    {
+                                                        <option value="@doTuoi" selected="@(ViewBag.CurrentDoTuoi == doTuoi)">@doTuoi</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <!-- Thời lượng -->
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-semibold">
+                                                <i class="fas fa-clock text-warning me-1"></i>Thời lượng
+                                            </label>
+                                            <select name="thoiLuongFilter" class="form-select">
+                                                <option value="">Tất cả thời lượng</option>
+                                                <option value="short" selected="@(ViewBag.CurrentThoiLuongFilter == "short")">Ngắn (≤90p)</option>
+                                                <option value="medium" selected="@(ViewBag.CurrentThoiLuongFilter == "medium")">Trung bình (90-150p)</option>
+                                                <option value="long" selected="@(ViewBag.CurrentThoiLuongFilter == "long")">Dài (>150p)</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Giá vé -->
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-semibold">
+                                                <i class="fas fa-money-bill text-success me-1"></i>Mức giá
+                                            </label>
+                                            <select name="giaFilter" class="form-select">
+                                                <option value="">Tất cả mức giá</option>
+                                                <option value="budget" selected="@(ViewBag.CurrentGiaFilter == "budget")">Tiết kiệm (≤80k)</option>
+                                                <option value="medium" selected="@(ViewBag.CurrentGiaFilter == "medium")">Trung bình (80k-150k)</option>
+                                                <option value="premium" selected="@(ViewBag.CurrentGiaFilter == "premium")">Cao cấp (>150k)</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Đánh giá -->
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">
+                                                <i class="fas fa-star text-warning me-1"></i>Đánh giá tối thiểu
+                                            </label>
+                                            <div class="rating-slider-container">
+                                                <input type="range" class="form-range" id="ratingSlider" name="ratingFilter" 
+                                                       min="0" max="10" step="0.5" value="@(ViewBag.CurrentRatingFilter ?? 0)">
+                                                <div class="d-flex justify-content-between small text-muted">
+                                                    <span>0</span>
+                                                    <span class="fw-semibold text-warning" id="ratingValue">@(ViewBag.CurrentRatingFilter ?? 0)</span>
+                                                    <span>10</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Sắp xếp -->
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">
+                                                <i class="fas fa-sort text-secondary me-1"></i>Sắp xếp theo
+                                            </label>
+                                            <select name="sortBy" class="form-select">
+                                                <option value="name_asc" selected="@(ViewBag.CurrentSortBy == "name_asc")">Tên A-Z</option>
+                                                <option value="name_desc" selected="@(ViewBag.CurrentSortBy == "name_desc")">Tên Z-A</option>
+                                                <option value="rating_desc" selected="@(ViewBag.CurrentSortBy == "rating_desc")">Đánh giá cao nhất</option>
+                                                <option value="rating_asc" selected="@(ViewBag.CurrentSortBy == "rating_asc")">Đánh giá thấp nhất</option>
+                                                <option value="duration_desc" selected="@(ViewBag.CurrentSortBy == "duration_desc")">Thời lượng dài nhất</option>
+                                                <option value="duration_asc" selected="@(ViewBag.CurrentSortBy == "duration_asc")">Thời lượng ngắn nhất</option>
+                                                <option value="price_desc" selected="@(ViewBag.CurrentSortBy == "price_desc")">Giá cao nhất</option>
+                                                <option value="price_asc" selected="@(ViewBag.CurrentSortBy == "price_asc")">Giá thấp nhất</option>
+                                                <option value="popularity_desc" selected="@(ViewBag.CurrentSortBy == "popularity_desc")">Phổ biến nhất</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- Nút điều khiển -->
+                                    <div class="row mt-4">
+                                        <div class="col-12">
+                                            <div class="d-flex justify-content-between flex-wrap gap-2">
+                                                <div class="d-flex gap-2">
+                                                    <button type="submit" class="btn btn-primary btn-lg">
+                                                        <i class="fas fa-search me-2"></i>Tìm kiếm
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-secondary" onclick="clearAllFilters()">
+                                                        <i class="fas fa-eraser me-2"></i>Xóa bộ lọc
+                                                    </button>
+                                                </div>
+                                                <div class="filter-summary" id="filterSummary">
+                                                    <!-- Filter summary will be inserted here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -109,16 +234,26 @@
                                                                             <i class="fas fa-users me-2 text-info"></i>
                                                                             <span class="small">@phim.DoTuoiPhanAnh</span>
                                                                         </div>
+                                                                        <div class="info-line rating-line" data-phim="@phim.MaPhim">
+                                                                            <div class="movie-rating">
+                                                                                <div class="stars-small">
+                                                                                    <!-- Stars will be loaded via JavaScript -->
+                                                                                </div>
+                                                                                <span class="rating-text small text-muted ms-1">Đang tải...</span>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                     <p class="card-text small text-muted mt-2">
                                                                         @(phim.MoTa.Length > 80 ? phim.MoTa.Substring(0, 80) + "..." : phim.MoTa)
                                                                     </p>
                                                                 </div>
                                                                 <div class="card-footer p-2">
-                                                                    <a href="@Url.Action("ChiTietPhim", new { id = phim.MaPhim })" 
-                                                                       class="btn btn-primary btn-sm w-100">
-                                                                        <i class="fas fa-info-circle me-1"></i>Xem chi tiết
-                                                                    </a>
+                                                                    <div class="d-flex gap-1">
+                                                                        <a href="@Url.Action("ChiTietPhim", new { id = phim.MaPhim })" 
+                                                                           class="btn btn-primary btn-sm w-100">
+                                                                            <i class="fas fa-info-circle me-1"></i>Chi tiết
+                                                                        </a>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -209,6 +344,9 @@
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
 
+            // Initialize advanced filters
+            initializeAdvancedFilters();
+
             // Initialize carousel cho phim
             var phimCarousel = new bootstrap.Carousel(document.getElementById('phimCarousel'), {
                 interval: 6000, // Auto slide every 6 seconds
@@ -282,7 +420,170 @@
 
             // Update status every minute
             setInterval(updateShowtimeStatus, 60000);
+            
+            // Load rating for all movies
+            loadMovieRatings();
         });
+
+        // Initialize advanced filters functionality
+        function initializeAdvancedFilters() {
+            // Toggle filters visibility
+            $('#toggleFilters').on('click', function() {
+                var $content = $('#filterContent');
+                var $icon = $('#filterToggleIcon');
+                var $button = $(this);
+                
+                if ($content.is(':visible')) {
+                    $content.slideUp(300);
+                    $icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+                    $button.html('<i class="fas fa-chevron-down" id="filterToggleIcon"></i> Mở rộng');
+                } else {
+                    $content.slideDown(300);
+                    $icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+                    $button.html('<i class="fas fa-chevron-up" id="filterToggleIcon"></i> Thu gọn');
+                }
+            });
+
+            // Rating slider functionality
+            $('#ratingSlider').on('input', function() {
+                var value = $(this).val();
+                $('#ratingValue').text(value);
+                if (value > 0) {
+                    $('#ratingValue').html(value + ' <i class="fas fa-star"></i>');
+                } else {
+                    $('#ratingValue').text('0');
+                }
+            });
+
+            // Auto-submit on filter change (optional)
+            $('.form-select').on('change', function() {
+                if ($(this).closest('form').hasClass('auto-submit')) {
+                    $(this).closest('form').submit();
+                }
+            });
+
+            // Update filter summary
+            updateFilterSummary();
+
+            // Show filter count in header
+            updateFilterCount();
+        }
+
+        // Clear search function
+        function clearSearch() {
+            $('input[name="searchTerm"]').val('');
+            $('#filterForm').submit();
+        }
+
+        // Clear all filters function
+        function clearAllFilters() {
+            $('#filterForm')[0].reset();
+            $('#ratingValue').text('0');
+            window.location.href = '@Url.Action("Index")';
+        }
+
+        // Update filter summary
+        function updateFilterSummary() {
+            var filters = [];
+            var form = $('#filterForm');
+            
+            // Check each filter
+            if (form.find('[name="searchTerm"]').val()) {
+                filters.push('Tìm kiếm: "' + form.find('[name="searchTerm"]').val() + '"');
+            }
+            if (form.find('[name="theLoai"]').val()) {
+                filters.push('Thể loại: ' + form.find('[name="theLoai"] option:selected').text());
+            }
+            if (form.find('[name="doTuoi"]').val()) {
+                filters.push('Độ tuổi: ' + form.find('[name="doTuoi"] option:selected').text());
+            }
+            if (form.find('[name="thoiLuongFilter"]').val()) {
+                filters.push('Thời lượng: ' + form.find('[name="thoiLuongFilter"] option:selected').text());
+            }
+            if (form.find('[name="giaFilter"]').val()) {
+                filters.push('Giá: ' + form.find('[name="giaFilter"] option:selected').text());
+            }
+            if (form.find('[name="ratingFilter"]').val() > 0) {
+                filters.push('Đánh giá: ≥' + form.find('[name="ratingFilter"]').val());
+            }
+            
+            var summary = '';
+            if (filters.length > 0) {
+                summary = '<small class="text-muted"><strong>Bộ lọc đang áp dụng:</strong> ' + filters.join(', ') + '</small>';
+            }
+            
+            $('#filterSummary').html(summary);
+        }
+
+        // Update filter count
+        function updateFilterCount() {
+            var activeFilters = 0;
+            var form = $('#filterForm');
+            
+            if (form.find('[name="searchTerm"]').val()) activeFilters++;
+            if (form.find('[name="theLoai"]').val()) activeFilters++;
+            if (form.find('[name="doTuoi"]').val()) activeFilters++;
+            if (form.find('[name="thoiLuongFilter"]').val()) activeFilters++;
+            if (form.find('[name="giaFilter"]').val()) activeFilters++;
+            if (form.find('[name="ratingFilter"]').val() > 0) activeFilters++;
+            
+            var $header = $('.card-header h5');
+            if (activeFilters > 0) {
+                $header.html('<i class="fas fa-filter me-2"></i>Bộ lọc và tìm kiếm <span class="badge bg-warning ms-2">' + activeFilters + '</span>');
+            } else {
+                $header.html('<i class="fas fa-filter me-2"></i>Bộ lọc và tìm kiếm');
+            }
+        }
+
+        function loadMovieRatings() {
+            $('.rating-line').each(function() {
+                var $ratingLine = $(this);
+                var maPhim = $ratingLine.data('phim');
+                
+                $.ajax({
+                    url: '@Url.Action("GetPhimRating")',
+                    type: 'GET',
+                    data: { id: maPhim },
+                    success: function(response) {
+                        displayMovieRating($ratingLine, response.diemTrungBinh, response.tongSoDanhGia);
+                    },
+                    error: function() {
+                        $ratingLine.find('.rating-text').text('Chưa có đánh giá');
+                    }
+                });
+            });
+        }
+
+        function displayMovieRating($element, diemTrungBinh, tongSoDanhGia) {
+            var $starsContainer = $element.find('.stars-small');
+            var $ratingText = $element.find('.rating-text');
+            
+            // Clear existing stars
+            $starsContainer.empty();
+            
+            if (tongSoDanhGia === 0) {
+                $ratingText.text('Chưa có đánh giá');
+                return;
+            }
+            
+            // Generate stars (using 5-star scale for display)
+            var scaledRating = diemTrungBinh / 2; // Convert 10-point to 5-point scale
+            
+            for (var i = 1; i <= 5; i++) {
+                var starClass = '';
+                if (i <= scaledRating) {
+                    starClass = 'fas fa-star text-warning';
+                } else if (i - 0.5 <= scaledRating) {
+                    starClass = 'fas fa-star-half-alt text-warning';
+                } else {
+                    starClass = 'far fa-star text-muted';
+                }
+                
+                $starsContainer.append('<i class="' + starClass + '"></i>');
+            }
+            
+            $ratingText.text(diemTrungBinh.toFixed(1) + '/10 (' + tongSoDanhGia + ')');
+        }
 
         function loadScheduleForDate(selectedDate) {
             // Show loading state
@@ -756,5 +1057,296 @@
         .schedule-transition {
             transition: all 0.3s ease;
         }
+        
+        /* Movie Rating Styles */
+        .rating-line {
+            margin-top: 5px;
+        }
+        
+        .movie-rating {
+            display: flex;
+            align-items: center;
+        }
+        
+        .stars-small {
+            display: flex;
+            align-items: center;
+        }
+        
+        .stars-small i {
+            font-size: 0.75rem;
+            margin-right: 1px;
+        }
+        
+        .rating-text {
+            white-space: nowrap;
+        }
+        
+        /* Animation for rating load */
+        .rating-line {
+            animation: fadeInRating 0.5s ease-in-out;
+        }
+        
+        @@keyframes fadeInRating {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Advanced Filter Styles */
+        .advanced-filter-section {
+            margin-bottom: 2rem;
+        }
+
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        }
+
+        .advanced-filter-section .card {
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .advanced-filter-section .card:hover {
+            box-shadow: 0 8px 30px rgba(0, 123, 255, 0.2);
+        }
+
+        .advanced-filter-section .card-header {
+            border-bottom: none;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .advanced-filter-section .card-body {
+            padding: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #495057;
+        }
+
+        .form-select, .form-control {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            padding: 0.75rem 1rem;
+        }
+
+        .form-select:focus, .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .form-select:hover, .form-control:hover {
+            border-color: #80bdff;
+        }
+
+        /* Rating Slider Styles */
+        .rating-slider-container {
+            padding: 0.5rem 0;
+        }
+
+        .form-range {
+            height: 6px;
+            background: linear-gradient(to right, #dc3545 0%, #ffc107 50%, #28a745 100%);
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .form-range::-webkit-slider-thumb {
+            width: 20px;
+            height: 20px;
+            background: #007bff;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 10px rgba(0, 123, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-range::-webkit-slider-thumb:hover {
+            background: #0056b3;
+            transform: scale(1.2);
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.5);
+        }
+
+        .form-range::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #007bff;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 10px rgba(0, 123, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #ratingValue {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        /* Filter Summary Styles */
+        .filter-summary {
+            max-width: 400px;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 123, 255, 0.1);
+            border: 1px solid rgba(0, 123, 255, 0.2);
+            border-radius: 8px;
+            margin-left: auto;
+        }
+
+        /* Button Styles */
+        .btn-lg {
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+        }
+
+        .btn-outline-secondary {
+            border: 2px solid #6c757d;
+            color: #6c757d;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-light {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-light:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        /* Input Group Styles */
+        .input-group-lg .input-group-text {
+            padding: 1rem 1.25rem;
+            font-size: 1.1rem;
+            border: none;
+        }
+
+        .input-group-lg .form-control {
+            border: none;
+            box-shadow: none;
+            font-size: 1.1rem;
+        }
+
+        .input-group {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* Badge Styles */
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .bg-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+        }
+
+        /* Animation for filter toggle */
+        #filterContent {
+            transition: all 0.3s ease;
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 768px) {
+            .advanced-filter-section .card-body {
+                padding: 1rem;
+            }
+            
+            .form-label {
+                font-size: 0.9rem;
+            }
+            
+            .btn-lg {
+                padding: 0.6rem 1.5rem;
+                font-size: 0.9rem;
+            }
+            
+            .filter-summary {
+                max-width: 100%;
+                margin-top: 1rem;
+                margin-left: 0;
+            }
+            
+            .d-flex.justify-content-between {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+        }
+
+        /* Loading state for filters */
+        .filter-loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .filter-loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        /* Hover effects for form controls */
+        .form-select:hover {
+            cursor: pointer;
+        }
+
+        .form-control:hover {
+            cursor: text;
+        }
+
+        /* Icon colors */
+        .text-primary { color: #007bff !important; }
+        .text-info { color: #17a2b8 !important; }
+        .text-warning { color: #ffc107 !important; }
+        .text-success { color: #28a745 !important; }
+        .text-secondary { color: #6c757d !important; }
     </style>
 }

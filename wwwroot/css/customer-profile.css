@@ -1,0 +1,223 @@
+/* Custom styles cho trang thông tin khách hàng */
+.customer-profile {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.profile-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Đảm bảo card body có màu nền trắng */
+.profile-card .card-body {
+    background-color: #ffffff !important;
+    border-radius: 0 0 15px 15px;
+}
+
+/* Đảm bảo tất cả card body trong trang profile có màu trắng */
+.card.mb-4 .card-body {
+    background-color: #ffffff !important;
+}
+
+/* Đảm bảo form controls có màu nền trắng */
+.profile-card .form-control {
+    background-color: #ffffff !important;
+    border-color: #ced4da !important;
+    color: #495057 !important;
+}
+
+.profile-card .form-control:focus {
+    background-color: #ffffff !important;
+    border-color: #667eea !important;
+    color: #495057 !important;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+}
+
+.profile-card .form-control:disabled,
+.profile-card .form-control[readonly] {
+    background-color: #f8f9fa !important;
+    opacity: 1 !important;
+}
+
+/* Đảm bảo labels có màu text đậm */
+.profile-card .form-label {
+    color: #495057 !important;
+    font-weight: 500;
+}
+
+.stats-card {
+    background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.member-badge {
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    color: #333;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 25px;
+    display: inline-block;
+    margin: 10px 0;
+}
+
+.member-badge.silver {
+    background: linear-gradient(45deg, #C0C0C0, #A8A8A8);
+}
+
+.member-badge.gold {
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+}
+
+.member-badge.diamond {
+    background: linear-gradient(45deg, #B9F2FF, #ACDDDE);
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Override form-control mặc định để đảm bảo màu trắng */
+.form-control {
+    background-color: #ffffff !important;
+    color: #495057 !important;
+}
+
+.form-control:focus {
+    background-color: #ffffff !important;
+    color: #495057 !important;
+}
+
+.btn-gradient {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+    background: linear-gradient(45deg, #764ba2, #667eea);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.ticket-history-item {
+    border-left: 4px solid #667eea;
+    padding-left: 15px;
+    margin-bottom: 15px;
+    background: rgba(102, 126, 234, 0.05);
+    border-radius: 0 10px 10px 0;
+    transition: all 0.3s ease;
+}
+
+.ticket-history-item:hover {
+    background: rgba(102, 126, 234, 0.1);
+    transform: translateX(5px);
+}
+
+.alert-custom {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.badge-custom {
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.support-btn {
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+.support-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Animation cho loading */
+.loading-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stats-number {
+        font-size: 2rem;
+    }
+    
+    .profile-card {
+        margin-bottom: 20px;
+    }
+    
+    .btn-group-mobile {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-group-mobile .btn {
+        width: 100%;
+    }
+}
+
+/* Dark mode support - nhưng vẫn giữ form trắng */
+@media (prefers-color-scheme: dark) {
+    .profile-card {
+        background-color: #ffffff !important;
+        color: #333333 !important;
+    }
+    
+    .profile-card .card-body {
+        background-color: #ffffff !important;
+        color: #333333 !important;
+    }
+    
+    .form-control {
+        background-color: #ffffff !important;
+        border-color: #ced4da !important;
+        color: #495057 !important;
+    }
+    
+    .form-control:focus {
+        background-color: #ffffff !important;
+        border-color: #667eea !important;
+        color: #495057 !important;
+    }
+    
+    .profile-card .form-label {
+        color: #495057 !important;
+    }
+}

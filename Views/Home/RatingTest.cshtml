@@ -1,0 +1,96 @@
+@{
+    ViewData["Title"] = "Test Hệ thống Đánh giá";
+    Layout = "_Layout";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-star me-2"></i>Test Hệ thống Đánh giá Điểm
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form id="ratingForm">
+                        <div class="form-group mb-3">
+                            <label class="form-label">Đánh giá sản phẩm (1-10 điểm):</label>
+                            @await Html.PartialAsync("_RatingSystem", null)
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="reviewText" class="form-label">Nội dung đánh giá:</label>
+                            <textarea id="reviewText" name="reviewText" class="form-control" 
+                                      rows="4" placeholder="Viết đánh giá của bạn..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Gửi đánh giá
+                        </button>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="alert alert-info">
+                        <h6>Debug Information:</h6>
+                        <p><strong>Selected Rating:</strong> <span id="debugRating">0</span>/10</p>
+                        <p><strong>Radio Value:</strong> <span id="debugRadioValue">None</span></p>
+                    </div>
+                    
+                    <h5>Ví dụ hiển thị đánh giá:</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p>Đánh giá 8.5/10:</p>
+                            @await Html.PartialAsync("_RatingDisplay", 8.5)
+                        </div>
+                        <div class="col-md-4">
+                            <p>Đánh giá 7.0/10:</p>
+                            @await Html.PartialAsync("_RatingDisplay", 7.0)
+                        </div>
+                        <div class="col-md-4">
+                            <p>Đánh giá 9.5/10:</p>
+                            @await Html.PartialAsync("_RatingDisplay", 9.5)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Debug function to show selected rating
+        function updateDebugInfo() {
+            const container = document.querySelector('.rating-container');
+            const selectedRadio = container.querySelector('input[type="radio"]:checked');
+            const rating = selectedRadio ? parseInt(selectedRadio.value) : 0;
+            
+            document.getElementById('debugRating').textContent = rating;
+            document.getElementById('debugRadioValue').textContent = selectedRadio ? selectedRadio.value : 'None';
+        }
+        
+        // Add event listeners for debug
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.rating-container');
+            const radioButtons = container.querySelectorAll('input[type="radio"]');
+            
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', updateDebugInfo);
+            });
+            
+            // Initial debug info
+            updateDebugInfo();
+        });
+        
+        document.getElementById('ratingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const selectedRating = getSelectedRating(document.querySelector('.rating-container').id);
+            const reviewText = document.getElementById('reviewText').value;
+            
+            alert(`Đánh giá: ${selectedRating}/10\nNội dung: ${reviewText}`);
+        });
+    </script>
+} 

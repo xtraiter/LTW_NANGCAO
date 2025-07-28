@@ -1,0 +1,21 @@
+@model int?
+
+@{
+    var ratingId = Guid.NewGuid().ToString("N");
+}
+
+<div class="rating-container" data-rating-id="@ratingId">
+    <div class="rating-numbers">
+        @for (int i = 1; i <= 10; i++)
+        {
+            var numberId = $"rating-{i}-{ratingId}";
+            <input type="radio" name="DiemDanhGia" value="@i" id="@numberId" @(Model == i ? "checked" : "") class="rating-input">
+            <label for="@numberId" class="rating-number">
+                @i
+            </label>
+        }
+    </div>
+    <div class="rating-text mt-2">
+        <small class="text-muted">Chọn @(Model ?? 0)/10 điểm</small>
+    </div>
+</div> 

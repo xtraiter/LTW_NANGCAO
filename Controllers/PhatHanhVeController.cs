@@ -25,7 +25,7 @@ namespace CinemaManagement.Controllers
         {
             if (!IsManagerOrStaff())
             {
-                return RedirectToAction("Login", "Auth");
+                return RedirectToAction("Index", "Home");
             }
 
             // Mặc định lọc theo ngày hiện tại nếu không có bộ lọc nào
@@ -95,7 +95,7 @@ namespace CinemaManagement.Controllers
         {
             if (!IsManagerOrStaff())
             {
-                return RedirectToAction("Login", "Auth");
+                return RedirectToAction("Index", "Home");
             }
 
             var ves = await _context.Ves
@@ -113,7 +113,7 @@ namespace CinemaManagement.Controllers
         {
             if (!IsManagerOrStaff())
             {
-                return RedirectToAction("Login", "Auth");
+                return RedirectToAction("Index", "Home");
             }
 
             if (string.IsNullOrEmpty(id))
@@ -140,7 +140,7 @@ namespace CinemaManagement.Controllers
         {
             if (!IsManagerOrStaff())
             {
-                return RedirectToAction("Login", "Auth");
+                return RedirectToAction("Index", "Home");
             }
 
             if (string.IsNullOrEmpty(maLichChieu))
@@ -180,7 +180,7 @@ namespace CinemaManagement.Controllers
         {
             if (!IsManagerOrStaff())
             {
-                return RedirectToAction("Login", "Auth");
+                return RedirectToAction("Index", "Home");
             }
 
             if (model.GheChon == null || !model.GheChon.Any())
@@ -231,9 +231,13 @@ namespace CinemaManagement.Controllers
                     var ghe = await _context.GheNgois.FirstOrDefaultAsync(g => g.MaGhe == maGhe);
                     if (ghe != null)
                     {
-                        // Format: V + YYMMDD + 3 chữ số counter = 10 ký tự
-                        var maVe = $"V{today}{counter:D3}";
-                        counter++;
+                        string maVe;
+                        do
+                        {
+                            maVe = $"V{today}{counter:D3}";
+                            counter++;
+                        }
+                        while (await _context.Ves.AnyAsync(v => v.MaVe == maVe));
 
                         var ve = new Ve
                         {
@@ -320,7 +324,7 @@ namespace CinemaManagement.Controllers
         {
             if (!IsManagerOrStaff())
             {
-                return RedirectToAction("Login", "Auth");
+                return RedirectToAction("Index", "Home");
             }
 
             if (string.IsNullOrEmpty(maLichChieu))
@@ -359,7 +363,7 @@ namespace CinemaManagement.Controllers
         {
             if (!IsManagerOrStaff())
             {
-                return RedirectToAction("Login", "Auth");
+                return RedirectToAction("Index", "Home");
             }
 
             var thongKe = new ThongKeVeViewModel

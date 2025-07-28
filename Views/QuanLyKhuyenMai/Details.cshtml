@@ -1,0 +1,343 @@
+@model CinemaManagement.Models.Voucher
+@{
+    ViewData["Title"] = "Chi tiết khuyến mãi";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-tag"></i> Chi tiết khuyến mãi: @Model.TenGiamGia
+                    </h3>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Thông tin cơ bản -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h5><i class="fas fa-info-circle"></i> Thông tin khuyến mãi</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Mã khuyến mãi:</strong></td>
+                                            <td><span class="badge bg-primary fs-6">@Model.MaGiamGia</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Tên khuyến mãi:</strong></td>
+                                            <td>@Model.TenGiamGia</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Phần trăm giảm:</strong></td>
+                                            <td>
+                                                <span class="badge bg-success fs-5">
+                                                    <i class="fas fa-percentage"></i> @Model.PhanTramGiam%
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Thời gian bắt đầu:</strong></td>
+                                            <td>
+                                                <i class="fas fa-play text-success"></i> 
+                                                @Model.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Thời gian kết thúc:</strong></td>
+                                            <td>
+                                                <i class="fas fa-stop text-danger"></i>
+                                                @Model.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm")
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Trạng thái:</strong></td>
+                                            <td>
+                                                @{
+                                                    var currentDate = DateTime.Now;
+                                                    var status = "";
+                                                    var statusClass = "";
+                                                    var statusIcon = "";
+                                                    
+                                                    if (Model.ThoiGianKetThuc < currentDate)
+                                                    {
+                                                        status = "Đã hết hạn";
+                                                        statusClass = "bg-danger";
+                                                        statusIcon = "fas fa-times";
+                                                    }
+                                                    else if (Model.ThoiGianBatDau > currentDate)
+                                                    {
+                                                        status = "Sắp diễn ra";
+                                                        statusClass = "bg-warning";
+                                                        statusIcon = "fas fa-clock";
+                                                    }
+                                                    else
+                                                    {
+                                                        status = "Đang hoạt động";
+                                                        statusClass = "bg-success";
+                                                        statusIcon = "fas fa-play";
+                                                    }
+                                                }
+                                                <span class="badge @statusClass">
+                                                    <i class="@statusIcon"></i> @status
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Người tạo:</strong></td>
+                                            <td>
+                                                @if (Model.NhanVien != null)
+                                                {
+                                                    <i class="fas fa-user text-muted"></i> @Model.NhanVien.TenNhanVien
+                                                    <br><small class="text-muted">@Model.NhanVien.ChucVu</small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">N/A</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mô tả -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h5><i class="fas fa-file-alt"></i> Mô tả chi tiết</h5>
+                                </div>
+                                <div class="card-body">
+                                    @if (!string.IsNullOrEmpty(Model.MoTa))
+                                    {
+                                        <p>@Model.MoTa</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted"><i>Chưa có mô tả</i></p>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Preview voucher -->
+                            <div class="card mt-3">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5><i class="fas fa-eye"></i> Xem trước voucher</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="card border-primary">
+                                        <div class="card-body text-center">
+                                            <div class="badge bg-primary mb-2 fs-6">@Model.MaGiamGia</div>
+                                            <h4 class="text-primary">@Model.TenGiamGia</h4>
+                                            <div class="badge bg-success fs-3 mb-3">
+                                                <i class="fas fa-percentage"></i> @Model.PhanTramGiam%
+                                            </div>
+                                            <div class="text-muted">
+                                                <small>
+                                                    <div><i class="fas fa-calendar"></i> @Model.ThoiGianBatDau.ToString("dd/MM/yyyy")</div>
+                                                    <div>đến @Model.ThoiGianKetThuc.ToString("dd/MM/yyyy")</div>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thống kê sử dụng -->
+                    @if (Model.HDVouchers != null && Model.HDVouchers.Any())
+                    {
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header bg-success text-white">
+                                        <h5><i class="fas fa-chart-bar"></i> Thống kê sử dụng</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        @{
+                                            var totalUsage = Model.HDVouchers.Sum(hv => hv.SoLuongVoucher);
+                                            var totalSaved = Model.HDVouchers.Sum(hv => hv.TongTien);
+                                            var uniqueCustomers = Model.HDVouchers.Select(hv => hv.HoaDon?.MaKhachHang).Distinct().Count();
+                                        }
+                                        
+                                        <div class="row text-center">
+                                            <div class="col-md-3">
+                                                <div class="info-box bg-info">
+                                                    <span class="info-box-icon">
+                                                        <i class="fas fa-ticket-alt"></i>
+                                                    </span>
+                                                    <div class="info-box-content">
+                                                        <span class="info-box-text">Lần sử dụng</span>
+                                                        <span class="info-box-number">@totalUsage</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="info-box bg-success">
+                                                    <span class="info-box-icon">
+                                                        <i class="fas fa-dollar-sign"></i>
+                                                    </span>
+                                                    <div class="info-box-content">
+                                                        <span class="info-box-text">Tổng tiết kiệm</span>
+                                                        <span class="info-box-number">@totalSaved.ToString("N0")đ</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="info-box bg-warning">
+                                                    <span class="info-box-icon">
+                                                        <i class="fas fa-users"></i>
+                                                    </span>
+                                                    <div class="info-box-content">
+                                                        <span class="info-box-text">Khách hàng</span>
+                                                        <span class="info-box-number">@uniqueCustomers</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="info-box bg-danger">
+                                                    <span class="info-box-icon">
+                                                        <i class="fas fa-receipt"></i>
+                                                    </span>
+                                                    <div class="info-box-content">
+                                                        <span class="info-box-text">Hóa đơn</span>
+                                                        <span class="info-box-number">@Model.HDVouchers.Count</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lịch sử sử dụng -->
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5><i class="fas fa-history"></i> Lịch sử sử dụng</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-striped">
+                                                <thead class="table-dark">
+                                                    <tr>
+                                                        <th>Mã HĐ</th>
+                                                        <th>Khách hàng</th>
+                                                        <th>Ngày sử dụng</th>
+                                                        <th>Số lượng</th>
+                                                        <th>Tiết kiệm</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var hdVoucher in Model.HDVouchers.OrderByDescending(hv => hv.HoaDon.ThoiGianTao))
+                                                    {
+                                                        <tr>
+                                                            <td>
+                                                                <span class="badge bg-primary">@hdVoucher.MaHoaDon</span>
+                                                            </td>
+                                                            <td>
+                                                                @if (hdVoucher.HoaDon?.KhachHang != null)
+                                                                {
+                                                                    <i class="fas fa-user text-muted"></i> @hdVoucher.HoaDon.KhachHang.HoTen
+                                                                    <br><small class="text-muted">@hdVoucher.HoaDon.KhachHang.SDT</small>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="text-muted">N/A</span>
+                                                                }
+                                                            </td>
+                                                            <td>@hdVoucher.HoaDon?.ThoiGianTao.ToString("dd/MM/yyyy HH:mm")</td>
+                                                            <td>
+                                                                <span class="badge bg-info">@hdVoucher.SoLuongVoucher</span>
+                                                            </td>
+                                                            <td>
+                                                                <strong class="text-success">@hdVoucher.TongTien.ToString("N0")đ</strong>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="alert alert-info text-center">
+                                    <i class="fas fa-info-circle fa-2x mb-2"></i>
+                                    <p>Khuyến mãi này chưa được sử dụng.</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                        </a>
+                        <div>
+                            @if (currentDate >= Model.ThoiGianBatDau && currentDate <= Model.ThoiGianKetThuc)
+                            {
+                                <button class="btn btn-warning me-2" onclick="toggleStatus('@Model.MaGiamGia', '@Model.TenGiamGia')">
+                                    <i class="fas fa-pause"></i> Tạm dừng
+                                </button>
+                            }
+                            else if (currentDate < Model.ThoiGianBatDau)
+                            {
+                                <button class="btn btn-success me-2" onclick="toggleStatus('@Model.MaGiamGia', '@Model.TenGiamGia')">
+                                    <i class="fas fa-play"></i> Kích hoạt ngay
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-info me-2" onclick="toggleStatus('@Model.MaGiamGia', '@Model.TenGiamGia')">
+                                    <i class="fas fa-redo"></i> Gia hạn
+                                </button>
+                            }
+                            
+                            <a asp-action="Edit" asp-route-id="@Model.MaGiamGia" class="btn btn-primary">
+                                <i class="fas fa-edit"></i> Sửa thông tin
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleStatus(maGiamGia, tenGiamGia) {
+    if (confirm(`Bạn có chắc chắn muốn thay đổi trạng thái khuyến mãi "${tenGiamGia}"?`)) {
+        $.ajax({
+            url: '@Url.Action("ToggleStatus", "QuanLyKhuyenMai")',
+            type: 'POST',
+            data: { id: maGiamGia },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function() {
+                alert('Có lỗi xảy ra khi thay đổi trạng thái!');
+            }
+        });
+    }
+}
+</script>

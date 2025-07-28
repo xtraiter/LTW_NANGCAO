@@ -1,0 +1,255 @@
+@model CinemaManagement.ViewModels.PhimRatingViewModel
+@{
+    ViewData["Title"] = "Đánh giá phim - " + Model.TenPhim;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-star me-2"></i>Đánh giá phim: @Model.TenPhim
+                        </h4>
+                        <a href="@Url.Action("ChiTietPhim", new { id = Model.MaPhim })" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Thống kê tổng quan -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="rating-summary text-center">
+                                <h2 class="display-4 text-warning mb-2">@Model.DiemTrungBinh.ToString("F1")</h2>
+                                <div class="rating-display mb-2">
+                                    @await Html.PartialAsync("_RatingDisplay", (double)Model.DiemTrungBinh)
+                                </div>
+                                <p class="text-muted">Dựa trên @Model.TongSoDanhGia đánh giá</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <!-- Form đánh giá -->
+                            <div class="rating-form">
+                                <h5 class="mb-3">
+                                    @if (Model.DaDanhGia)
+                                    {
+                                        <i class="fas fa-edit me-2"></i>@:Chỉnh sửa đánh giá của bạn
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-plus me-2"></i>@:Thêm đánh giá của bạn
+                                    }
+                                </h5>
+                                <form id="ratingForm">
+                                    <input type="hidden" name="MaPhim" value="@Model.MaPhim" />
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Điểm đánh giá (1-10)</label>
+                                        @await Html.PartialAsync("_RatingSystem", Model.DanhGiaCuaToi?.DiemDanhGia)
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="noiDung" class="form-label">Nội dung đánh giá</label>
+                                        <textarea class="form-control" id="noiDung" name="NoiDungDanhGia" rows="4" 
+                                                  placeholder="Chia sẻ cảm nhận của bạn về bộ phim...">@(Model.DanhGiaCuaToi?.NoiDungDanhGia ?? "")</textarea>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-warning w-100">
+                                        <i class="fas fa-star me-1"></i>
+                                        @(Model.DaDanhGia ? "Cập nhật đánh giá" : "Gửi đánh giá")
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Danh sách đánh giá -->
+                    @if (Model.DanhSachDanhGia.Any())
+                    {
+                        <div class="reviews-section">
+                            <h5 class="mb-3">
+                                <i class="fas fa-comments me-2"></i>Đánh giá từ khách hàng
+                            </h5>
+                            <div class="reviews-list">
+                                @foreach (var danhGia in Model.DanhSachDanhGia)
+                                {
+                                    <div class="review-item mb-3">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div>
+                                                        <h6 class="mb-1">@danhGia.TenKhachHang</h6>
+                                                        <div class="rating-display-small">
+                                                            @await Html.PartialAsync("_RatingDisplay", (double)danhGia.DiemDanhGia)
+                                                        </div>
+                                                    </div>
+                                                    <small class="text-muted">@danhGia.ThoiGianDanhGia.ToString("dd/MM/yyyy HH:mm")</small>
+                                                </div>
+                                                @if (!string.IsNullOrEmpty(danhGia.NoiDungDanhGia))
+                                                {
+                                                    <p class="mb-0">@danhGia.NoiDungDanhGia</p>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Chưa có đánh giá nào</h5>
+                            <p class="text-muted">Hãy là người đầu tiên đánh giá bộ phim này!</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Xử lý form đánh giá
+            $('#ratingForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                var formData = {
+                    MaPhim: $('input[name="MaPhim"]').val(),
+                    DiemDanhGia: $('input[name="DiemDanhGia"]:checked').val(),
+                    NoiDungDanhGia: $('textarea[name="NoiDungDanhGia"]').val()
+                };
+                
+                if (!formData.DiemDanhGia) {
+                    showMessage('error', 'Vui lòng chọn điểm đánh giá!');
+                    return;
+                }
+                
+                $.ajax({
+                    url: '@Url.Action("DanhGiaPhim")',
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            showMessage('success', response.message);
+                            
+                            // Cập nhật thống kê
+                            $('.display-4').text(response.diemTrungBinh);
+                            $('.text-muted:contains("Dựa trên")').text('Dựa trên ' + response.tongSoDanhGia + ' đánh giá');
+                            
+                            // Reload trang sau 2 giây để hiển thị đánh giá mới
+                            setTimeout(function() {
+                                location.reload();
+                            }, 2000);
+                        } else {
+                            showMessage('error', response.message);
+                        }
+                    },
+                    error: function() {
+                        showMessage('error', 'Có lỗi xảy ra khi gửi đánh giá!');
+                    }
+                });
+            });
+            
+            // Khởi tạo hệ thống rating
+            initializeRatingSystem();
+        });
+        
+        function showMessage(type, message) {
+            var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            
+            var alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    <i class="fas ${icon} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            $('.card-body').prepend(alertHtml);
+            
+            // Auto hide after 5 seconds
+            setTimeout(function() {
+                $('.alert').fadeOut();
+            }, 5000);
+        }
+    </script>
+    
+    <style>
+        .rating-summary {
+            border-right: 1px solid #dee2e6;
+        }
+        
+        .rating-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .rating-display .stars {
+            color: #ffc107;
+            font-size: 18px;
+        }
+        
+        .rating-display .rating-text {
+            font-size: 14px;
+            color: #666;
+            margin-left: 5px;
+        }
+        
+        .rating-display-small {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .rating-display-small .stars {
+            color: #ffc107;
+            font-size: 14px;
+        }
+        
+        .rating-display-small .rating-text {
+            font-size: 12px;
+            color: #666;
+            margin-left: 3px;
+        }
+        
+        .review-item {
+            transition: transform 0.2s ease;
+        }
+        
+        .review-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .rating-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        @@media (max-width: 768px) {
+            .rating-summary {
+                border-right: none;
+                border-bottom: 1px solid #dee2e6;
+                margin-bottom: 20px;
+                padding-bottom: 20px;
+            }
+            
+            .rating-display .stars {
+                font-size: 16px;
+            }
+            
+            .display-4 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+}

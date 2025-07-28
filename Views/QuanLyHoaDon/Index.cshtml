@@ -1,0 +1,333 @@
+@model IEnumerable<CinemaManagement.Models.HoaDonSanPham>
+@{
+    ViewData["Title"] = "Quản lý đơn hàng sản phẩm";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-shopping-cart me-2"></i>Quản lý đơn hàng sản phẩm
+        </h2>
+        <a href="@Url.Action("ThongKe")" class="btn btn-info">
+            <i class="fas fa-chart-bar me-2"></i>Thống kê
+        </a>
+    </div>
+
+    <!-- Thống kê nhanh -->
+    @if (ViewBag.ThongKe != null)
+    {
+        var thongKe = ViewBag.ThongKe;
+        <div class="row mb-4">
+            <div class="col-md-2">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h4>@thongKe.TongDonHang</h4>
+                        <small>Tổng đơn hàng</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <h4>@thongKe.DonHangMoi</h4>
+                        <small>Đơn hàng mới</small>
+                    </div>
+                        </div>
+                        </div>
+            <div class="col-md-2">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h4>@thongKe.DonHangDangXuLy</h4>
+                        <small>Đang xử lý</small>
+                        </div>
+                            </div>
+                        </div>
+            <div class="col-md-2">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h4>@thongKe.DonHangDaGiao</h4>
+                        <small>Đã giao</small>
+                                </div>
+                            </div>
+                        </div>
+            <div class="col-md-2">
+                <div class="card bg-danger text-white">
+                    <div class="card-body text-center">
+                        <h4>@thongKe.DonHangDaHuy</h4>
+                        <small>Đã hủy</small>
+                                </div>
+                            </div>
+                        </div>
+            <div class="col-md-2">
+                <div class="card bg-dark text-white">
+                    <div class="card-body text-center">
+                        <h4>@thongKe.TongDoanhThu.ToString("#,##0")</h4>
+                        <small>Doanh thu (VNĐ)</small>
+                                </div>
+                            </div>
+            </div>
+        </div>
+    }
+
+    <!-- Bộ lọc -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="trangThaiFilter" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="Đã đặt" selected="@(ViewBag.TrangThaiFilter == "Đã đặt")">Đã đặt</option>
+                        <option value="Đang xử lý" selected="@(ViewBag.TrangThaiFilter == "Đang xử lý")">Đang xử lý</option>
+                        <option value="Đang giao" selected="@(ViewBag.TrangThaiFilter == "Đang giao")">Đang giao</option>
+                        <option value="Đã giao" selected="@(ViewBag.TrangThaiFilter == "Đã giao")">Đã giao</option>
+                        <option value="Đã hủy" selected="@(ViewBag.TrangThaiFilter == "Đã hủy")">Đã hủy</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Từ ngày</label>
+                    <input type="date" name="tuNgay" class="form-control" value="@ViewBag.TuNgay?.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Đến ngày</label>
+                    <input type="date" name="denNgay" class="form-control" value="@ViewBag.DenNgay?.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Tìm kiếm</label>
+                    <input type="text" name="searchTerm" class="form-control" placeholder="Mã đơn, tên KH, SĐT..." value="@ViewBag.SearchTerm" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-1"></i>Tìm kiếm
+                    </button>
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">
+                        <i class="fas fa-refresh me-1"></i>Làm mới
+                    </a>
+                </div>
+            </form>
+                        </div>
+                    </div>
+
+    <!-- Danh sách đơn hàng -->
+    <div class="card">
+        <div class="card-body">
+                    <div class="table-responsive">
+                <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                            <th>Mã đơn hàng</th>
+                                    <th>Khách hàng</th>
+                            <th>Sản phẩm</th>
+                                    <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày đặt</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                        @foreach (var hoaDon in Model)
+                                    {
+                                        <tr>
+                                <td>
+                                    <strong>@hoaDon.MaHoaDonSanPham</strong>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>@hoaDon.KhachHang?.HoTen</strong><br />
+                                        <small class="text-muted">@hoaDon.KhachHang?.SDT</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small>
+                                        @string.Join(", ", hoaDon.ChiTietHoaDonSanPhams.Select(c => $"{c.SanPham?.TenSanPham} x{c.SoLuong}"))
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="text-success fw-bold">
+                                        @hoaDon.TongTien.ToString("#,##0") VNĐ
+                                    </span>
+                                </td>
+                                <td>
+                                    @{
+                                        var badgeClass = hoaDon.TrangThai switch
+                                        {
+                                            "Đã đặt" => "badge bg-warning",
+                                            "Đang xử lý" => "badge bg-info",
+                                            "Đang giao" => "badge bg-primary",
+                                            "Đã giao" => "badge bg-success",
+                                            "Đã hủy" => "badge bg-danger",
+                                            _ => "badge bg-secondary"
+                                        };
+                                    }
+                                    <span class="@badgeClass">@hoaDon.TrangThai</span>
+                                </td>
+                                <td>
+                                    <small>@hoaDon.ThoiGianTao.ToString("dd/MM/yyyy HH:mm")</small>
+                                </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                        <a href="@Url.Action("Details", new { id = hoaDon.MaHoaDonSanPham })" 
+                                           class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                        <button type="button" class="btn btn-sm btn-outline-warning dropdown-toggle" 
+                                                data-bs-toggle="dropdown">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            @if (hoaDon.TrangThai == "Đã đặt")
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item" href="#" 
+                                                       onclick="capNhatTrangThai('@hoaDon.MaHoaDonSanPham', 'Đang xử lý')">
+                                                        <i class="fas fa-play me-2"></i>Bắt đầu xử lý
+                                                    </a>
+                                                </li>
+                                            }
+                                            @if (hoaDon.TrangThai == "Đang xử lý")
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item" href="#" 
+                                                       onclick="capNhatTrangThai('@hoaDon.MaHoaDonSanPham', 'Đang giao')">
+                                                        <i class="fas fa-truck me-2"></i>Bắt đầu giao
+                                                    </a>
+                                                </li>
+                                            }
+                                            @if (hoaDon.TrangThai == "Đang giao")
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item" href="#" 
+                                                       onclick="capNhatTrangThai('@hoaDon.MaHoaDonSanPham', 'Đã giao')">
+                                                        <i class="fas fa-check me-2"></i>Hoàn thành giao
+                                                    </a>
+                                                </li>
+                                            }
+                                            @if (hoaDon.TrangThai == "Đã đặt" || hoaDon.TrangThai == "Đang xử lý")
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#" 
+                                                       onclick="capNhatTrangThai('@hoaDon.MaHoaDonSanPham', 'Đã hủy')">
+                                                        <i class="fas fa-times me-2"></i>Hủy đơn hàng
+                                                    </a>
+                                                </li>
+                                            }
+                                            @if (hoaDon.TrangThai == "Đã hủy" || hoaDon.TrangThai == "Đã đặt")
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#" 
+                                                       onclick="xoaHoaDon('@hoaDon.MaHoaDonSanPham')">
+                                                        <i class="fas fa-trash me-2"></i>Xóa đơn hàng
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                                </div>
+                                            </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Phân trang -->
+            @if (ViewBag.TotalPages > 1)
+                    {
+                <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                        @if (ViewBag.CurrentPage > 1)
+                                {
+                                    <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Index", new { 
+                                    trangThaiFilter = ViewBag.TrangThaiFilter,
+                                    tuNgay = ViewBag.TuNgay,
+                                    denNgay = ViewBag.DenNgay,
+                                    searchTerm = ViewBag.SearchTerm,
+                                    page = ViewBag.CurrentPage - 1
+                                })">Trước</a>
+                                    </li>
+                                }
+
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                                {
+                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { 
+                                    trangThaiFilter = ViewBag.TrangThaiFilter,
+                                    tuNgay = ViewBag.TuNgay,
+                                    denNgay = ViewBag.DenNgay,
+                                    searchTerm = ViewBag.SearchTerm,
+                                    page = i
+                                })">@i</a>
+                                    </li>
+                                }
+
+                        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                                {
+                                    <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Index", new { 
+                                    trangThaiFilter = ViewBag.TrangThaiFilter,
+                                    tuNgay = ViewBag.TuNgay,
+                                    denNgay = ViewBag.DenNgay,
+                                    searchTerm = ViewBag.SearchTerm,
+                                    page = ViewBag.CurrentPage + 1
+                                })">Sau</a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function capNhatTrangThai(maHoaDon, trangThaiMoi) {
+            if (confirm(`Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng ${maHoaDon} thành "${trangThaiMoi}"?`)) {
+                $.ajax({
+                    url: '@Url.Action("CapNhatTrangThai")',
+                    type: 'POST',
+                    data: {
+                        maHoaDon: maHoaDon,
+                        trangThaiMoi: trangThaiMoi
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi cập nhật trạng thái');
+                    }
+                });
+            }
+        }
+
+        function xoaHoaDon(maHoaDon) {
+            if (confirm(`Bạn có chắc chắn muốn xóa đơn hàng ${maHoaDon}?`)) {
+                $.ajax({
+                    url: '@Url.Action("XoaHoaDon")',
+                    type: 'POST',
+                    data: {
+                        maHoaDon: maHoaDon
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi xóa đơn hàng');
+                    }
+                });
+            }
+        }
+    </script>
+}

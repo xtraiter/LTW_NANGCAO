@@ -2,6 +2,11 @@
 @{
     ViewData["Title"] = "Thanh toán";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    int diemTichLuy = Model.DiemTichLuy;
+    string hangKhachHang = diemTichLuy > 200 ? "Vàng" : diemTichLuy > 100 ? "Bạc" : "Thường";
+    decimal giamGiaHang = diemTichLuy > 200 ? 0.10m : diemTichLuy > 100 ? 0.05m : 0m;
+    decimal tienGiamGiaHang = Model.TongTien * giamGiaHang;
+    decimal tongTienSauGiam = Model.TongTien - tienGiamGiaHang;
 }
 
 <div class="container-fluid mt-4">
@@ -53,7 +58,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="post" action="@Url.Action("XuLyThanhToan")">
+                    <form method="post" action="@Url.Action("CreatePaymentLink", "Payment")">
                         <!-- Voucher -->
                         @if (Model.Vouchers.Any())
                         {
@@ -78,12 +83,19 @@
                                 <span id="subtotal">@Model.TongTien.ToString("N0") VNĐ</span>
                             </div>
                             <div class="d-flex justify-content-between mb-2" id="discount-row" style="display: none;">
-                                <span>Giảm giá:</span>
+                                <span>Giảm giá voucher:</span>
                                 <span class="text-danger" id="discount-amount">0 VNĐ</span>
                             </div>
+                            @if (giamGiaHang > 0)
+                            {
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Giảm giá hạng @hangKhachHang:</span>
+                                    <span class="text-danger" id="rank-discount-amount">-@tienGiamGiaHang.ToString("N0") VNĐ</span>
+                                </div>
+                            }
                             <div class="d-flex justify-content-between mb-3 border-top pt-2">
                                 <strong>Tổng cộng:</strong>
-                                <strong class="text-success" id="total-amount">@Model.TongTien.ToString("N0") VNĐ</strong>
+                                <strong class="text-success" id="total-amount">@tongTienSauGiam.ToString("N0") VNĐ</strong>
                             </div>
                         </div>
 
@@ -92,21 +104,7 @@
                             <label class="form-label">Phương thức thanh toán:</label>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="paymentMethod" 
-                                       id="vnpay" value="vnpay" checked>
-                                <label class="form-check-label" for="vnpay">
-                                    <i class="fas fa-credit-card me-1"></i>VNPay
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="paymentMethod" 
-                                       id="momo" value="momo">
-                                <label class="form-check-label" for="momo">
-                                    <i class="fas fa-mobile-alt me-1"></i>MoMo
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="paymentMethod" 
-                                       id="banking" value="banking">
+                                       id="banking" value="banking" checked>
                                 <label class="form-check-label" for="banking">
                                     <i class="fas fa-university me-1"></i>Chuyển khoản ngân hàng
                                 </label>
@@ -114,8 +112,8 @@
                         </div>
 
                         <!-- Nút thanh toán -->
-                        <button type="submit" class="btn btn-success w-100 btn-lg">
-                            <i class="fas fa-lock me-1"></i>Thanh toán ngay
+                        <button type="submit" id="create-payment-link-btn" class="btn btn-success w-100 btn-lg">
+                            <i class="fas fa-lock me-1"></i>Thanh toán với PayOS
                         </button>
                     </form>
 
@@ -189,6 +187,7 @@
     <script>
         // Global variables
         let originalTotal = @(Model.TongTien.ToString("F0", System.Globalization.CultureInfo.InvariantCulture));
+        let rankDiscount = @(tienGiamGiaHang.ToString("F0", System.Globalization.CultureInfo.InvariantCulture));
         let currentDiscount = 0;
 
         // Function để format số tiền
@@ -200,17 +199,19 @@
         // Function cập nhật tóm tắt thanh toán
         function updatePaymentSummary() {
             try {
-                var finalTotal = originalTotal - currentDiscount;
+                var finalTotal = originalTotal - rankDiscount - currentDiscount;
                 
                 $('#subtotal').text(formatMoney(originalTotal) + ' VNĐ');
                 $('#discount-amount').text('-' + formatMoney(currentDiscount) + ' VNĐ');
-                $('#total-amount').text(formatMoney(finalTotal) + ' VNĐ');
-                
                 if (currentDiscount > 0) {
                     $('#discount-row').show().removeClass('d-none');
                 } else {
                     $('#discount-row').hide().addClass('d-none');
                 }
+                if (rankDiscount > 0) {
+                    $('#rank-discount-amount').text('-' + formatMoney(rankDiscount) + ' VNĐ');
+                }
+                $('#total-amount').text(formatMoney(finalTotal) + ' VNĐ');
                 
                 console.log('Payment summary updated:', {
                     original: originalTotal,

@@ -1,0 +1,159 @@
+@model ChiTietSanPhamViewModel
+
+@{
+    ViewData["Title"] = "Chi tiết sản phẩm";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Chi tiết sản phẩm</h3>
+                    <div class="card-tools">
+                        <a asp-action="Edit" asp-route-id="@Model.SanPham.MaSanPham" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Sửa
+                        </a>
+                        <a asp-action="Index" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Product Info -->
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    @if (!string.IsNullOrEmpty(Model.SanPham.HinhAnh))
+                                    {
+                                        <img src="@Model.SanPham.HinhAnh" alt="@Model.SanPham.TenSanPham" 
+                                             class="img-fluid rounded" style="max-height: 300px;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-light d-flex align-items-center justify-content-center rounded" 
+                                             style="height: 300px;">
+                                            <i class="fas fa-image fa-5x text-muted"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-8">
+                                    <h2>@Model.SanPham.TenSanPham</h2>
+                                    <p class="text-muted mb-3">Mã sản phẩm: @Model.SanPham.MaSanPham</p>
+                                    
+                                    <div class="mb-3">
+                                        <span class="h3 text-success">@Model.SanPham.Gia.ToString("N0") ₫</span>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        @if (Model.SanPham.TrangThai == "Còn hàng")
+                                        {
+                                            <span class="badge badge-success badge-lg">@Model.SanPham.TrangThai</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-danger badge-lg">@Model.SanPham.TrangThai</span>
+                                        }
+                                    </div>
+
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td><strong>Số lượng tồn:</strong></td>
+                                            <td>@Model.SanPham.SoLuongTon</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Người quản lý:</strong></td>
+                                            <td>@Model.SanPham.NhanVien?.TenNhanVien</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Số lượng đã bán:</strong></td>
+                                            <td>@Model.SoLuongDaBan</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Doanh thu:</strong></td>
+                                            <td class="text-success font-weight-bold">@Model.DoanhThuTuSanPham.ToString("N0") ₫</td>
+                                        </tr>
+                                    </table>
+
+                                    @if (!string.IsNullOrEmpty(Model.SanPham.MoTa))
+                                    {
+                                        <div class="mt-4">
+                                            <h5>Mô tả sản phẩm</h5>
+                                            <p>@Model.SanPham.MoTa</p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Statistics -->
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-chart-bar"></i> Thống kê</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="text-center mb-3">
+                                        <div class="h2 text-primary">@Model.SoLuongDaBan</div>
+                                        <small class="text-muted">Sản phẩm đã bán</small>
+                                    </div>
+                                    
+                                    <div class="text-center mb-3">
+                                        <div class="h3 text-success">@Model.DoanhThuTuSanPham.ToString("N0") ₫</div>
+                                        <small class="text-muted">Tổng doanh thu</small>
+                                    </div>
+
+                                    <div class="text-center">
+                                        <div class="h4 text-info">@((Model.DoanhThuTuSanPham / (Model.SoLuongDaBan == 0 ? 1 : Model.SoLuongDaBan)).ToString("N0")) ₫</div>
+                                        <small class="text-muted">Giá trung bình/sản phẩm</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.LichSuBanHang.Any())
+                    {
+                        <hr class="my-4">
+                        
+                        <h5><i class="fas fa-history"></i> Lịch sử bán hàng</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Mã hóa đơn</th>
+                                        <th>Số lượng</th>
+                                        <th>Đơn giá</th>
+                                        <th>Thành tiền</th>
+                                        <th>Ngày bán</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.LichSuBanHang.OrderByDescending(x => x.HoaDonSanPham?.ThoiGianTao ?? DateTime.MinValue))
+                                    {
+                                        <tr>
+                                            <td>@item.MaHoaDonSanPham</td>
+                                            <td>@item.SoLuong</td>
+                                            <td>@item.DonGia.ToString("N0") ₫</td>
+                                            <td class="font-weight-bold">@((item.SoLuong * item.DonGia).ToString("N0")) ₫</td>
+                                            <td>@(item.HoaDonSanPham?.ThoiGianTao.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <hr class="my-4">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Sản phẩm này chưa được bán.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

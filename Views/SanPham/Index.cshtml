@@ -1,0 +1,234 @@
+@model QuanLySanPhamViewModel
+
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Quản lý sản phẩm</h3>
+                    <div class="card-tools">
+                        <a asp-action="Create" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus"></i> Thêm sản phẩm
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <div class="info-box bg-info">
+                                <span class="info-box-icon"><i class="fas fa-box"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Tổng sản phẩm</span>
+                                    <span class="info-box-number">@Model.TongSoSanPham</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box bg-success">
+                                <span class="info-box-icon"><i class="fas fa-check-circle"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Còn hàng</span>
+                                    <span class="info-box-number">@Model.SanPhamConHang</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box bg-warning">
+                                <span class="info-box-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Hết hàng</span>
+                                    <span class="info-box-number">@Model.SanPhamHetHang</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box bg-primary">
+                                <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Giá trị tồn kho</span>
+                                    <span class="info-box-number">@Model.TongGiaTriTonKho.ToString("N0") VNĐ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <form asp-action="Index" method="get" class="mb-3">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <input asp-for="TenSanPham" class="form-control" placeholder="Tên sản phẩm" />
+                            </div>
+                            <div class="col-md-2">
+                                <select asp-for="TrangThai" class="form-control">
+                                    <option value="">Tất cả trạng thái</option>
+                                    <option value="Còn hàng">Còn hàng</option>
+                                    <option value="Hết hàng">Hết hàng</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <input asp-for="GiaMin" type="number" class="form-control" placeholder="Giá từ" />
+                            </div>
+                            <div class="col-md-2">
+                                <input asp-for="GiaMax" type="number" class="form-control" placeholder="Giá đến" />
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Tìm kiếm
+                                </button>
+                                <a asp-action="Index" class="btn btn-secondary">
+                                    <i class="fas fa-redo"></i> Reset
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Product Table -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Mã SP</th>
+                                    <th>Hình ảnh</th>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Giá</th>
+                                    <th>Số lượng tồn</th>
+                                    <th>Trạng thái</th>
+                                    <th>Người quản lý</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.SanPhams)
+                                {
+                                    <tr>
+                                        <td>@Html.DisplayFor(modelItem => item.MaSanPham)</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.HinhAnh))
+                                            {
+                                                <img src="@item.HinhAnh" alt="@item.TenSanPham" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;" />
+                                            }
+                                            else
+                                            {
+                                                <div class="bg-light d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                    <i class="fas fa-image text-muted"></i>
+                                                </div>
+                                            }
+                                        </td>
+                                        <td>
+                                            <strong>@Html.DisplayFor(modelItem => item.TenSanPham)</strong>
+                                            @if (!string.IsNullOrEmpty(item.MoTa))
+                                            {
+                                                <br><small class="text-muted">@(item.MoTa.Length > 50 ? item.MoTa.Substring(0, 50) + "..." : item.MoTa)</small>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="font-weight-bold text-success">@item.Gia.ToString("N0") VNĐ</span>
+                                        </td>
+                                        <td>
+                                            <div class="input-group input-group-sm" style="width: 100px;">
+                                                <input type="number" class="form-control stock-input" 
+                                                       data-product-id="@item.MaSanPham" 
+                                                       value="@item.SoLuongTon" 
+                                                       min="0" />
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-outline-primary update-stock-btn" 
+                                                            data-product-id="@item.MaSanPham" 
+                                                            type="button">
+                                                        <i class="fas fa-save"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if (item.TrangThai == "Còn hàng")
+                                            {
+                                                <span class="badge badge-success">@item.TrangThai</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-danger">@item.TrangThai</span>
+                                            }
+                                        </td>
+                                        <td>@(item.NhanVien?.TenNhanVien ?? "N/A")</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a asp-action="Details" asp-route-id="@item.MaSanPham" 
+                                                   class="btn btn-info btn-sm" title="Chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@item.MaSanPham" 
+                                                   class="btn btn-warning btn-sm" title="Sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@item.MaSanPham" 
+                                                   class="btn btn-danger btn-sm" title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (!Model.SanPhams.Any())
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">Không có sản phẩm nào</h4>
+                            <p class="text-muted">Hãy thêm sản phẩm đầu tiên của bạn</p>
+                            <a asp-action="Create" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Thêm sản phẩm
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Update stock functionality
+            $('.update-stock-btn').click(function() {
+                var productId = $(this).data('product-id');
+                var newStock = $(`.stock-input[data-product-id="${productId}"]`).val();
+                
+                $.ajax({
+                    url: '@Url.Action("UpdateStock", "SanPham")',
+                    type: 'POST',
+                    data: {
+                        maSanPham: productId,
+                        soLuongMoi: newStock
+                    },
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            toastr.success(response.message);
+                            // Reload page to update status
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Có lỗi xảy ra khi cập nhật tồn kho');
+                    }
+                });
+            });
+        });
+    </script>
+} 

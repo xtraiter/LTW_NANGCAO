@@ -1,0 +1,335 @@
+@model CinemaManagement.Models.HoaDonSanPham
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-receipt me-2"></i>Chi tiết đơn hàng: @Model.MaHoaDonSanPham
+        </h2>
+        <div>
+            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại
+            </a>
+            <button type="button" class="btn btn-primary" onclick="window.print()">
+                <i class="fas fa-print me-2"></i>In hóa đơn
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Thông tin đơn hàng -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Thông tin đơn hàng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Mã đơn hàng:</strong></td>
+                                    <td>@Model.MaHoaDonSanPham</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ngày đặt:</strong></td>
+                                    <td>@Model.ThoiGianTao.ToString("dd/MM/yyyy HH:mm")</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Trạng thái:</strong></td>
+                                    <td>
+                                        @{
+                                            var badgeClass = Model.TrangThai switch
+                                            {
+                                                "Đã đặt" => "badge bg-warning",
+                                                "Đang xử lý" => "badge bg-info",
+                                                "Đang giao" => "badge bg-primary",
+                                                "Đã giao" => "badge bg-success",
+                                                "Đã hủy" => "badge bg-danger",
+                                                _ => "badge bg-secondary"
+                                            };
+                                        }
+                                        <span class="@badgeClass">@Model.TrangThai</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tổng tiền:</strong></td>
+                                    <td class="text-success fw-bold">@Model.TongTien.ToString("#,##0") VNĐ</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Số lượng sản phẩm:</strong></td>
+                                    <td>@Model.SoLuong</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Địa chỉ giao hàng:</strong></td>
+                                    <td>@Model.DiaChiGiaoHang</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông tin khách hàng -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>Thông tin khách hàng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Mã khách hàng:</strong></td>
+                                    <td>@Model.KhachHang?.MaKhachHang</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Họ tên:</strong></td>
+                                    <td>@Model.KhachHang?.HoTen</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Số điện thoại:</strong></td>
+                                    <td>@Model.KhachHang?.SDT</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Điểm tích lũy:</strong></td>
+                                    <td>@Model.KhachHang?.DiemTichLuy điểm</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chi tiết sản phẩm -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shopping-bag me-2"></i>Chi tiết sản phẩm
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Sản phẩm</th>
+                                    <th>Đơn giá</th>
+                                    <th>Số lượng</th>
+                                    <th>Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.ChiTietHoaDonSanPhams.Count; i++)
+                                {
+                                    var chiTiet = Model.ChiTietHoaDonSanPhams.ElementAt(i);
+                                    <tr>
+                                        <td>@(i + 1)</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrEmpty(chiTiet.SanPham?.HinhAnh))
+                                                {
+                                                    <img src="@chiTiet.SanPham.HinhAnh" alt="@chiTiet.SanPham.TenSanPham" 
+                                                         class="me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                                }
+                                                <div>
+                                                    <strong>@chiTiet.SanPham?.TenSanPham</strong><br />
+                                                    <small class="text-muted">@chiTiet.SanPham?.MoTa</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@chiTiet.DonGia.ToString("#,##0") VNĐ</td>
+                                        <td>@chiTiet.SoLuong</td>
+                                        <td class="text-success fw-bold">@((chiTiet.DonGia * chiTiet.SoLuong).ToString("#,##0")) VNĐ</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong>Tổng cộng:</strong></td>
+                                    <td class="text-success fw-bold">@Model.TongTien.ToString("#,##0") VNĐ</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voucher đã sử dụng -->
+            @if (Model.HoaDonSanPhamVouchers.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-ticket-alt me-2"></i>Voucher đã sử dụng
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mã voucher</th>
+                                        <th>Tên voucher</th>
+                                        <th>Số lượng</th>
+                                        <th>Tiền giảm</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var voucher in Model.HoaDonSanPhamVouchers)
+                                    {
+                                        <tr>
+                                            <td>@voucher.VoucherSanPham?.MaVoucherSanPham</td>
+                                            <td>@voucher.VoucherSanPham?.TenVoucher</td>
+                                            <td>@voucher.SoLuongVoucher</td>
+                                            <td class="text-danger">-@voucher.TongTienGiam.ToString("#,##0") VNĐ</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Sidebar - Thao tác -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>Thao tác
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @if (Model.TrangThai == "Đã đặt")
+                        {
+                            <button type="button" class="btn btn-info" 
+                                    onclick="capNhatTrangThai('@Model.MaHoaDonSanPham', 'Đang xử lý')">
+                                <i class="fas fa-play me-2"></i>Bắt đầu xử lý
+                            </button>
+                        }
+                        @if (Model.TrangThai == "Đang xử lý")
+                        {
+                            <button type="button" class="btn btn-primary" 
+                                    onclick="capNhatTrangThai('@Model.MaHoaDonSanPham', 'Đang giao')">
+                                <i class="fas fa-truck me-2"></i>Bắt đầu giao
+                            </button>
+                        }
+                        @if (Model.TrangThai == "Đang giao")
+                        {
+                            <button type="button" class="btn btn-success" 
+                                    onclick="capNhatTrangThai('@Model.MaHoaDonSanPham', 'Đã giao')">
+                                <i class="fas fa-check me-2"></i>Hoàn thành giao
+                            </button>
+                        }
+                        @if (Model.TrangThai == "Đã đặt" || Model.TrangThai == "Đang xử lý")
+                        {
+                            <button type="button" class="btn btn-danger" 
+                                    onclick="capNhatTrangThai('@Model.MaHoaDonSanPham', 'Đã hủy')">
+                                <i class="fas fa-times me-2"></i>Hủy đơn hàng
+                            </button>
+                        }
+                        @if (Model.TrangThai == "Đã hủy" || Model.TrangThai == "Đã đặt")
+                        {
+                            <button type="button" class="btn btn-danger" 
+                                    onclick="xoaHoaDon('@Model.MaHoaDonSanPham')">
+                                <i class="fas fa-trash me-2"></i>Xóa đơn hàng
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thống kê nhanh -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Thống kê nhanh
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">@Model.SoLuong</h4>
+                            <small class="text-muted">Sản phẩm</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">@Model.TongTien.ToString("#,##0")</h4>
+                            <small class="text-muted">VNĐ</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function capNhatTrangThai(maHoaDon, trangThaiMoi) {
+            if (confirm(`Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng ${maHoaDon} thành "${trangThaiMoi}"?`)) {
+                $.ajax({
+                    url: '@Url.Action("CapNhatTrangThai")',
+                    type: 'POST',
+                    data: {
+                        maHoaDon: maHoaDon,
+                        trangThaiMoi: trangThaiMoi
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi cập nhật trạng thái');
+                    }
+                });
+            }
+        }
+
+        function xoaHoaDon(maHoaDon) {
+            if (confirm(`Bạn có chắc chắn muốn xóa đơn hàng ${maHoaDon}?`)) {
+                $.ajax({
+                    url: '@Url.Action("XoaHoaDon")',
+                    type: 'POST',
+                    data: {
+                        maHoaDon: maHoaDon
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            window.location.href = '@Url.Action("Index")';
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi xóa đơn hàng');
+                    }
+                });
+            }
+        }
+    </script>
+}

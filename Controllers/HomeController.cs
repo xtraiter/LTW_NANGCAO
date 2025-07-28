@@ -7,7 +7,6 @@ namespace CinemaManagement.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
-
     public HomeController(ILogger<HomeController> logger)
     {
         _logger = logger;
@@ -32,8 +31,8 @@ public class HomeController : Controller
         }
         else if (!string.IsNullOrEmpty(maNhanVien))
         {
-            // Nếu đã đăng nhập, chuyển đến trang bán vé
-            return RedirectToAction("Index", "BanVe");
+            // Nếu đã đăng nhập, chuyển đến trang quản lý
+            return RedirectToAction("Index", "QuanLy");
         }
         else
         {
@@ -45,6 +44,12 @@ public class HomeController : Controller
     {
         return View();
     }
+
+    public IActionResult RatingTest()
+    {
+        return View();
+    }
+
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()

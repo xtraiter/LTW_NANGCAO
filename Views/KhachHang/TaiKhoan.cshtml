@@ -1,33 +1,40 @@
-@model CinemaManagement.Models.KhachHang
+@model CinemaManagement.ViewModels.KhachHangProfileViewModel
 @{
     ViewData["Title"] = "Thông tin tài khoản";
     Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link href="~/css/customer-profile.css" rel="stylesheet" />
 }
 
 <div class="container-fluid mt-4">
     <div class="row">
         <!-- Thông tin tài khoản -->
         <div class="col-lg-8">
-            <div class="card">
+            <!-- Card thông tin cá nhân -->
+            <div class="card mb-4 profile-card">
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
-                        <i class="fas fa-user me-2"></i>Thông tin tài khoản
+                        <i class="fas fa-user me-2"></i>Thông tin cá nhân
                     </h4>
                 </div>
                 <div class="card-body">
                     @if (TempData["SuccessMessage"] != null)
                     {
-                        <div class="alert alert-success" role="alert">
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
                             <i class="fas fa-check-circle me-2"></i>
                             @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     }
 
                     @if (TempData["ErrorMessage"] != null)
                     {
-                        <div class="alert alert-danger" role="alert">
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
                             <i class="fas fa-exclamation-circle me-2"></i>
                             @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     }
 
@@ -36,10 +43,10 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="hoTen" class="form-label">
-                                        <i class="fas fa-user me-1"></i>Họ và tên
+                                        <i class="fas fa-user me-1"></i>Họ và tên <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" class="form-control" id="hoTen" name="hoTen" 
-                                           value="@Model.HoTen" required>
+                                           value="@Model.KhachHang.HoTen" required maxlength="100">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -48,7 +55,8 @@
                                         <i class="fas fa-phone me-1"></i>Số điện thoại
                                     </label>
                                     <input type="tel" class="form-control" id="sdt" name="sdt" 
-                                           value="@Model.SDT">
+                                           value="@Model.KhachHang.SDT" pattern="[0-9]{10,11}" 
+                                           title="Số điện thoại phải có 10-11 chữ số">
                                 </div>
                             </div>
                         </div>
@@ -56,28 +64,134 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">
-                                        <i class="fas fa-id-card me-1"></i>Mã khách hàng
+                                    <label for="email" class="form-label">
+                                        <i class="fas fa-envelope me-1"></i>Email
                                     </label>
-                                    <input type="text" class="form-control" value="@Model.MaKhachHang" readonly>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="@Model.TaiKhoan.Email" readonly>
+                                    <div class="form-text">Email không thể thay đổi</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">
-                                        <i class="fas fa-star me-1"></i>Điểm tích lũy
+                                        <i class="fas fa-id-card me-1"></i>Mã khách hàng
                                     </label>
-                                    <input type="text" class="form-control" value="@Model.DiemTichLuy điểm" readonly>
+                                    <input type="text" class="form-control" value="@Model.KhachHang.MaKhachHang" readonly>
                                 </div>
                             </div>
                         </div>
 
+                        <div class="mb-3">
+                            <label for="DiaChiGiaoHang" class="form-label">
+                                <i class="fas fa-map-marker-alt me-1"></i>Địa chỉ giao hàng
+                            </label>
+                            <textarea class="form-control" id="DiaChiGiaoHang" name="DiaChiGiaoHang" 
+                                      rows="2" maxlength="255" 
+                                      placeholder="Nhập địa chỉ giao hàng đầy đủ (số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố)">@Model.KhachHang.DiaChiGiaoHang</textarea>
+                            <div class="form-text">Địa chỉ này sẽ được sử dụng làm mặc định khi đặt hàng</div>
+                        </div>
+
                         <div class="text-end">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-gradient">
                                 <i class="fas fa-save me-1"></i>Cập nhật thông tin
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+
+            @if (!Model.IsGoogleAccount)
+            {
+                <!-- Card đổi mật khẩu -->
+                <div class="card mb-4 profile-card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lock me-2"></i>Đổi mật khẩu
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="changePasswordForm">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">Mật khẩu hiện tại</label>
+                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">Mật khẩu mới</label>
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" 
+                                   minlength="6" required>
+                            <div class="form-text">Mật khẩu phải có ít nhất 6 ký tự</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Xác nhận mật khẩu mới</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-key me-1"></i>Đổi mật khẩu
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            }
+
+            <!-- Card lịch sử gần đây -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Lịch sử mua vé gần đây
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.LichSuGanDay.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Mã hóa đơn</th>
+                                        <th>Ngày mua</th>
+                                        <th>Số lượng vé</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Thao tác</th>
+                                    </tr> 
+                                </thead>
+                                <tbody>
+                                    @foreach (var hoaDon in Model.LichSuGanDay)
+                                    {
+                                        <tr>
+                                            <td><strong>@hoaDon.MaHoaDon</strong></td>
+                                            <td>@hoaDon.ThoiGianTao.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>@hoaDon.SoLuong vé</td>
+                                            <td class="text-success">@hoaDon.TongTien.ToString("#,##0") VNĐ</td>
+                                            <td>
+                                                <a href="@Url.Action("ChiTietHoaDon", new { id = hoaDon.MaHoaDon })" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i> Chi tiết
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="@Url.Action("LichSuDatVe")" class="btn btn-outline-info">
+                                <i class="fas fa-list me-1"></i>Xem tất cả lịch sử
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Bạn chưa có lịch sử mua vé nào</p>
+                            <a href="@Url.Action("Index")" class="btn btn-primary">
+                                <i class="fas fa-film me-1"></i>Đặt vé ngay
+                            </a>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -92,11 +206,11 @@
                     </h6>
                 </div>
                 <div class="card-body text-center">
-                    <h2 class="text-warning">@Model.DiemTichLuy</h2>
+                    <h2 class="text-warning">@Model.KhachHang.DiemTichLuy</h2>
                     <p class="text-muted mb-0">điểm tích lũy</p>
                     <hr>
                     <small class="text-muted">
-                        Tích lũy thêm @(1000 - (Model.DiemTichLuy % 1000)) điểm để nhận voucher
+                        Tích lũy thêm @(100 - (Model.KhachHang.DiemTichLuy % 100)) điểm để nhận voucher
                     </small>
                 </div>
             </div>
@@ -105,45 +219,44 @@
             <div class="card mb-3">
                 <div class="card-header bg-info text-white">
                     <h6 class="mb-0">
-                        <i class="fas fa-chart-bar me-2"></i>Thống kê
+                        <i class="fas fa-chart-bar me-2"></i>Thống kê cá nhân
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="row text-center">
-                        <div class="col-12 mb-3">
-                            <h4 class="text-info mb-0" id="total-tickets">0</h4>
-                            <small class="text-muted">Vé đã mua</small>
-                        </div>
-                        <div class="col-12 mb-3">
-                            <h4 class="text-success mb-0" id="total-spent">0 VNĐ</h4>
-                            <small class="text-muted">Tổng chi tiêu</small>
-                        </div>
                         <div class="col-12">
-                            <h4 class="text-primary mb-0" id="favorite-genre">Hành động</h4>
-                            <small class="text-muted">Thể loại yêu thích</small>
+                            <h4 class="text-success mb-0">@Model.TongChiTieu.ToString("#,##0") VNĐ</h4>
+                            <small class="text-muted">Tổng chi tiêu</small>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Card hỗ trợ -->
-            <div class="card">
-                <div class="card-header bg-secondary text-white">
+            <!-- Card thành viên -->
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">
                     <h6 class="mb-0">
-                        <i class="fas fa-headset me-2"></i>Hỗ trợ khách hàng
+                        <i class="fas fa-crown me-2"></i>Thông tin thành viên
                     </h6>
                 </div>
                 <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="tel:1900xxxx" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-phone me-1"></i>Hotline: 1900-xxxx
-                        </a>
-                        <a href="mailto:support@cinema.com" class="btn btn-outline-info btn-sm">
-                            <i class="fas fa-envelope me-1"></i>Email hỗ trợ
-                        </a>
-                        <a href="#" class="btn btn-outline-secondary btn-sm">
-                            <i class="fas fa-comments me-1"></i>Chat trực tuyến
-                        </a>
+                    <div class="text-center">
+                        @{
+                            string memberLevel = "Đồng";
+                            string badgeClass = "badge bg-secondary";
+                            if (Model.KhachHang.DiemTichLuy >= 200) 
+                            {
+                                memberLevel = "Vàng";
+                                badgeClass = "badge bg-warning";
+                            }
+                            else if (Model.KhachHang.DiemTichLuy >= 100) 
+                            {
+                                memberLevel = "Bạc";
+                                badgeClass = "badge bg-info";
+                            }
+                        }
+                        <span class="@badgeClass fs-6 px-3 py-2">@memberLevel</span>
+                        <p class="mt-2 mb-0 text-muted small">Hạng thành viên</p>
                     </div>
                 </div>
             </div>
@@ -153,15 +266,12 @@
     <!-- Nút hành động -->
     <div class="row mt-3">
         <div class="col-12">
-            <div class="d-flex gap-2">
+            <div class="d-flex flex-wrap gap-2">
                 <a href="@Url.Action("Index")" class="btn btn-outline-primary">
                     <i class="fas fa-film me-1"></i>Xem phim
                 </a>
                 <a href="@Url.Action("LichSuDatVe")" class="btn btn-outline-info">
                     <i class="fas fa-history me-1"></i>Lịch sử đặt vé
-                </a>
-                <a href="@Url.Action("Index")" class="btn btn-outline-primary">
-                    <i class="fas fa-film me-1"></i>Xem phim
                 </a>
                 <a href="@Url.Action("Logout", "Auth")" class="btn btn-outline-danger">
                     <i class="fas fa-sign-out-alt me-1"></i>Đăng xuất
@@ -174,60 +284,117 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Load thống kê từ API (demo data)
-            loadUserStats();
+            @if (!Model.IsGoogleAccount)
+            {
+            <text>
+            // Xử lý form đổi mật khẩu
+            $('#changePasswordForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                var currentPassword = $('#currentPassword').val();
+                var newPassword = $('#newPassword').val();
+                var confirmPassword = $('#confirmPassword').val();
+                
+                // Kiểm tra xác nhận mật khẩu
+                if (newPassword !== confirmPassword) {
+                    showMessage('error', 'Xác nhận mật khẩu không khớp!');
+                    return;
+                }
+                
+                // Kiểm tra độ dài mật khẩu
+                if (newPassword.length &lt; 6) {
+                    showMessage('error', 'Mật khẩu mới phải có ít nhất 6 ký tự!');
+                    return;
+                }
+                
+                // Gửi AJAX request
+                $.ajax({
+                    url: '@Url.Action("DoiMatKhau")',
+                    type: 'POST',
+                    data: {
+                        CurrentPassword: currentPassword,
+                        NewPassword: newPassword,
+                        ConfirmPassword: confirmPassword
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            showMessage('success', response.message);
+                            $('#changePasswordForm')[0].reset();
+                        } else {
+                            showMessage('error', response.message);
+                        }
+                    },
+                    error: function() {
+                        showMessage('error', 'Có lỗi xảy ra khi đổi mật khẩu!');
+                    }
+                });
+            });
+
+            function showMessage(type, message) {
+                var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+                var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+                
+                var alertHtml = `
+                    <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                        <i class="fas ${icon} me-2"></i>
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                
+                // Thêm alert vào đầu card đổi mật khẩu
+                $('.card:has(#changePasswordForm) .card-body').prepend(alertHtml);
+                
+                // Auto hide after 5 seconds
+                setTimeout(function() {
+                    $('.alert').fadeOut();
+                }, 5000);
+            }
+            </text>
+            }
             
             // Auto hide alerts after 5 seconds
             setTimeout(function() {
                 $('.alert').fadeOut();
             }, 5000);
-        });
-
-        function loadUserStats() {
-            // Gọi API để lấy thống kê thật
-            $.ajax({
-                url: '@Url.Action("GetThongKeKhachHang")',
-                type: 'GET',
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        var data = response.data;
-                        
-                        // Cập nhật số vé đã mua
-                        $('#total-tickets').text(data.tongSoVe);
-                        
-                        // Cập nhật tổng chi tiêu với định dạng tiền tệ
-                        var formattedMoney = new Intl.NumberFormat('vi-VN', {
-                            style: 'currency',
-                            currency: 'VND'
-                        }).format(data.tongChiTieu);
-                        $('#total-spent').text(formattedMoney);
-                        
-                        // Cập nhật thể loại yêu thích
-                        $('#favorite-genre').text(data.theLoaiYeuThich);
-                        
-                        // Cập nhật điểm cần tích lũy thêm để nhận voucher
-                        var diemCanThichLuy = 1000 - (data.diemTichLuy % 1000);
-                        if (diemCanThichLuy === 1000) {
-                            diemCanThichLuy = 0; // Đã đủ điểm
-                        }
-                        $('.text-muted small').text('Tích lũy thêm ' + diemCanThichLuy + ' điểm để nhận voucher');
-                    } else {
-                        console.error('Lỗi khi tải thống kê:', response.message);
-                        // Hiển thị dữ liệu mặc định nếu có lỗi
-                        $('#total-tickets').text('0');
-                        $('#total-spent').text('0 VNĐ');
-                        $('#favorite-genre').text('Chưa có');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Lỗi AJAX:', error);
-                    // Hiển thị dữ liệu mặc định nếu có lỗi
-                    $('#total-tickets').text('0');
-                    $('#total-spent').text('0 VNĐ');
-                    $('#favorite-genre').text('Chưa có');
+            
+            // Validation cho form thông tin cá nhân
+            $('#hoTen').on('input', function() {
+                var value = $(this).val();
+                if (value.length &gt; 100) {
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
                 }
             });
-        }
+            
+            $('#sdt').on('input', function() {
+                var value = $(this).val();
+                if (value && (value.length &lt; 10 || value.length &gt; 11 || !/^\d+$/.test(value))) {
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+        });
     </script>
+
+    <style>
+        .profile-card {
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        
+        .profile-card .card-header {
+            border-radius: 10px 10px 0 0;
+            font-weight: 600;
+        }
+        
+        .form-control:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+    </style>
 }

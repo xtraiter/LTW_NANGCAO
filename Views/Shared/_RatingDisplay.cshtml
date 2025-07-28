@@ -1,0 +1,27 @@
+@model double
+
+<div class="rating-display" data-rating="@Model">
+    <div class="stars">
+        @{
+            var fullStars = (int)Model;
+            var hasHalfStar = Model % 1 != 0;
+            var emptyStars = 10 - fullStars - (hasHalfStar ? 1 : 0);
+        }
+        
+        @for (int i = 0; i < fullStars; i++)
+        {
+            <i class="fas fa-star"></i>
+        }
+        
+        @if (hasHalfStar)
+        {
+            <i class="fas fa-star-half-alt"></i>
+        }
+        
+        @for (int i = 0; i < emptyStars; i++)
+        {
+            <i class="far fa-star"></i>
+        }
+    </div>
+    <span class="rating-text">@Model.ToString("F1")/10</span>
+</div> 

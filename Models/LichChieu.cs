@@ -6,7 +6,7 @@ namespace CinemaManagement.Models
     public class LichChieu
     {
         [Key]
-        [StringLength(10)]
+        [StringLength(50)]
         public string MaLichChieu { get; set; } = string.Empty;
 
         public DateTime ThoiGianBatDau { get; set; }
@@ -16,13 +16,13 @@ namespace CinemaManagement.Models
         [Column(TypeName = "decimal(10,2)")]
         public decimal Gia { get; set; }
 
-        [StringLength(10)]
+        [StringLength(50)]
         public string MaPhong { get; set; } = string.Empty;
 
-        [StringLength(10)]
+        [StringLength(50)]
         public string MaPhim { get; set; } = string.Empty;
 
-        [StringLength(10)]
+        [StringLength(50)]
         public string MaNhanVien { get; set; } = string.Empty;
 
         // Navigation properties

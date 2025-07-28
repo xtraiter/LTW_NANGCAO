@@ -1,0 +1,160 @@
+@model CinemaManagement.Models.HoaDon
+@{
+    ViewData["Title"] = "Chi tiết hóa đơn";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-receipt me-2"></i>Chi tiết hóa đơn #@Model.MaHoaDon
+                        </h4>
+                        <a href="@Url.Action("TaiKhoan")" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Thông tin hóa đơn -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Thông tin hóa đơn</h6>
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <td><strong>Mã hóa đơn:</strong></td>
+                                    <td>@Model.MaHoaDon</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ngày tạo:</strong></td>
+                                    <td>@Model.ThoiGianTao.ToString("dd/MM/yyyy HH:mm")</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Số lượng vé:</strong></td>
+                                    <td>@Model.SoLuong vé</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tổng tiền:</strong></td>
+                                    <td class="text-success"><strong>@Model.TongTien.ToString("#,##0") VNĐ</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            @if (Model.HDVouchers.Any())
+                            {
+                                <h6 class="text-muted">Khuyến mãi áp dụng</h6>
+                                @foreach (var hdVoucher in Model.HDVouchers)
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-tag me-2"></i>
+                                        <strong>@hdVoucher.Voucher.TenGiamGia</strong><br>
+                                        <small>Giảm @hdVoucher.Voucher.PhanTramGiam%</small>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Chi tiết vé -->
+                    <h6 class="text-muted mb-3">Chi tiết vé</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mã vé</th>
+                                    <th>Phim</th>
+                                    <th>Phòng chiếu</th>
+                                    <th>Ghế</th>
+                                    <th>Thời gian chiếu</th>
+                                    <th>Giá vé</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var cthd in Model.CTHDs)
+                                {
+                                    <tr>
+                                        <td><span class="badge bg-primary">@cthd.Ve.MaVe</span></td>
+                                        <td>
+                                            <strong>@cthd.Ve.LichChieu.Phim.TenPhim</strong><br>
+                                            <small class="text-muted">@cthd.Ve.LichChieu.Phim.TheLoai</small>
+                                        </td>
+                                        <td>@cthd.Ve.LichChieu.PhongChieu.TenPhong</td>
+                                        <td>
+                                            <span class="badge bg-secondary">@cthd.Ve.GheNgoi.SoGhe</span>
+                                        </td>
+                                        <td>
+                                            @cthd.Ve.LichChieu.ThoiGianBatDau.ToString("dd/MM/yyyy")<br>
+                                            <small>@cthd.Ve.LichChieu.ThoiGianBatDau.ToString("HH:mm")</small>
+                                        </td>
+                                        <td class="text-success">@cthd.DonGia.ToString("#,##0") VNĐ</td>
+                                        <td>
+                                            @{
+                                                string badgeClass = "bg-secondary";
+                                                if (cthd.Ve.TrangThai == "Đã bán") badgeClass = "bg-success";
+                                                else if (cthd.Ve.TrangThai == "Hết hạn") badgeClass = "bg-danger";
+                                                else if (cthd.Ve.TrangThai == "Còn hạn") badgeClass = "bg-warning";
+                                            }
+                                            <span class="badge @badgeClass">@cthd.Ve.TrangThai</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Tổng kết -->
+                    <div class="row mt-4">
+                        <div class="col-md-6 offset-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Tạm tính:</span>
+                                        <span>@Model.CTHDs.Sum(c => c.DonGia).ToString("#,##0") VNĐ</span>
+                                    </div>
+                                    @if (Model.HDVouchers.Any())
+                                    {
+                                        <div class="d-flex justify-content-between mb-2 text-success">
+                                            <span>Giảm giá:</span>
+                                            <span>-@((Model.CTHDs.Sum(c => c.DonGia) * Model.HDVouchers.Sum(hv => hv.Voucher.PhanTramGiam) / 100).ToString("#,##0")) VNĐ</span>
+                                        </div>
+                                    }
+                                    <hr>
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Tổng cộng:</strong>
+                                        <strong class="text-success">@Model.TongTien.ToString("#,##0") VNĐ</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nút thao tác -->
+                    <div class="text-center mt-4">
+                        <a href="@Url.Action("LichSuDatVe")" class="btn btn-outline-info me-2">
+                            <i class="fas fa-history me-1"></i>Xem lịch sử
+                        </a>
+                        <a href="@Url.Action("Index")" class="btn btn-primary">
+                            <i class="fas fa-film me-1"></i>Đặt vé mới
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Thêm hiệu ứng cho các badge
+            $('.badge').hover(
+                function() { $(this).addClass('shadow-sm'); },
+                function() { $(this).removeClass('shadow-sm'); }
+            );
+        });
+    </script>
+}

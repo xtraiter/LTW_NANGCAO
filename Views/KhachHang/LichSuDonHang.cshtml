@@ -1,0 +1,306 @@
+@model LichSuDonHangViewModel
+
+@{
+    ViewData["Title"] = "Lịch sử đơn hàng";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-history"></i> Lịch sử đơn hàng
+                    </h3>
+                    <div class="card-tools">
+                        <a asp-action="Shopping" class="btn btn-success btn-sm">
+                            <i class="fas fa-shopping-bag"></i> Tiếp tục mua sắm
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Filters -->
+                    <form asp-action="LichSuDonHang" method="get" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <select asp-for="TrangThaiFilter" class="form-control">
+                                    <option value="">Tất cả trạng thái</option>
+                                    <option value="Đang xử lý">Đang xử lý</option>
+                                    <option value="Đã xác nhận">Đã xác nhận</option>
+                                    <option value="Đang giao">Đang giao</option>
+                                    <option value="Hoàn thành">Hoàn thành</option>
+                                    <option value="Hủy">Hủy</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input asp-for="TuNgay" type="date" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <input asp-for="DenNgay" type="date" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Lọc
+                                </button>
+                                <a asp-action="LichSuDonHang" class="btn btn-secondary">
+                                    <i class="fas fa-redo"></i> Reset
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+
+                    @if (Model.DonHangs.Any())
+                    {
+                        <!-- Orders List -->
+                        <div class="row">
+                            @foreach (var donHang in Model.DonHangs)
+                            {
+                                <div class="col-12 mb-4">
+                                    <div class="card border-left-primary">
+                                        <div class="card-header">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-3">
+                                                    <strong>Đơn hàng #@donHang.HoaDon.MaHoaDonSanPham</strong>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-calendar"></i>
+                                                        @donHang.HoaDon.ThoiGianTao.ToString("dd/MM/yyyy HH:mm")
+                                                    </small>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    @switch (donHang.HoaDon.TrangThai)
+                                                    {
+                                                        case "Đang xử lý":
+                                                            <span class="badge badge-warning">@donHang.HoaDon.TrangThai</span>
+                                                            break;
+                                                        case "Đã xác nhận":
+                                                            <span class="badge badge-info">@donHang.HoaDon.TrangThai</span>
+                                                            break;
+                                                        case "Đang giao":
+                                                            <span class="badge badge-primary">@donHang.HoaDon.TrangThai</span>
+                                                            break;
+                                                        case "Hoàn thành":
+                                                            <span class="badge badge-success">@donHang.HoaDon.TrangThai</span>
+                                                            break;
+                                                        case "Hủy":
+                                                            <span class="badge badge-danger">@donHang.HoaDon.TrangThai</span>
+                                                            break;
+                                                        default:
+                                                            <span class="badge badge-secondary">@donHang.HoaDon.TrangThai</span>
+                                                            break;
+                                                    }
+                                                </div>
+                                                <div class="col-md-3 text-right">
+                                                    <span class="h5 text-success">@donHang.HoaDon.TongTien.ToString("N0") ₫</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <!-- Order Items -->
+                                                <div class="col-md-8">
+                                                    @foreach (var item in donHang.Items)
+                                                    {
+                                                        <div class="d-flex align-items-center mb-3 p-2 border rounded">
+                                                            @if (!string.IsNullOrEmpty(item.SanPham.HinhAnh))
+                                                            {
+                                                                <img src="@item.SanPham.HinhAnh" 
+                                                                     alt="@item.SanPham.TenSanPham" 
+                                                                     class="img-thumbnail me-3" 
+                                                                     style="width: 60px; height: 60px; object-fit: cover;" />
+                                                            }
+                                                            else
+                                                            {
+                                                                <div class="bg-light d-flex align-items-center justify-content-center me-3" 
+                                                                     style="width: 60px; height: 60px;">
+                                                                    <i class="fas fa-image text-muted"></i>
+                                                                </div>
+                                                            }
+                                                            
+                                                            <div class="flex-grow-1">
+                                                                <h6 class="mb-1">@item.SanPham.TenSanPham</h6>
+                                                                <div class="d-flex justify-content-between">
+                                                                    <small class="text-muted">
+                                                                        @item.ChiTiet.DonGia.ToString("N0") ₫ x @item.ChiTiet.SoLuong
+                                                                    </small>
+                                                                    <span class="font-weight-bold text-primary">
+                                                                        @item.ThanhTien.ToString("N0") ₫
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+
+                                                <!-- Order Info -->
+                                                <div class="col-md-4">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body">
+                                                            <h6><i class="fas fa-map-marker-alt"></i> Địa chỉ giao hàng</h6>
+                                                            <p class="mb-2">@donHang.HoaDon.DiaChiGiaoHang</p>
+                                                            
+                                                            <h6><i class="fas fa-box"></i> Chi tiết đơn hàng</h6>
+                                                            <div class="d-flex justify-content-between mb-1">
+                                                                <span>Số lượng:</span>
+                                                                <span>@donHang.HoaDon.SoLuong sản phẩm</span>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between mb-1">
+                                                                <span>Tạm tính:</span>
+                                                                <span>@donHang.TongTienTruocGiam.ToString("N0") ₫</span>
+                                                            </div>
+                                                            @if (donHang.TienGiam > 0)
+                                                            {
+                                                                <div class="d-flex justify-content-between mb-1 text-success">
+                                                                    <span>Giảm giá:</span>
+                                                                    <span>-@donHang.TienGiam.ToString("N0") ₫</span>
+                                                                </div>
+                                                            }
+                                                            <hr class="my-2">
+                                                            <div class="d-flex justify-content-between font-weight-bold">
+                                                                <span>Tổng cộng:</span>
+                                                                <span class="text-success">@donHang.HoaDon.TongTien.ToString("N0") ₫</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Action Buttons -->
+                                                    <div class="mt-3">
+                                                        @if (donHang.HoaDon.TrangThai == "Hoàn thành")
+                                                        {
+                                                            <button class="btn btn-outline-primary btn-sm btn-block" disabled>
+                                                                <i class="fas fa-star"></i> Đánh giá sản phẩm
+                                                            </button>
+                                                        }
+                                                        @if (donHang.HoaDon.TrangThai == "Đang xử lý")
+                                                        {
+                                                            <button class="btn btn-outline-danger btn-sm btn-block" 
+                                                                    onclick="cancelOrder('@donHang.HoaDon.MaHoaDonSanPham')">
+                                                                <i class="fas fa-times"></i> Hủy đơn hàng
+                                                            </button>
+                                                        }
+                                                        <button class="btn btn-outline-info btn-sm btn-block"
+                                                                onclick="viewOrderDetails('@donHang.HoaDon.MaHoaDonSanPham')">
+                                                            <i class="fas fa-eye"></i> Xem chi tiết
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Pagination would go here if needed -->
+                    }
+                    else
+                    {
+                        <!-- No Orders -->
+                        <div class="text-center py-5">
+                            <i class="fas fa-clipboard-list fa-5x text-muted mb-4"></i>
+                            <h3 class="text-muted">Chưa có đơn hàng nào</h3>
+                            <p class="text-muted mb-4">
+                                @if (!string.IsNullOrEmpty(Model.TrangThaiFilter) || Model.TuNgay.HasValue || Model.DenNgay.HasValue)
+                                {
+                                    <text>Không tìm thấy đơn hàng nào phù hợp với bộ lọc.</text>
+                                }
+                                else
+                                {
+                                    <text>Bạn chưa có đơn hàng nào. Hãy bắt đầu mua sắm ngay!</text>
+                                }
+                            </p>
+                            <a asp-action="Shopping" class="btn btn-success btn-lg">
+                                <i class="fas fa-shopping-bag"></i> Bắt đầu mua sắm
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Details Modal -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết đơn hàng</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="orderDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.border-left-primary {
+    border-left: 4px solid #007bff !important;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s;
+}
+</style>
+
+@section Scripts {
+    <script>
+        function cancelOrder(orderId) {
+            if (confirm('Bạn có chắc muốn hủy đơn hàng này?')) {
+                // Here you would make an AJAX call to cancel the order
+                $.ajax({
+                    url: '@Url.Action("HuyDonHang", "KhachHang")',
+                    type: 'POST',
+                    data: { maHoaDon: orderId },
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            toastr.success('Đã hủy đơn hàng thành công');
+                            location.reload();
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Có lỗi xảy ra khi hủy đơn hàng');
+                    }
+                });
+            }
+        }
+
+        function viewOrderDetails(orderId) {
+            // Load order details in modal
+            $.ajax({
+                url: '@Url.Action("ChiTietDonHang", "KhachHang")',
+                type: 'GET',
+                data: { id: orderId },
+                success: function(response) {
+                    $('#orderDetailsContent').html(response);
+                    $('#orderDetailsModal').modal('show');
+                },
+                error: function() {
+                    toastr.error('Không thể tải chi tiết đơn hàng');
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+
+            // Set max date for date inputs to today
+            var today = new Date().toISOString().split('T')[0];
+            $('input[type="date"]').attr('max', today);
+        });
+    </script>
+} 

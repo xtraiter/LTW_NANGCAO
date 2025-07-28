@@ -1,0 +1,405 @@
+@model List<CinemaManagement.Models.TinNhan>
+@{
+    ViewData["Title"] = "Hỗ trợ khách hàng";
+    var tenKhachHang = ViewBag.TenKhachHang as string;
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-headset me-2"></i>
+                        Hỗ trợ khách hàng - @tenKhachHang
+                    </h4>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Chat Messages Area -->
+                    <div id="chat-messages" class="chat-messages p-3">
+                        @if (Model.Any())
+                        {
+                            @foreach (var tinNhan in Model)
+                            {
+                                <div class="message-item mb-3 fade-in" data-message-id="@tinNhan.MaTinNhan">
+                                    <div class="message-bubble user-message">
+                                        @if (!string.IsNullOrEmpty(tinNhan.NoiDung))
+                                        {
+                                            <div class="message-content">
+                                                @tinNhan.NoiDung
+                                            </div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(tinNhan.HinhAnh))
+                                        {
+                                            <div class="message-image mt-2">
+                                                <img src="@tinNhan.HinhAnh" alt="Hình ảnh đính kèm" class="img-fluid rounded" style="max-width: 300px; cursor: pointer;" onclick="showImageModal('@tinNhan.HinhAnh')" />
+                                            </div>
+                                        }
+                                        <div class="message-time">
+                                            <small class="text-muted">
+                                                @tinNhan.ThoiGianGui.ToString("dd/MM/yyyy HH:mm") - @tinNhan.TrangThai
+                                            </small>
+                                            <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="deleteMessage('@tinNhan.MaTinNhan')" title="Xóa tin nhắn">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="empty-state text-center py-5">
+                                <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Chưa có tin nhắn nào. Hãy gửi tin nhắn đầu tiên của bạn!</p>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Message Input Area -->
+                    <div class="chat-input border-top p-3">
+                        <form id="message-form" enctype="multipart/form-data">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-8">
+                                    <textarea id="message-content" name="noiDung" class="form-control" rows="2" placeholder="Nhập tin nhắn của bạn..." style="resize: none;"></textarea>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="d-flex gap-2">
+                                        <input type="file" id="image-input" name="hinhAnh" accept="image/*" style="display: none;" />
+                                        <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('image-input').click()" title="Đính kèm hình ảnh">
+                                            <i class="fas fa-image"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-paper-plane me-1"></i>
+                                        Gửi
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Image Preview -->
+                            <div id="image-preview" class="mt-2" style="display: none;">
+                                <div class="position-relative d-inline-block">
+                                    <img id="preview-img" src="" alt="Preview" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
+                                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded-circle" onclick="removeImagePreview()" style="width: 25px; height: 25px; padding: 0;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Hình ảnh</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modal-image" src="" alt="Hình ảnh" class="img-fluid" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Spinner -->
+<div id="loading-spinner" class="position-fixed top-50 start-50 translate-middle" style="display: none; z-index: 9999;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Đang gửi...</span>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .chat-messages {
+            height: 500px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+        }
+
+        .message-item {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            background-color: #007bff;
+            color: white;
+            position: relative;
+        }
+
+        .user-message {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .message-content {
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message-time {
+            margin-top: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .message-time small {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .message-image img {
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+
+        .message-image img:hover {
+            transform: scale(1.05);
+        }
+
+        .chat-input {
+            background-color: white;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .empty-state {
+            color: #6c757d;
+        }
+
+        /* Custom scrollbar */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        #image-preview {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #f8f9fa;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto scroll to bottom
+            scrollToBottom();
+
+            // Handle form submission
+            $('#message-form').on('submit', function(e) {
+                e.preventDefault();
+                sendMessage();
+            });
+
+            // Handle image input change
+            $('#image-input').on('change', function() {
+                previewImage(this);
+            });
+
+            // Auto resize textarea
+            $('#message-content').on('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Enter to send (Shift+Enter for new line)
+            $('#message-content').on('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    $('#message-form').submit();
+                }
+            });
+        });
+
+        function sendMessage() {
+            const content = $('#message-content').val().trim();
+            const imageFile = $('#image-input')[0].files[0];
+
+            if (!content && !imageFile) {
+                showAlert('Vui lòng nhập nội dung tin nhắn hoặc chọn hình ảnh', 'warning');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('noiDung', content);
+            if (imageFile) {
+                formData.append('hinhAnh', imageFile);
+            }
+
+            $('#loading-spinner').show();
+
+            $.ajax({
+                url: '@Url.Action("SendMessage", "Support")',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        addMessageToChat(response.data);
+                        $('#message-form')[0].reset();
+                        removeImagePreview();
+                        $('#message-content').css('height', 'auto');
+                        showAlert('Tin nhắn đã được gửi thành công', 'success');
+                    } else {
+                        showAlert(response.message, 'error');
+                    }
+                },
+                error: function() {
+                    showAlert('Có lỗi xảy ra khi gửi tin nhắn', 'error');
+                },
+                complete: function() {
+                    $('#loading-spinner').hide();
+                }
+            });
+        }
+
+        function addMessageToChat(messageData) {
+            const messageHtml = createMessageHtml(messageData);
+            
+            // Remove empty state if exists
+            $('.empty-state').remove();
+            
+            $('#chat-messages').append(messageHtml);
+            scrollToBottom();
+        }
+
+        function createMessageHtml(data) {
+            let contentHtml = '';
+            if (data.noiDung) {
+                contentHtml += `<div class="message-content">${data.noiDung}</div>`;
+            }
+            if (data.hinhAnh) {
+                contentHtml += `<div class="message-image mt-2">
+                    <img src="${data.hinhAnh}" alt="Hình ảnh đính kèm" class="img-fluid rounded" style="max-width: 300px; cursor: pointer;" onclick="showImageModal('${data.hinhAnh}')" />
+                </div>`;
+            }
+
+            return `
+                <div class="message-item mb-3 fade-in" data-message-id="${data.maTinNhan}">
+                    <div class="message-bubble user-message">
+                        ${contentHtml}
+                        <div class="message-time">
+                            <small class="text-muted">${data.thoiGianGui} - ${data.trangThai}</small>
+                            <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="deleteMessage('${data.maTinNhan}')" title="Xóa tin nhắn">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#preview-img').attr('src', e.target.result);
+                    $('#image-preview').show();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function removeImagePreview() {
+            $('#image-preview').hide();
+            $('#image-input').val('');
+        }
+
+        function showImageModal(imageSrc) {
+            $('#modal-image').attr('src', imageSrc);
+            $('#imageModal').modal('show');
+        }
+
+        function deleteMessage(maTinNhan) {
+            if (!confirm('Bạn có chắc chắn muốn xóa tin nhắn này?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("DeleteMessage", "Support")',
+                type: 'POST',
+                data: { maTinNhan: maTinNhan },
+                success: function(response) {
+                    if (response.success) {
+                        $(`[data-message-id="${maTinNhan}"]`).fadeOut(300, function() {
+                            $(this).remove();
+                            if ($('.message-item').length === 0) {
+                                $('#chat-messages').html(`
+                                    <div class="empty-state text-center py-5">
+                                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">Chưa có tin nhắn nào. Hãy gửi tin nhắn đầu tiên của bạn!</p>
+                                    </div>
+                                `);
+                            }
+                        });
+                        showAlert('Đã xóa tin nhắn thành công', 'success');
+                    } else {
+                        showAlert(response.message, 'error');
+                    }
+                },
+                error: function() {
+                    showAlert('Có lỗi xảy ra khi xóa tin nhắn', 'error');
+                }
+            });
+        }
+
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showAlert(message, type) {
+            const alertClass = type === 'success' ? 'alert-success' : 
+                             type === 'warning' ? 'alert-warning' : 'alert-danger';
+            
+            const alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            $('body').append(alertHtml);
+            
+            // Auto remove after 5 seconds
+            setTimeout(function() {
+                $('.alert').fadeOut();
+            }, 5000);
+        }
+    </script>
+} 

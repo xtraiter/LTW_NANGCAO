@@ -1,0 +1,649 @@
+@model List<CinemaManagement.Models.LichChieu>
+
+@{
+    ViewData["Title"] = "Quản lý lịch chiếu";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">
+                        <i class="fas fa-calendar-alt me-2"></i>Quản lý lịch chiếu
+                    </h3>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#themLichChieuModal">
+                        <i class="fas fa-plus me-1"></i>Thêm lịch chiếu mới
+                    </button>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <!-- Bộ lọc -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-filter me-2"></i>Bộ lọc và tìm kiếm
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="get" action="" id="filterForm">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="searchTerm" class="form-label">Tìm kiếm</label>
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   id="searchTerm" 
+                                                   name="searchTerm" 
+                                                   value="@ViewBag.SearchTerm" 
+                                                   placeholder="Mã lịch, tên phim, tên phòng...">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label for="maPhim" class="form-label">Phim</label>
+                                            <select class="form-select" id="maPhimFilter" name="maPhim">
+                                                <option value="">Tất cả phim</option>
+                                                @if (ViewBag.DanhSachPhim != null)
+                                                {
+                                                    @foreach (var phim in ViewBag.DanhSachPhim)
+                                                    {
+                                                        <option value="@phim.MaPhim" selected="@(ViewBag.MaPhim == phim.MaPhim)">@phim.TenPhim</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label for="maPhong" class="form-label">Phòng chiếu</label>
+                                            <select class="form-select" id="maPhongFilter" name="maPhong">
+                                                <option value="">Tất cả phòng</option>
+                                                @if (ViewBag.DanhSachPhong != null)
+                                                {
+                                                    @foreach (var phong in ViewBag.DanhSachPhong)
+                                                    {
+                                                        <option value="@phong.MaPhong" selected="@(ViewBag.MaPhong == phong.MaPhong)">@phong.TenPhong (@phong.LoaiPhong)</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label for="ngayChieu" class="form-label">Ngày chiếu</label>
+                                            <input type="date" class="form-control" id="ngayChieu" name="ngayChieu" value="@ViewBag.NgayChieu">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="trangThai" class="form-label">Trạng thái</label>
+                                            <select class="form-select" id="trangThaiFilter" name="trangThai">
+                                                <option value="">Tất cả trạng thái</option>
+                                                <option value="SapChieu" selected="@(ViewBag.TrangThai == "SapChieu")">Sắp chiếu</option>
+                                                <option value="DangChieu" selected="@(ViewBag.TrangThai == "DangChieu")">Đang chiếu</option>
+                                                <option value="KetThuc" selected="@(ViewBag.TrangThai == "KetThuc")">Kết thúc</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="sortBy" class="form-label">Sắp xếp theo</label>
+                                            <select class="form-select" id="sortBy" name="sortBy">
+                                                <option value="ThoiGianBatDau" selected="@(ViewBag.SortBy == "ThoiGianBatDau")">Thời gian bắt đầu (Tăng dần)</option>
+                                                <option value="ThoiGianBatDau_desc" selected="@(ViewBag.SortBy == "ThoiGianBatDau_desc")">Thời gian bắt đầu (Giảm dần)</option>
+                                                <option value="TenPhim" selected="@(ViewBag.SortBy == "TenPhim")">Tên phim</option>
+                                                <option value="TenPhong" selected="@(ViewBag.SortBy == "TenPhong")">Tên phòng</option>
+                                                <option value="Gia" selected="@(ViewBag.SortBy == "Gia")">Giá vé</option>
+                                                <option value="MaLichChieu" selected="@(ViewBag.SortBy == "MaLichChieu")">Mã lịch chiếu</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div class="mb-3">
+                                            <label class="form-label">&nbsp;</label>
+                                            <div class="d-flex gap-2">
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-search me-1"></i>Lọc
+                                                </button>
+                                                <a href="@Url.Action("Index", "LichChieu")" class="btn btn-outline-secondary">
+                                                    <i class="fas fa-refresh me-1"></i>Xóa bộ lọc
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Thống kê nhanh -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-info">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Tổng lịch chiếu</span>
+                                    <span class="info-box-number">@Model.Count</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-success">
+                                    <i class="fas fa-play-circle"></i>
+                                </span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Sắp chiếu</span>
+                                    <span class="info-box-number">@Model.Count(l => l.ThoiGianBatDau > DateTime.Now)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-warning">
+                                    <i class="fas fa-video"></i>
+                                </span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Đang chiếu</span>
+                                    <span class="info-box-number">@Model.Count(l => l.ThoiGianBatDau <= DateTime.Now && l.ThoiGianKetThuc > DateTime.Now)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-danger">
+                                    <i class="fas fa-stop-circle"></i>
+                                </span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Kết thúc</span>
+                                    <span class="info-box-number">@Model.Count(l => l.ThoiGianKetThuc <= DateTime.Now)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Mã lịch chiếu</th>
+                                    <th>Phim</th>
+                                    <th>Phòng chiếu</th>
+                                    <th>Thời gian bắt đầu</th>
+                                    <th>Thời gian kết thúc</th>
+                                    <th>Giá vé</th>
+                                    <th>Trạng thái</th>
+                                    <th>Nhân viên lập</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var lichChieu in Model)
+                                {
+                                    var now = DateTime.Now;
+                                    string trangThai;
+                                    string badgeClass;
+                                    
+                                    if (lichChieu.ThoiGianBatDau > now)
+                                    {
+                                        trangThai = "Sắp chiếu";
+                                        badgeClass = "bg-success";
+                                    }
+                                    else if (lichChieu.ThoiGianKetThuc > now)
+                                    {
+                                        trangThai = "Đang chiếu";
+                                        badgeClass = "bg-warning";
+                                    }
+                                    else
+                                    {
+                                        trangThai = "Kết thúc";
+                                        badgeClass = "bg-secondary";
+                                    }
+
+                                    <tr class="schedule-row">
+                                        <td><span class="badge bg-primary">@lichChieu.MaLichChieu</span></td>
+                                        <td>
+                                            <strong>@lichChieu.Phim.TenPhim</strong>
+                                            <br>
+                                            <small class="text-muted">@lichChieu.Phim.ThoiLuong phút - @lichChieu.Phim.TheLoai</small>
+                                        </td>
+                                        <td>
+                                            <strong>@lichChieu.PhongChieu.TenPhong</strong>
+                                            <br>
+                                            <span class="badge bg-info">@lichChieu.PhongChieu.LoaiPhong</span>
+                                        </td>
+                                        <td>
+                                            <strong>@lichChieu.ThoiGianBatDau.ToString("dd/MM/yyyy")</strong>
+                                            <br>
+                                            <span class="text-primary">@lichChieu.ThoiGianBatDau.ToString("HH:mm")</span>
+                                        </td>
+                                        <td>
+                                            <strong>@lichChieu.ThoiGianKetThuc.ToString("dd/MM/yyyy")</strong>
+                                            <br>
+                                            <span class="text-danger">@lichChieu.ThoiGianKetThuc.ToString("HH:mm")</span>
+                                        </td>
+                                        <td>
+                                            <strong class="text-success">@lichChieu.Gia.ToString("N0") VNĐ</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge @badgeClass">@trangThai</span>
+                                        </td>
+                                        <td>@(lichChieu.NhanVien?.TenNhanVien ?? "Chưa có thông tin")</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-outline-info" onclick="xemChiTiet('@lichChieu.MaLichChieu')" title="Xem chi tiết" data-bs-toggle="modal" data-bs-target="#chiTietModal">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                @if (lichChieu.ThoiGianBatDau > DateTime.Now)
+                                                {
+                                                    <button class="btn btn-sm btn-outline-warning" onclick="suaLichChieu('@lichChieu.MaLichChieu')" title="Sửa" data-bs-toggle="modal" data-bs-target="#suaLichChieuModal">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="xoaLichChieu('@lichChieu.MaLichChieu', '@lichChieu.Phim.TenPhim', '@lichChieu.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")')" title="Xóa">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Hiện tại chưa có lịch chiếu nào trong hệ thống.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thêm lịch chiếu -->
+<div class="modal fade" id="themLichChieuModal" tabindex="-1" aria-labelledby="themLichChieuModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="themLichChieuModalLabel">Thêm lịch chiếu mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="maPhim" class="form-label">Phim <span class="text-danger">*</span></label>
+                                <select class="form-select" id="maPhim" required>
+                                    <option value="">Chọn phim</option>
+                                    @if (ViewBag.DanhSachPhim != null)
+                                    {
+                                        @foreach (var phim in ViewBag.DanhSachPhim)
+                                        {
+                                            <option value="@phim.MaPhim">@phim.TenPhim</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="maPhong" class="form-label">Phòng chiếu <span class="text-danger">*</span></label>
+                                <select class="form-select" id="maPhong" required>
+                                    <option value="">Chọn phòng chiếu</option>
+                                    @if (ViewBag.DanhSachPhong != null)
+                                    {
+                                        @foreach (var phong in ViewBag.DanhSachPhong)
+                                        {
+                                            <option value="@phong.MaPhong">@phong.TenPhong (@phong.LoaiPhong)</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="thoiGianBatDau" class="form-label">Thời gian bắt đầu <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" id="thoiGianBatDau" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="gia" class="form-label">Giá vé (VNĐ) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="gia" min="50000" max="500000" step="1000" required>
+                                <div class="form-text">Giá vé từ 50,000 đến 500,000 VNĐ</div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="themLichChieu()">Thêm lịch chiếu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal sửa lịch chiếu -->
+<div class="modal fade" id="suaLichChieuModal" tabindex="-1" aria-labelledby="suaLichChieuModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="suaLichChieuModalLabel">Sửa lịch chiếu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="editMaLichChieu">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editMaPhim" class="form-label">Phim <span class="text-danger">*</span></label>
+                                <select class="form-select" id="editMaPhim" required>
+                                    <option value="">Chọn phim</option>
+                                    @if (ViewBag.DanhSachPhim != null)
+                                    {
+                                        @foreach (var phim in ViewBag.DanhSachPhim)
+                                        {
+                                            <option value="@phim.MaPhim">@phim.TenPhim</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editMaPhong" class="form-label">Phòng chiếu <span class="text-danger">*</span></label>
+                                <select class="form-select" id="editMaPhong" required>
+                                    <option value="">Chọn phòng chiếu</option>
+                                    @if (ViewBag.DanhSachPhong != null)
+                                    {
+                                        @foreach (var phong in ViewBag.DanhSachPhong)
+                                        {
+                                            <option value="@phong.MaPhong">@phong.TenPhong (@phong.LoaiPhong)</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editThoiGianBatDau" class="form-label">Thời gian bắt đầu <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" id="editThoiGianBatDau" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editGia" class="form-label">Giá vé (VNĐ) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="editGia" min="50000" max="500000" step="1000" required>
+                                <div class="form-text">Giá vé từ 50,000 đến 500,000 VNĐ</div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="capNhatLichChieu()">Cập nhật</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xem chi tiết lịch chiếu -->
+<div class="modal fade" id="chiTietModal" tabindex="-1" aria-labelledby="chiTietModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="chiTietModalLabel">Chi tiết lịch chiếu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="chiTietModalBody">
+                <!-- Nội dung chi tiết lịch chiếu sẽ được load bằng JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Hàm xem chi tiết lịch chiếu
+    function xemChiTiet(maLichChieu) {
+        console.log('Xem chi tiết lịch chiếu:', maLichChieu);
+        fetch('/LichChieu/ChiTietLichChieu?maLichChieu=' + maLichChieu)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    const lichChieu = data.lichChieu;
+                    const modalBody = document.getElementById('chiTietModalBody');
+                    modalBody.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><strong>Mã lịch chiếu:</strong> ${lichChieu.MaLichChieu}</h6>
+                                <h6><strong>Phim:</strong> ${lichChieu.TenPhim}</h6>
+                                <h6><strong>Thời lượng phim:</strong> ${lichChieu.ThoiLuongPhim} phút</h6>
+                                <h6><strong>Phòng chiếu:</strong> ${lichChieu.TenPhong} (${lichChieu.LoaiPhong})</h6>
+                                <h6><strong>Thời gian bắt đầu:</strong> ${lichChieu.ThoiGianBatDau}</h6>
+                                <h6><strong>Thời gian kết thúc:</strong> ${lichChieu.ThoiGianKetThuc}</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><strong>Giá vé:</strong> <span class="text-success">${lichChieu.Gia.toLocaleString('vi-VN')} VNĐ</span></h6>
+                                <h6><strong>Trạng thái:</strong> <span class="badge ${lichChieu.TrangThai === 'Sắp chiếu' ? 'bg-success' : lichChieu.TrangThai === 'Đang chiếu' ? 'bg-warning' : 'bg-secondary'}">${lichChieu.TrangThai}</span></h6>
+                                <h6><strong>Tổng ghế:</strong> ${lichChieu.TongGhe}</h6>
+                                <h6><strong>Vé đã bán:</strong> ${lichChieu.VeDaBan}</h6>
+                                <h6><strong>Ghế còn lại:</strong> ${lichChieu.GheConLai}</h6>
+                                <h6><strong>Doanh thu:</strong> <span class="text-success">${lichChieu.DoanhThu.toLocaleString('vi-VN')} VNĐ</span></h6>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h6><strong>Nhân viên lập lịch:</strong> ${lichChieu.TenNhanVien}</h6>
+                        </div>
+                    `;
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi tải thông tin lịch chiếu');
+            });
+    }
+
+    // Hàm sửa lịch chiếu
+    function suaLichChieu(maLichChieu) {
+        console.log('Sửa lịch chiếu:', maLichChieu);
+        fetch('/LichChieu/ChiTietLichChieu?maLichChieu=' + maLichChieu)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const lichChieu = data.lichChieu;
+                    // Điền dữ liệu vào form sửa
+                    document.getElementById('editMaLichChieu').value = lichChieu.MaLichChieu;
+                    document.getElementById('editMaPhim').value = lichChieu.MaPhim;
+                    document.getElementById('editMaPhong').value = lichChieu.MaPhong;
+                    
+                    // Chuyển đổi định dạng thời gian cho datetime-local input
+                    const thoiGianBatDau = new Date(lichChieu.ThoiGianBatDau.replace(/(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/, '$3-$2-$1T$4:$5'));
+                    document.getElementById('editThoiGianBatDau').value = thoiGianBatDau.toISOString().slice(0, 16);
+                    
+                    document.getElementById('editGia').value = lichChieu.Gia;
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi tải thông tin lịch chiếu');
+            });
+    }
+
+    // Hàm xóa lịch chiếu
+    function xoaLichChieu(maLichChieu, tenPhim, thoiGian) {
+        console.log('Xóa lịch chiếu:', maLichChieu, tenPhim, thoiGian);
+        if (confirm(`Bạn có chắc chắn muốn xóa lịch chiếu "${tenPhim}" vào lúc ${thoiGian} không?`)) {
+            fetch('/LichChieu/XoaLichChieu', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'maLichChieu=' + encodeURIComponent(maLichChieu)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Xóa lịch chiếu thành công!');
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi xóa lịch chiếu');
+            });
+        }
+    }
+
+    // Hàm thêm lịch chiếu
+    function themLichChieu() {
+        console.log('Thêm lịch chiếu mới');
+        var maPhim = document.getElementById('maPhim').value;
+        var maPhong = document.getElementById('maPhong').value;
+        var thoiGianBatDau = document.getElementById('thoiGianBatDau').value;
+        var gia = document.getElementById('gia').value;
+
+        if (!maPhim || !maPhong || !thoiGianBatDau || !gia) {
+            alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
+            return;
+        }
+
+        // Kiểm tra thời gian bắt đầu phải sau thời gian hiện tại
+        const now = new Date();
+        const startTime = new Date(thoiGianBatDau);
+        if (startTime <= now) {
+            alert('Thời gian bắt đầu phải sau thời gian hiện tại!');
+            return;
+        }
+
+        fetch('/LichChieu/ThemLichChieu', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'maPhim=' + encodeURIComponent(maPhim) +
+                  '&maPhong=' + encodeURIComponent(maPhong) +
+                  '&thoiGianBatDau=' + encodeURIComponent(thoiGianBatDau) +
+                  '&gia=' + encodeURIComponent(gia)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Thêm lịch chiếu thành công!');
+                // Đóng modal và reset form
+                var modal = bootstrap.Modal.getInstance(document.getElementById('themLichChieuModal'));
+                modal.hide();
+                document.getElementById('createForm').reset();
+                location.reload();
+            } else {
+                alert('Lỗi: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra khi thêm lịch chiếu');
+        });
+    }
+
+    // Hàm cập nhật lịch chiếu
+    function capNhatLichChieu() {
+        console.log('Cập nhật lịch chiếu');
+        var maLichChieu = document.getElementById('editMaLichChieu').value;
+        var maPhim = document.getElementById('editMaPhim').value;
+        var maPhong = document.getElementById('editMaPhong').value;
+        var thoiGianBatDau = document.getElementById('editThoiGianBatDau').value;
+        var gia = document.getElementById('editGia').value;
+
+        if (!maPhim || !maPhong || !thoiGianBatDau || !gia) {
+            alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
+            return;
+        }
+
+        // Kiểm tra thời gian bắt đầu phải sau thời gian hiện tại
+        const now = new Date();
+        const startTime = new Date(thoiGianBatDau);
+        if (startTime <= now) {
+            alert('Thời gian bắt đầu phải sau thời gian hiện tại!');
+            return;
+        }
+
+        fetch('/LichChieu/SuaLichChieu', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'maLichChieu=' + encodeURIComponent(maLichChieu) +
+                  '&maPhim=' + encodeURIComponent(maPhim) +
+                  '&maPhong=' + encodeURIComponent(maPhong) +
+                  '&thoiGianBatDau=' + encodeURIComponent(thoiGianBatDau) +
+                  '&gia=' + encodeURIComponent(gia)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Cập nhật lịch chiếu thành công!');
+                // Đóng modal
+                var modal = bootstrap.Modal.getInstance(document.getElementById('suaLichChieuModal'));
+                modal.hide();
+                location.reload();
+            } else {
+                alert('Lỗi: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra khi cập nhật lịch chiếu');
+        });
+    }
+
+    // Đặt thời gian mặc định cho input datetime-local
+    document.addEventListener('DOMContentLoaded', function() {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        now.setHours(now.getHours() + 1); // Thêm 1 giờ
+        document.getElementById('thoiGianBatDau').min = now.toISOString().slice(0, 16);
+        document.getElementById('editThoiGianBatDau').min = now.toISOString().slice(0, 16);
+    });
+</script>

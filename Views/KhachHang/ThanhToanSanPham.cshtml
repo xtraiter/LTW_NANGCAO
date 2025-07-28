@@ -1,0 +1,224 @@
+@model ThanhToanSanPhamViewModel
+
+@{
+    ViewData["Title"] = "Thanh toán";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-credit-card"></i> Thanh toán đơn hàng
+                    </h3>
+                </div>
+
+                <form asp-action="ThanhToanSanPham" method="post">
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Order Summary -->
+                            <div class="col-md-8">
+                                <h5><i class="fas fa-shopping-cart"></i> Đơn hàng của bạn</h5>
+                                
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Sản phẩm</th>
+                                                <th>Đơn giá</th>
+                                                <th>Số lượng</th>
+                                                <th>Thành tiền</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model.GioHang.Items)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            @if (!string.IsNullOrEmpty(item.SanPham.HinhAnh))
+                                                            {
+                                                                <img src="@item.SanPham.HinhAnh" alt="@item.SanPham.TenSanPham" 
+                                                                     class="img-thumbnail me-2" style="width: 50px; height: 50px; object-fit: cover;" />
+                                                            }
+                                                            else
+                                                            {
+                                                                <div class="bg-light d-flex align-items-center justify-content-center me-2" 
+                                                                     style="width: 50px; height: 50px;">
+                                                                    <i class="fas fa-image text-muted"></i>
+                                                                </div>
+                                                            }
+                                                            <div>
+                                                                <h6 class="mb-0">@item.SanPham.TenSanPham</h6>
+                                                                <small class="text-muted">@item.SanPham.MaSanPham</small>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>@item.ChiTiet.DonGia.ToString("N0") ₫</td>
+                                                    <td>@item.ChiTiet.SoLuong</td>
+                                                    <td class="font-weight-bold">@item.ThanhTien.ToString("N0") ₫</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <hr>
+
+                                <!-- Customer & Delivery Info -->
+                                <h5><i class="fas fa-user"></i> Thông tin giao hàng</h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Họ tên khách hàng</label>
+                                            <input type="text" class="form-control" value="@Model.KhachHang.HoTen" readonly />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Số điện thoại</label>
+                                            <input type="text" class="form-control" value="@Model.KhachHang.SDT" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label asp-for="DiaChiGiaoHang" class="control-label">Địa chỉ giao hàng <span class="text-danger">*</span></label>
+                                    <textarea asp-for="DiaChiGiaoHang" class="form-control" rows="3" 
+                                              placeholder="Nhập địa chỉ giao hàng chi tiết..."></textarea>
+                                    <span asp-validation-for="DiaChiGiaoHang" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label asp-for="GhiChu" class="control-label">Ghi chú (tùy chọn)</label>
+                                    <textarea asp-for="GhiChu" class="form-control" rows="2" 
+                                              placeholder="Ghi chú cho đơn hàng..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Payment Summary -->
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-receipt"></i> Tổng đơn hàng</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Tổng số lượng:</span>
+                                            <span class="font-weight-bold">@Model.GioHang.TongSoLuong</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Tạm tính:</span>
+                                            <span class="font-weight-bold">@Model.GioHang.TongTien.ToString("N0") ₫</span>
+                                        </div>
+                                        
+                                        @if (Model.TienGiam > 0)
+                                        {
+                                            <div class="d-flex justify-content-between mb-2 text-success">
+                                                <span>Giảm giá:</span>
+                                                <span class="font-weight-bold">-@Model.TienGiam.ToString("N0") ₫</span>
+                                            </div>
+                                        }
+                                        
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Phí vận chuyển:</span>
+                                            <span class="text-success font-weight-bold">Miễn phí</span>
+                                        </div>
+                                        
+                                        <hr>
+                                        
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span class="h5">Tổng thanh toán:</span>
+                                            <span class="h4 text-success font-weight-bold">@Model.TongTienSauGiam.ToString("N0") ₫</span>
+                                        </div>
+
+                                        <!-- Payment Method -->
+                                        <div class="mb-3">
+                                            <h6><i class="fas fa-credit-card"></i> Phương thức thanh toán</h6>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="cod" checked>
+                                                <label class="form-check-label" for="cod">
+                                                    <i class="fas fa-money-bill-wave"></i> Thanh toán khi nhận hàng (COD)
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="paymentMethod" id="online" value="online" disabled>
+                                                <label class="form-check-label text-muted" for="online">
+                                                    <i class="fas fa-credit-card"></i> Thanh toán online (Sắp có)
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <!-- Loyalty Points -->
+                                        <div class="alert alert-info">
+                                            <small>
+                                                <i class="fas fa-star"></i>
+                                                Điểm tích lũy hiện tại: <strong>@Model.KhachHang.DiemTichLuy</strong>
+                                                <br>
+                                                Bạn sẽ nhận thêm <strong>@((int)(Model.TongTienSauGiam / 10000))</strong> điểm từ đơn hàng này
+                                            </small>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-success btn-lg btn-block">
+                                            <i class="fas fa-check"></i> Xác nhận đặt hàng
+                                        </button>
+                                        
+                                        <a asp-action="GioHang" class="btn btn-outline-secondary btn-block mt-2">
+                                            <i class="fas fa-arrow-left"></i> Quay lại giỏ hàng
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- Security Info -->
+                                <div class="card mt-3">
+                                    <div class="card-body text-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-shield-alt text-success"></i>
+                                            Thông tin của bạn được bảo mật an toàn
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Form validation
+            $('form').on('submit', function(e) {
+                var diaChiGiaoHang = $('#DiaChiGiaoHang').val().trim();
+                
+                if (!diaChiGiaoHang) {
+                    e.preventDefault();
+                    toastr.error('Vui lòng nhập địa chỉ giao hàng');
+                    $('#DiaChiGiaoHang').focus();
+                    return false;
+                }
+                
+                // Show loading overlay
+                $('button[type="submit"]').prop('disabled', true);
+                $('button[type="submit"]').html('<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
+            });
+
+            // Auto-fill address if available
+            @if (!string.IsNullOrEmpty(Model.KhachHang.DiaChiGiaoHang))
+            {
+                <text>
+                if (!$('#DiaChiGiaoHang').val()) {
+                    $('#DiaChiGiaoHang').val('@Html.Raw(Model.KhachHang.DiaChiGiaoHang)');
+                }
+                </text>
+            }
+        });
+    </script>
+} 

@@ -3,11 +3,13 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Hệ thống Quản lý Rạp Chiếu Phim</title>
+    <title>@ViewData["Title"] - D'CINE</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/theme-system.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/shopping.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CinemaManagement.styles.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -16,8 +18,8 @@
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="QuanLy" asp-action="Index">
-                    <i class="fas fa-film me-2"></i>
-                    CinemaManagement
+                    <img src="~/images/Logo.png" alt="D'CINE Logo" height="48" class="me-2" />
+                    D'CINE
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
@@ -28,8 +30,8 @@
                         @if (Context.Session.GetString("MaNhanVien") != null)
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="BanVe" asp-action="Index">
-                                    <i class="fas fa-ticket-alt me-1"></i>Bán Vé
+                                <a class="nav-link" asp-controller="PhatHanhVe" asp-action="Index">
+                                    <i class="fas fa-ticket-alt me-1"></i>Phát Hành Vé
                                 </a>
                             </li>
                             @if (Context.Session.GetString("VaiTro") == "Quản lý")
@@ -75,6 +77,23 @@
                                         <li><a class="dropdown-item" asp-controller="QuanLy" asp-action="QuanLyNhanVien">
                                             <i class="fas fa-users me-1"></i>Quản lý nhân viên
                                         </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="QuanLyKhachHang" asp-action="Index">
+                                            <i class="fas fa-user-friends me-1"></i>Quản lý khách hàng
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="QuanLyKhuyenMai" asp-action="Index">
+                                            <i class="fas fa-tags me-1"></i>Quản lý khuyến mãi
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="QuanLyHoaDon" asp-action="Index">
+                                            <i class="fas fa-shopping-cart me-1"></i>Quản lý đơn hàng
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="SanPham" asp-action="Index">
+                                            <i class="fas fa-box me-1"></i>Quản lý sản phẩm
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="AdminSupport" asp-action="Index">
+                                            <i class="fas fa-headset me-1"></i>Hỗ trợ khách hàng
+                                        </a></li>
                                     </ul>
                                 </li>
                             }
@@ -91,6 +110,24 @@
                                     <i class="fas fa-history me-1"></i>Lịch sử đặt vé
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="KhachHang" asp-action="Shopping">
+                                    <i class="fas fa-shopping-bag me-1"></i>Cửa hàng
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link position-relative" asp-controller="KhachHang" asp-action="GioHang">
+                                    <i class="fas fa-shopping-cart me-1"></i>Giỏ hàng
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count" style="display: none;">
+                                        0
+                                    </span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="KhachHang" asp-action="LichSuDonHang">
+                                    <i class="fas fa-clipboard-list me-1"></i>Đơn hàng
+                                </a>
+                            </li>
                         }
                         @if (Context.Session.GetString("MaNhanVien") == null && Context.Session.GetString("MaKhachHang") == null)
                         {
@@ -101,6 +138,36 @@
                             </li>
                         }
                     </ul>
+                    
+                    <!-- Movie Search Widget - Only for Customers -->
+                    @{
+                        var userRole = Context.Session.GetString("VaiTro");
+                        var isCustomer = userRole == "Khách hàng" || string.IsNullOrEmpty(userRole);
+                    }
+                    @if (isCustomer)
+                    {
+                        <div class="navbar-nav me-3">
+                            <div class="movie-search-widget">
+                                <div class="position-relative">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" 
+                                           id="navSearchInput" 
+                                           class="form-control" 
+                                           placeholder="Tìm phim..."
+                                           autocomplete="off">
+                                    <div id="navSuggestionsList" class="movie-search-suggestions d-none">
+                                        <!-- Suggestions will be inserted here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    
+                    <!-- Settings Widget -->
+                    <div class="navbar-nav me-3">
+                        @await Html.PartialAsync("_SettingsWidget")
+                    </div>
+                    
                     <ul class="navbar-nav">
                         @if (Context.Session.GetString("MaNhanVien") != null)
                         {
@@ -191,7 +258,7 @@
                 <div class="col-md-4">
                     <p class="mb-0">
                         <i class="fas fa-film me-2"></i>
-                        &copy; 2025 - Hệ thống Quản lý Rạp Chiếu Phim
+                        &copy; 2025 - D'CINE
                     </p>
                 </div>
                 <div class="col-md-4 text-center">
@@ -229,6 +296,166 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/js/theme-system.js" asp-append-version="true"></script>
+        @await RenderSectionAsync("Scripts", required: false)
+    
+    <!-- Movie Search Widget Script - Only for Customers -->
+    @if (isCustomer)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const navSearchInput = document.getElementById('navSearchInput');
+                const navSuggestionsList = document.getElementById('navSuggestionsList');
+                let navSearchTimeout;
+                let navSelectedIndex = -1;
+                
+                if (navSearchInput) {
+                    navSearchInput.addEventListener('input', function(e) {
+                        const term = e.target.value.trim();
+                        clearTimeout(navSearchTimeout);
+                        
+                        if (term.length >= 2) {
+                            navSearchTimeout = setTimeout(() => {
+                                loadNavSuggestions(term);
+                            }, 300);
+                        } else {
+                            hideNavSuggestions();
+                        }
+                    });
+                    
+                    navSearchInput.addEventListener('keydown', function(e) {
+                        const suggestions = navSuggestionsList.querySelectorAll('.movie-suggestion-item');
+                        
+                        switch(e.key) {
+                            case 'ArrowDown':
+                                e.preventDefault();
+                                navSelectedIndex = Math.min(navSelectedIndex + 1, suggestions.length - 1);
+                                updateNavSuggestionSelection(suggestions);
+                                break;
+                                
+                            case 'ArrowUp':
+                                e.preventDefault();
+                                navSelectedIndex = Math.max(navSelectedIndex - 1, -1);
+                                updateNavSuggestionSelection(suggestions);
+                                break;
+                                
+                            case 'Enter':
+                                e.preventDefault();
+                                if (navSelectedIndex >= 0 && suggestions[navSelectedIndex]) {
+                                    selectNavSuggestion(suggestions[navSelectedIndex]);
+                                } else {
+                                    // Navigate to search page with current term
+                                    window.location.href = '/Phim/TimKiem?search=' + encodeURIComponent(e.target.value);
+                                }
+                                break;
+                                
+                            case 'Escape':
+                                hideNavSuggestions();
+                                e.target.blur();
+                                break;
+                        }
+                    });
+                    
+                    navSearchInput.addEventListener('focus', function(e) {
+                        const term = e.target.value.trim();
+                        if (term.length >= 2) {
+                            loadNavSuggestions(term);
+                        }
+                    });
+                    
+                    // Hide suggestions when clicking outside
+                    document.addEventListener('click', function(e) {
+                        if (!e.target.closest('.movie-search-widget')) {
+                            hideNavSuggestions();
+                        }
+                    });
+                }
+                
+                function loadNavSuggestions(term) {
+                    fetch('/Phim/SearchSuggestions?term=' + encodeURIComponent(term))
+                        .then(response => response.json())
+                        .then(data => {
+                            displayNavSuggestions(data.suggestions);
+                        })
+                        .catch(error => {
+                            console.error('Error loading nav suggestions:', error);
+                        });
+                }
+                
+                function displayNavSuggestions(suggestions) {
+                    if (suggestions.length === 0) {
+                        hideNavSuggestions();
+                        return;
+                    }
+                    
+                    const html = suggestions.slice(0, 5).map(movie => `
+                        <div class="movie-suggestion-item" onclick="selectNavMovieFromSuggestion('${movie.tenPhim}')">
+                            <div class="d-flex align-items-center">
+                                ${movie.viTriFilePhim ? 
+                                    `<img src="${movie.viTriFilePhim}" alt="${movie.tenPhim}" class="movie-suggestion-poster">` :
+                                    `<div class="movie-suggestion-placeholder">
+                                        <i class="fas fa-film text-muted"></i>
+                                    </div>`
+                                }
+                                <div class="movie-suggestion-info">
+                                    <div class="movie-suggestion-title">${movie.tenPhim}</div>
+                                    <div class="movie-suggestion-meta">
+                                        <span class="text-primary">${movie.theLoai}</span> • 
+                                        <span class="text-muted">${movie.thoiLuong}p</span> • 
+                                        <span class="text-warning">${movie.doTuoiPhanAnh}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    const viewAllHtml = `
+                        <div class="movie-suggestion-item border-top" onclick="goToSearchPage('${navSearchInput.value}')">
+                            <div class="text-center text-primary">
+                                <i class="fas fa-search me-2"></i>Xem tất cả kết quả tìm kiếm
+                            </div>
+                        </div>
+                    `;
+                    
+                    navSuggestionsList.innerHTML = html + viewAllHtml;
+                    navSuggestionsList.classList.remove('d-none');
+                    navSelectedIndex = -1;
+                }
+                
+                function updateNavSuggestionSelection(suggestions) {
+                    suggestions.forEach((item, index) => {
+                        item.classList.toggle('active', index === navSelectedIndex);
+                    });
+                }
+                
+                function selectNavSuggestion(suggestionElement) {
+                    const movieTitle = suggestionElement.querySelector('.movie-suggestion-title').textContent;
+                    selectNavMovieFromSuggestion(movieTitle);
+                }
+                
+                function hideNavSuggestions() {
+                    navSuggestionsList.classList.add('d-none');
+                    navSelectedIndex = -1;
+                }
+                
+                // Global functions for onclick handlers
+                window.selectNavMovieFromSuggestion = function(movieTitle) {
+                    navSearchInput.value = movieTitle;
+                    hideNavSuggestions();
+                    window.location.href = '/Phim/TimKiem?search=' + encodeURIComponent(movieTitle);
+                };
+                
+                window.goToSearchPage = function(searchTerm) {
+                    window.location.href = '/Phim/TimKiem?search=' + encodeURIComponent(searchTerm);
+                };
+            });
+        </script>
+    }
+    
+    <!-- Chat Widget -->
+    @await Html.PartialAsync("_ChatWidget")
+    
+    <!-- Support Widget -->
+    @await Html.PartialAsync("_SupportWidget")
 </body>
 </html>

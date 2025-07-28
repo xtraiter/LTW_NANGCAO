@@ -1,0 +1,50 @@
+@model int?
+
+<div class="rating-input" id="rating-@Guid.NewGuid().ToString("N")">
+    @for (int i = 10; i >= 1; i--)
+    {
+        var uniqueId = $"star-{i}-{Guid.NewGuid().ToString("N")}";
+        <input type="radio" name="DiemDanhGia" value="@i" id="@uniqueId" @(Model == i ? "checked" : "")>
+        <label for="@uniqueId" class="star-label">
+            <i class="fas fa-star"></i>
+        </label>
+    }
+</div>
+
+<div class="rating-text mt-2">
+    <small class="text-muted">Chọn @(Model ?? 0)/10 sao</small>
+</div>
+
+<script>
+    // Initialize rating for this specific instance
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.querySelector('#rating-@Guid.NewGuid().ToString("N")');
+        if (container) {
+            const radioButtons = container.querySelectorAll('input[type="radio"]');
+            const labels = container.querySelectorAll('.star-label');
+            
+            // Add click event to labels
+            labels.forEach((label, index) => {
+                label.addEventListener('click', function() {
+                    const radio = radioButtons[index];
+                    radio.checked = true;
+                    
+                    // Update visual state
+                    updateRatingStars(container, index + 1);
+                    updateRatingText(container, index + 1);
+                    
+                    // Trigger change event
+                    radio.dispatchEvent(new Event('change'));
+                });
+            });
+            
+            // Initialize with current value
+            const checkedRadio = container.querySelector('input[type="radio"]:checked');
+            if (checkedRadio) {
+                const value = parseInt(checkedRadio.value);
+                updateRatingStars(container, value);
+                updateRatingText(container, value);
+            }
+        }
+    });
+</script> 

@@ -1,0 +1,132 @@
+@model CreateSanPhamViewModel
+
+@{
+    ViewData["Title"] = "Sửa sản phẩm";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Sửa sản phẩm</h3>
+                    <div class="card-tools">
+                        <a asp-action="Index" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                    <div class="card-body">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="MaSanPham" class="control-label">Mã sản phẩm</label>
+                                    <input asp-for="MaSanPham" class="form-control" readonly />
+                                    <span asp-validation-for="MaSanPham" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="TrangThai" class="control-label">Trạng thái <span class="text-danger">*</span></label>
+                                    <select asp-for="TrangThai" class="form-control">
+                                        <option value="Còn hàng">Còn hàng</option>
+                                        <option value="Hết hàng">Hết hàng</option>
+                                        <option value="Ngừng kinh doanh">Ngừng kinh doanh</option>
+                                    </select>
+                                    <span asp-validation-for="TrangThai" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="TenSanPham" class="control-label">Tên sản phẩm <span class="text-danger">*</span></label>
+                            <input asp-for="TenSanPham" class="form-control" />
+                            <span asp-validation-for="TenSanPham" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="MoTa" class="control-label">Mô tả sản phẩm</label>
+                            <textarea asp-for="MoTa" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="MoTa" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Gia" class="control-label">Giá bán (VNĐ) <span class="text-danger">*</span></label>
+                                    <input asp-for="Gia" type="number" class="form-control" min="0" step="1000" />
+                                    <span asp-validation-for="Gia" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="SoLuongTon" class="control-label">Số lượng tồn kho <span class="text-danger">*</span></label>
+                                    <input asp-for="SoLuongTon" type="number" class="form-control" min="0" />
+                                    <span asp-validation-for="SoLuongTon" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="HinhAnh" class="control-label">Hình ảnh sản phẩm</label>
+                            <input asp-for="HinhAnh" class="form-control" />
+                            <span asp-validation-for="HinhAnh" class="text-danger"></span>
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div class="form-group" id="image-preview" style="display: none;">
+                            <label class="control-label">Xem trước hình ảnh</label>
+                            <div>
+                                <img id="preview-img" src="" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px;" />
+                            </div>
+                        </div>
+
+                        <input asp-for="MaNhanVien" type="hidden" />
+                    </div>
+
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Cập nhật
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Preview image when URL is entered
+            $('#HinhAnh').on('input', function() {
+                var imageUrl = $(this).val();
+                if (imageUrl) {
+                    $('#preview-img').attr('src', imageUrl);
+                    $('#image-preview').show();
+                    
+                    // Hide preview if image fails to load
+                    $('#preview-img').on('error', function() {
+                        $('#image-preview').hide();
+                    });
+                } else {
+                    $('#image-preview').hide();
+                }
+            });
+
+            // Show current image if exists
+            if ($('#HinhAnh').val()) {
+                $('#HinhAnh').trigger('input');
+            }
+        });
+    </script>
+} 

@@ -1,7 +1,7 @@
-﻿// Cinema Management System JavaScript
+﻿// D'CINE System JavaScript
 
 // Global functions
-window.CinemaApp = {
+window.DCineApp = {
     // Format currency
     formatCurrency: function(amount) {
         return new Intl.NumberFormat('vi-VN', {
@@ -158,3 +158,122 @@ $('form').on('submit', function() {
         $submitBtn.prop('disabled', false);
     }, 3000);
 });
+
+// Rating System
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize rating system
+    initializeRatingSystem();
+    
+    // Initialize rating display
+    initializeRatingDisplay();
+});
+
+function initializeRatingSystem() {
+    const ratingContainers = document.querySelectorAll('.rating-container');
+    
+    ratingContainers.forEach(container => {
+        const radioButtons = container.querySelectorAll('input[type="radio"]');
+        const ratingNumbers = container.querySelectorAll('.rating-number');
+        
+        // Add click event to rating numbers
+        ratingNumbers.forEach((number, index) => {
+            number.addEventListener('click', function() {
+                const selectedValue = index + 1; // 1 is first, 10 is last
+                const radio = container.querySelector(`input[type="radio"][value="${selectedValue}"]`);
+                
+                if (radio) {
+                    radio.checked = true;
+                    
+                    // Update rating text
+                    updateRatingText(container, selectedValue);
+                    
+                    // Trigger change event
+                    radio.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+        
+        // Add change event to radio buttons
+        radioButtons.forEach((radio) => {
+            radio.addEventListener('change', function() {
+                const value = parseInt(radio.value);
+                updateRatingText(container, value);
+            });
+        });
+        
+        // Initialize with current value
+        const checkedRadio = container.querySelector('input[type="radio"]:checked');
+        if (checkedRadio) {
+            const value = parseInt(checkedRadio.value);
+            updateRatingText(container, value);
+        }
+    });
+}
+
+
+
+function updateRatingText(container, selectedRating) {
+    const ratingText = container.querySelector('.rating-text small');
+    if (ratingText) {
+        ratingText.textContent = `Chọn ${selectedRating}/10 điểm`;
+    }
+}
+
+function initializeRatingDisplay() {
+    const ratingDisplays = document.querySelectorAll('.rating-display');
+    
+    ratingDisplays.forEach(display => {
+        const rating = parseFloat(display.dataset.rating || 0);
+        const starsContainer = display.querySelector('.stars');
+        
+        if (starsContainer) {
+            starsContainer.innerHTML = generateStars(rating);
+        }
+    });
+}
+
+function generateStars(rating) {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+    const emptyStars = 10 - fullStars - (hasHalfStar ? 1 : 0);
+    
+    let starsHTML = '';
+    
+    // Full stars
+    for (let i = 0; i < fullStars; i++) {
+        starsHTML += '<i class="fas fa-star"></i>';
+    }
+    
+    // Half star
+    if (hasHalfStar) {
+        starsHTML += '<i class="fas fa-star-half-alt"></i>';
+    }
+    
+    // Empty stars
+    for (let i = 0; i < emptyStars; i++) {
+        starsHTML += '<i class="far fa-star"></i>';
+    }
+    
+    return starsHTML;
+}
+
+// Function to get selected rating value
+function getSelectedRating(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return 0;
+    
+    const selectedRadio = container.querySelector('input[type="radio"]:checked');
+    return selectedRadio ? parseInt(selectedRadio.value) : 0;
+}
+
+// Function to set rating value
+function setRating(containerId, rating) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const radio = container.querySelector(`input[type="radio"][value="${rating}"]`);
+    if (radio) {
+        radio.checked = true;
+        updateRatingStars(container, rating);
+    }
+}

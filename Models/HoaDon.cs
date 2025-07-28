@@ -6,7 +6,7 @@ namespace CinemaManagement.Models
     public class HoaDon
     {
         [Key]
-        [StringLength(10)]
+        [StringLength(50)]
         public string MaHoaDon { get; set; } = string.Empty;
 
         [Column(TypeName = "decimal(10,2)")]
@@ -16,10 +16,10 @@ namespace CinemaManagement.Models
 
         public int SoLuong { get; set; }
 
-        [StringLength(10)]
+        [StringLength(50)]
         public string MaKhachHang { get; set; } = string.Empty;
 
-        [StringLength(10)]
+        [StringLength(50)]
         public string MaNhanVien { get; set; } = string.Empty;
 
         // Navigation properties

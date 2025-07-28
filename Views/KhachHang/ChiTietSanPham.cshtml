@@ -1,0 +1,285 @@
+@model SanPham
+
+@{
+    ViewData["Title"] = "Chi tiết sản phẩm - " + Model.TenSanPham;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Shopping">Cửa hàng</a></li>
+                    <li class="breadcrumb-item active">@Model.TenSanPham</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Product Image -->
+                        <div class="col-md-6">
+                            @if (!string.IsNullOrEmpty(Model.HinhAnh))
+                            {
+                                <img src="@Model.HinhAnh" alt="@Model.TenSanPham" class="img-fluid rounded shadow" />
+                            }
+                            else
+                            {
+                                <div class="bg-light d-flex align-items-center justify-content-center rounded shadow" 
+                                     style="height: 400px;">
+                                    <i class="fas fa-image fa-5x text-muted"></i>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Product Info -->
+                        <div class="col-md-6">
+                            <h1 class="mb-3">@Model.TenSanPham</h1>
+                            <p class="text-muted mb-3">Mã sản phẩm: @Model.MaSanPham</p>
+
+                            <div class="mb-4">
+                                <span class="h2 text-success font-weight-bold">@Model.Gia.ToString("N0") ₫</span>
+                            </div>
+
+                            <div class="mb-3">
+                                @if (Model.TrangThai == "Còn hàng")
+                                {
+                                    <span class="badge badge-success badge-lg">
+                                        <i class="fas fa-check"></i> @Model.TrangThai
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-danger badge-lg">
+                                        <i class="fas fa-times"></i> @Model.TrangThai
+                                    </span>
+                                }
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(Model.MoTa))
+                            {
+                                <div class="mb-4">
+                                    <h5>Mô tả sản phẩm</h5>
+                                    <p class="text-muted">@Model.MoTa</p>
+                                </div>
+                            }
+
+                            <div class="mb-4">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Số lượng còn lại:</small>
+                                        <div class="font-weight-bold">@Model.SoLuongTon sản phẩm</div>
+                                    </div>
+                                    <div class="col-6">
+                                        @if (Model.SoLuongTon <= 5 && Model.SoLuongTon > 0)
+                                        {
+                                            <small class="text-warning"><i class="fas fa-exclamation-triangle"></i> Sắp hết hàng</small>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Purchase Section -->
+                            @if (Model.TrangThai == "Còn hàng" && Model.SoLuongTon > 0)
+                            {
+                                <div class="border rounded p-3 bg-light">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Số lượng:</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <button class="btn btn-outline-secondary" type="button" id="decrease-qty">
+                                                        <i class="fas fa-minus"></i>
+                                                    </button>
+                                                </div>
+                                                <input type="number" class="form-control text-center" 
+                                                       id="quantity-input" value="1" min="1" max="@Model.SoLuongTon" />
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-outline-secondary" type="button" id="increase-qty">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <button class="btn btn-success btn-lg btn-block" id="add-to-cart-btn"
+                                                    data-product-id="@Model.MaSanPham"
+                                                    data-product-name="@Model.TenSanPham">
+                                                <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Sản phẩm hiện tại không có sẵn
+                                </div>
+                            }
+
+                            <div class="mt-4">
+                                <a asp-action="Shopping" class="btn btn-outline-primary">
+                                    <i class="fas fa-arrow-left"></i> Tiếp tục mua sắm
+                                </a>
+                                <a asp-action="GioHang" class="btn btn-outline-success">
+                                    <i class="fas fa-shopping-cart"></i> Xem giỏ hàng
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Products -->
+            @if (ViewBag.RelatedProducts != null && ((List<SanPham>)ViewBag.RelatedProducts).Any())
+            {
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-heart"></i> Sản phẩm liên quan</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (var product in (List<SanPham>)ViewBag.RelatedProducts)
+                            {
+                                <div class="col-md-3 mb-3">
+                                    <div class="card h-100">
+                                        <div class="position-relative">
+                                            @if (!string.IsNullOrEmpty(product.HinhAnh))
+                                            {
+                                                <img src="@product.HinhAnh" class="card-img-top" alt="@product.TenSanPham" 
+                                                     style="height: 150px; object-fit: cover;" />
+                                            }
+                                            else
+                                            {
+                                                <div class="card-img-top d-flex align-items-center justify-content-center bg-light" 
+                                                     style="height: 150px;">
+                                                    <i class="fas fa-image fa-2x text-muted"></i>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="card-body d-flex flex-column">
+                                            <h6 class="card-title">@product.TenSanPham</h6>
+                                            <div class="mt-auto">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="text-success font-weight-bold">@product.Gia.ToString("N0") ₫</span>
+                                                    <small class="text-muted">Còn @product.SoLuongTon</small>
+                                                </div>
+                                                <div class="d-flex gap-1">
+                                                    <a asp-action="ChiTietSanPham" asp-route-id="@product.MaSanPham" 
+                                                       class="btn btn-outline-primary btn-sm flex-fill">
+                                                        <i class="fas fa-eye"></i> Xem
+                                                    </a>
+                                                    <button class="btn btn-success btn-sm flex-fill add-to-cart-btn-related" 
+                                                            data-product-id="@product.MaSanPham"
+                                                            data-product-name="@product.TenSanPham">
+                                                        <i class="fas fa-cart-plus"></i> Thêm
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Quantity controls
+            $('#increase-qty').click(function() {
+                var input = $('#quantity-input');
+                var currentValue = parseInt(input.val());
+                var maxValue = parseInt(input.attr('max'));
+                
+                if (currentValue < maxValue) {
+                    input.val(currentValue + 1);
+                }
+            });
+
+            $('#decrease-qty').click(function() {
+                var input = $('#quantity-input');
+                var currentValue = parseInt(input.val());
+                
+                if (currentValue > 1) {
+                    input.val(currentValue - 1);
+                }
+            });
+
+            // Add to cart - main product
+            $('#add-to-cart-btn').click(function() {
+                var productId = $(this).data('product-id');
+                var productName = $(this).data('product-name');
+                var quantity = parseInt($('#quantity-input').val());
+                var button = $(this);
+                
+                addToCart(productId, productName, quantity, button);
+            });
+
+            // Add to cart - related products
+            $('.add-to-cart-btn-related').click(function() {
+                var productId = $(this).data('product-id');
+                var productName = $(this).data('product-name');
+                var button = $(this);
+                
+                addToCart(productId, productName, 1, button);
+            });
+
+            function addToCart(productId, productName, quantity, button) {
+                // Show loading state
+                var originalHtml = button.html();
+                button.prop('disabled', true);
+                button.html('<i class="fas fa-spinner fa-spin"></i> Đang thêm...');
+                
+                $.ajax({
+                    url: '@Url.Action("ThemVaoGioHang", "KhachHang")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        maSanPham: productId,
+                        soLuong: quantity
+                    }),
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            toastr.success('Đã thêm ' + productName + ' vào giỏ hàng!');
+                            
+                            // Show success animation
+                            button.removeClass('btn-success').addClass('btn-info');
+                            button.html('<i class="fas fa-check"></i> Đã thêm');
+                            
+                            // Reset quantity to 1
+                            $('#quantity-input').val(1);
+                            
+                            // Reset button after 3 seconds
+                            setTimeout(function() {
+                                button.removeClass('btn-info').addClass('btn-success');
+                                button.html(originalHtml);
+                                button.prop('disabled', false);
+                            }, 3000);
+                        } else {
+                            toastr.error(response.message);
+                            button.html(originalHtml);
+                            button.prop('disabled', false);
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Có lỗi xảy ra khi thêm vào giỏ hàng');
+                        button.html(originalHtml);
+                        button.prop('disabled', false);
+                    }
+                });
+            }
+        });
+    </script>
+} 

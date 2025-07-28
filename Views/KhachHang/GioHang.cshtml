@@ -1,0 +1,382 @@
+@model GioHangViewModel
+
+@{
+    ViewData["Title"] = "Giỏ hàng của bạn";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-shopping-cart"></i> Giỏ hàng của bạn
+                    </h3>
+                    <div class="card-tools">
+                        <a asp-action="Shopping" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus"></i> Tiếp tục mua sắm
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    @if (Model.Items.Any())
+                    {
+                        <div class="row">
+                            <!-- Cart Items -->
+                            <div class="col-md-8">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Sản phẩm</th>
+                                                <th>Đơn giá</th>
+                                                <th>Số lượng</th>
+                                                <th>Thành tiền</th>
+                                                <th>Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model.Items)
+                                            {
+                                                <tr data-item-id="@item.ChiTiet.MaChiTietGioHang">
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            @if (!string.IsNullOrEmpty(item.SanPham.HinhAnh))
+                                                            {
+                                                                <img src="@item.SanPham.HinhAnh" alt="@item.SanPham.TenSanPham" 
+                                                                     class="img-thumbnail me-3" style="width: 60px; height: 60px; object-fit: cover;" />
+                                                            }
+                                                            else
+                                                            {
+                                                                <div class="bg-light d-flex align-items-center justify-content-center me-3" 
+                                                                     style="width: 60px; height: 60px;">
+                                                                    <i class="fas fa-image text-muted"></i>
+                                                                </div>
+                                                            }
+                                                            <div>
+                                                                <h6 class="mb-0">@item.SanPham.TenSanPham</h6>
+                                                                <small class="text-muted">Mã: @item.SanPham.MaSanPham</small>
+                                                                @if (item.SanPham.SoLuongTon <= 5)
+                                                                {
+                                                                    <br><span class="badge badge-warning">Sắp hết hàng</span>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-success font-weight-bold">@item.ChiTiet.DonGia.ToString("N0") ₫</span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="input-group" style="width: 120px;">
+                                                            <div class="input-group-prepend">
+                                                                <button class="btn btn-outline-secondary btn-sm qty-decrease" 
+                                                                        data-item-id="@item.ChiTiet.MaChiTietGioHang"
+                                                                        type="button">
+                                                                    <i class="fas fa-minus"></i>
+                                                                </button>
+                                                            </div>
+                                                            <input type="number" class="form-control text-center qty-input" 
+                                                                   value="@item.ChiTiet.SoLuong" 
+                                                                   min="1" 
+                                                                   max="@item.SanPham.SoLuongTon"
+                                                                   data-item-id="@item.ChiTiet.MaChiTietGioHang" />
+                                                            <div class="input-group-append">
+                                                                <button class="btn btn-outline-secondary btn-sm qty-increase" 
+                                                                        data-item-id="@item.ChiTiet.MaChiTietGioHang"
+                                                                        data-max-qty="@item.SanPham.SoLuongTon"
+                                                                        type="button">
+                                                                    <i class="fas fa-plus"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <small class="text-muted">Tối đa: @item.SanPham.SoLuongTon</small>
+                                                    </td>
+                                                    <td>
+                                                        <span class="font-weight-bold text-primary item-total">@item.ThanhTien.ToString("N0") ₫</span>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-danger btn-sm remove-item-btn" 
+                                                                data-item-id="@item.ChiTiet.MaChiTietGioHang"
+                                                                data-product-name="@item.SanPham.TenSanPham"
+                                                                title="Xóa khỏi giỏ hàng">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Order Summary -->
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-receipt"></i> Tóm tắt đơn hàng</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Tổng số lượng:</span>
+                                            <span class="font-weight-bold" id="total-quantity">@Model.TongSoLuong</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Tạm tính:</span>
+                                            <span class="font-weight-bold" id="subtotal">@Model.TongTien.ToString("N0") ₫</span>
+                                        </div>
+                                        <hr>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span class="h5">Tổng cộng:</span>
+                                            <span class="h5 text-success" id="total-amount">@Model.TongTien.ToString("N0") ₫</span>
+                                        </div>
+
+                                        <!-- Voucher Section -->
+                                        @if (Model.VouchersApDung.Any())
+                                        {
+                                            <div class="mb-3">
+                                                <label class="form-label">Mã giảm giá</label>
+                                                <select class="form-control" id="voucher-select">
+                                                    <option value="">Chọn voucher</option>
+                                                    @foreach (var voucher in Model.VouchersApDung)
+                                                    {
+                                                        <option value="@voucher.MaVoucherSanPham" 
+                                                                data-discount="@voucher.PhanTramGiam"
+                                                                data-max-discount="@voucher.GiaTriGiamToiDa">
+                                                            @voucher.TenVoucher - Giảm @voucher.PhanTramGiam% (Tối đa @voucher.GiaTriGiamToiDa.ToString("N0")₫)
+                                                        </option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        }
+
+                                        <div class="d-grid gap-2">
+                                            <a asp-action="ThanhToanSanPham" class="btn btn-success btn-lg">
+                                                <i class="fas fa-credit-card"></i> Thanh toán
+                                            </a>
+                                            <a asp-action="Shopping" class="btn btn-outline-primary">
+                                                <i class="fas fa-arrow-left"></i> Tiếp tục mua sắm
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Voucher List -->
+                                @if (Model.VouchersApDung.Any())
+                                {
+                                    <div class="card mt-3">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-tags"></i> Voucher khả dụng</h6>
+                                        </div>
+                                        <div class="card-body p-2">
+                                            @foreach (var voucher in Model.VouchersApDung.Take(3))
+                                            {
+                                                <div class="border rounded p-2 mb-2 voucher-item" 
+                                                     style="cursor: pointer; border-color: #28a745!important;">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <small class="font-weight-bold text-success">@voucher.TenVoucher</small>
+                                                            <br>
+                                                            <small class="text-muted">Giảm @voucher.PhanTramGiam% - Tối đa @voucher.GiaTriGiamToiDa.ToString("N0")₫</small>
+                                                        </div>
+                                                        <small class="text-muted">HSD: @voucher.ThoiGianKetThuc.ToString("dd/MM")</small>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Empty Cart -->
+                        <div class="text-center py-5">
+                            <i class="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
+                            <h3 class="text-muted">Giỏ hàng của bạn đang trống</h3>
+                            <p class="text-muted mb-4">Hãy thêm một số sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
+                            <a asp-action="Shopping" class="btn btn-success btn-lg">
+                                <i class="fas fa-shopping-bag"></i> Bắt đầu mua sắm
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Quantity increase/decrease
+            $('.qty-increase').click(function() {
+                var itemId = $(this).data('item-id');
+                var maxQty = $(this).data('max-qty');
+                var input = $(`.qty-input[data-item-id="${itemId}"]`);
+                var currentValue = parseInt(input.val());
+                
+                if (currentValue < maxQty) {
+                    input.val(currentValue + 1);
+                    updateCartItem(itemId, currentValue + 1);
+                } else {
+                    toastr.warning('Không thể thêm quá số lượng tồn kho');
+                }
+            });
+
+            $('.qty-decrease').click(function() {
+                var itemId = $(this).data('item-id');
+                var input = $(`.qty-input[data-item-id="${itemId}"]`);
+                var currentValue = parseInt(input.val());
+                
+                if (currentValue > 1) {
+                    input.val(currentValue - 1);
+                    updateCartItem(itemId, currentValue - 1);
+                } else {
+                    toastr.warning('Số lượng tối thiểu là 1');
+                }
+            });
+
+            // Quantity input change
+            $('.qty-input').change(function() {
+                var itemId = $(this).data('item-id');
+                var newQty = parseInt($(this).val());
+                var maxQty = parseInt($(this).attr('max'));
+                
+                if (newQty < 1) {
+                    $(this).val(1);
+                    newQty = 1;
+                } else if (newQty > maxQty) {
+                    $(this).val(maxQty);
+                    newQty = maxQty;
+                    toastr.warning('Không thể thêm quá số lượng tồn kho');
+                }
+                
+                updateCartItem(itemId, newQty);
+            });
+
+            // Remove item
+            $('.remove-item-btn').click(function() {
+                var itemId = $(this).data('item-id');
+                var productName = $(this).data('product-name');
+                
+                if (confirm('Bạn có chắc muốn xóa "' + productName + '" khỏi giỏ hàng?')) {
+                    removeCartItem(itemId);
+                }
+            });
+
+            // Update cart item
+            function updateCartItem(itemId, newQty) {
+                $.ajax({
+                    url: '@Url.Action("CapNhatGioHang", "KhachHang")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        maChiTietGioHang: itemId,
+                        soLuong: newQty
+                    }),
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Update item total and grand total
+                            updateTotals();
+                        } else {
+                            toastr.error(response.message);
+                            location.reload(); // Reload to get correct state
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Có lỗi xảy ra khi cập nhật giỏ hàng');
+                        location.reload();
+                    }
+                });
+            }
+
+            // Remove cart item
+            function removeCartItem(itemId) {
+                $.ajax({
+                    url: '@Url.Action("XoaKhoiGioHang", "KhachHang")',
+                    type: 'POST',
+                    data: {
+                        maChiTietGioHang: itemId
+                    },
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $(`tr[data-item-id="${itemId}"]`).fadeOut(function() {
+                                $(this).remove();
+                                updateTotals();
+                                
+                                // Check if cart is empty
+                                if ($('tbody tr').length === 0) {
+                                    location.reload();
+                                }
+                            });
+                            toastr.success(response.message);
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Có lỗi xảy ra khi xóa sản phẩm');
+                    }
+                });
+            }
+
+            // Update totals
+            function updateTotals() {
+                var totalQty = 0;
+                var totalAmount = 0;
+
+                $('tbody tr').each(function() {
+                    var qty = parseInt($(this).find('.qty-input').val());
+                    var price = parseInt($(this).find('.text-success').text().replace(/[^0-9]/g, ''));
+                    var itemTotal = qty * price;
+                    
+                    totalQty += qty;
+                    totalAmount += itemTotal;
+                    
+                    // Update item total display
+                    $(this).find('.item-total').text(itemTotal.toLocaleString('vi-VN') + ' ₫');
+                });
+
+                $('#total-quantity').text(totalQty);
+                $('#subtotal').text(totalAmount.toLocaleString('vi-VN') + ' ₫');
+                $('#total-amount').text(totalAmount.toLocaleString('vi-VN') + ' ₫');
+            }
+
+            // Voucher selection
+            $('#voucher-select').change(function() {
+                var selectedVoucher = $(this).val();
+                if (selectedVoucher) {
+                    var discount = parseInt($(this).find('option:selected').data('discount'));
+                    var maxDiscount = parseInt($(this).find('option:selected').data('max-discount'));
+                    
+                    // Calculate discount
+                    var subtotal = parseInt($('#subtotal').text().replace(/[^0-9]/g, ''));
+                    var discountAmount = Math.min(subtotal * discount / 100, maxDiscount);
+                    var finalAmount = subtotal - discountAmount;
+                    
+                    $('#total-amount').text(finalAmount.toLocaleString('vi-VN') + ' ₫');
+                    
+                    // Show discount info
+                    if ($('.discount-info').length === 0) {
+                        $('<div class="d-flex justify-content-between mb-2 discount-info"><span>Giảm giá:</span><span class="text-success">-' + discountAmount.toLocaleString('vi-VN') + ' ₫</span></div>').insertBefore('#total-amount').parent();
+                    } else {
+                        $('.discount-info span:last').text('-' + discountAmount.toLocaleString('vi-VN') + ' ₫');
+                    }
+                } else {
+                    // Remove discount
+                    $('.discount-info').remove();
+                    var subtotal = parseInt($('#subtotal').text().replace(/[^0-9]/g, ''));
+                    $('#total-amount').text(subtotal.toLocaleString('vi-VN') + ' ₫');
+                }
+            });
+        });
+    </script>
+} 

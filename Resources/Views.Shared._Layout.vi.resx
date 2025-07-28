@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Welcome" xml:space="preserve">
+    <value>Chào mừng</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>Đăng xuất</value>
+  </data>
+  <data name="Profile" xml:space="preserve">
+    <value>Hồ sơ</value>
+  </data>
+</root> 

@@ -1,0 +1,255 @@
+@model CinemaManagement.Models.Voucher
+@{
+    ViewData["Title"] = "Sửa khuyến mãi";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-edit"></i> Sửa khuyến mãi: @Model.TenGiamGia
+                    </h3>
+                </div>
+
+                <form asp-action="Edit" method="post">
+                    <input asp-for="MaGiamGia" type="hidden" />
+                    
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="MaGiamGia" class="form-label">
+                                        <i class="fas fa-barcode"></i> Mã khuyến mãi
+                                    </label>
+                                    <input asp-for="MaGiamGia" class="form-control" readonly />
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="PhanTramGiam" class="form-label">
+                                        <i class="fas fa-percentage"></i> Phần trăm giảm <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input asp-for="PhanTramGiam" class="form-control" type="number" min="1" max="100" />
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <span asp-validation-for="PhanTramGiam" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label asp-for="TenGiamGia" class="form-label">
+                                        <i class="fas fa-tag"></i> Tên khuyến mãi <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="TenGiamGia" class="form-control" placeholder="Nhập tên khuyến mãi" />
+                                    <span asp-validation-for="TenGiamGia" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="ThoiGianBatDau" class="form-label">
+                                        <i class="fas fa-play"></i> Thời gian bắt đầu <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="ThoiGianBatDau" class="form-control" type="datetime-local" />
+                                    <span asp-validation-for="ThoiGianBatDau" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="ThoiGianKetThuc" class="form-label">
+                                        <i class="fas fa-stop"></i> Thời gian kết thúc <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="ThoiGianKetThuc" class="form-control" type="datetime-local" />
+                                    <span asp-validation-for="ThoiGianKetThuc" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="MaNhanVien" class="form-label">
+                                        <i class="fas fa-user"></i> Nhân viên tạo <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="MaNhanVien" class="form-select">
+                                        <option value="">-- Chọn nhân viên --</option>
+                                        @foreach (var nhanVien in (List<CinemaManagement.Models.NhanVien>)ViewBag.NhanViens)
+                                        {
+                                            <option value="@nhanVien.MaNhanVien" 
+                                                    selected="@(nhanVien.MaNhanVien == Model.MaNhanVien)">
+                                                @nhanVien.TenNhanVien (@nhanVien.ChucVu)
+                                            </option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="MaNhanVien" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-info-circle"></i> Trạng thái hiện tại
+                                    </label>
+                                    <div class="alert alert-info">
+                                        @{
+                                            var currentDate = DateTime.Now;
+                                            var status = "";
+                                            var statusClass = "";
+                                            var statusIcon = "";
+                                            
+                                            if (Model.ThoiGianKetThuc < currentDate)
+                                            {
+                                                status = "Đã hết hạn";
+                                                statusClass = "text-danger";
+                                                statusIcon = "fas fa-times-circle";
+                                            }
+                                            else if (Model.ThoiGianBatDau > currentDate)
+                                            {
+                                                status = "Sắp diễn ra";
+                                                statusClass = "text-warning";
+                                                statusIcon = "fas fa-clock";
+                                            }
+                                            else
+                                            {
+                                                status = "Đang hoạt động";
+                                                statusClass = "text-success";
+                                                statusIcon = "fas fa-check-circle";
+                                            }
+                                        }
+                                        <i class="@statusIcon @statusClass"></i>
+                                        <span class="@statusClass"><strong>@status</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label asp-for="MoTa" class="form-label">
+                                        <i class="fas fa-file-alt"></i> Mô tả
+                                    </label>
+                                    <textarea asp-for="MoTa" class="form-control" rows="4" 
+                                              placeholder="Nhập mô tả chi tiết về khuyến mãi..."></textarea>
+                                    <span asp-validation-for="MoTa" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Preview khuyến mãi -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card bg-light">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-eye"></i> Xem trước khuyến mãi</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="card border-primary">
+                                                    <div class="card-body text-center">
+                                                        <div class="badge bg-primary mb-2">@Model.MaGiamGia</div>
+                                                        <h5 id="preview-name">@Model.TenGiamGia</h5>
+                                                        <div class="badge bg-success fs-5" id="preview-percent">@Model.PhanTramGiam%</div>
+                                                        <div class="text-muted mt-2">
+                                                            <small>
+                                                                <div id="preview-start">Bắt đầu: @Model.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")</div>
+                                                                <div id="preview-end">Kết thúc: @Model.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm")</div>
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-9">
+                                                <div class="form-text">
+                                                    <strong>Mô tả:</strong>
+                                                    <div id="preview-description" class="mt-1">@(string.IsNullOrEmpty(Model.MoTa) ? "Chưa có mô tả" : Model.MoTa)</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Cập nhật khuyến mãi
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // Live preview update
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = {
+                name: document.getElementById('TenGiamGia'),
+                percent: document.getElementById('PhanTramGiam'),
+                start: document.getElementById('ThoiGianBatDau'),
+                end: document.getElementById('ThoiGianKetThuc'),
+                description: document.getElementById('MoTa')
+            };
+
+            const previews = {
+                name: document.getElementById('preview-name'),
+                percent: document.getElementById('preview-percent'),
+                start: document.getElementById('preview-start'),
+                end: document.getElementById('preview-end'),
+                description: document.getElementById('preview-description')
+            };
+
+            function updatePreview() {
+                if (inputs.name.value) {
+                    previews.name.textContent = inputs.name.value;
+                }
+                
+                if (inputs.percent.value) {
+                    previews.percent.textContent = inputs.percent.value + '%';
+                }
+                
+                if (inputs.start.value) {
+                    const startDate = new Date(inputs.start.value);
+                    previews.start.textContent = 'Bắt đầu: ' + startDate.toLocaleString('vi-VN');
+                }
+
+                if (inputs.end.value) {
+                    const endDate = new Date(inputs.end.value);
+                    previews.end.textContent = 'Kết thúc: ' + endDate.toLocaleString('vi-VN');
+                }
+
+                previews.description.textContent = inputs.description.value || 'Chưa có mô tả';
+            }
+
+            // Add event listeners
+            Object.values(inputs).forEach(input => {
+                if (input) {
+                    input.addEventListener('input', updatePreview);
+                    input.addEventListener('change', updatePreview);
+                }
+            });
+        });
+    </script>
+}

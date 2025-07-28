@@ -1,10 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using CinemaManagement.Data;
+using CinemaManagement.Services;
+using Net.payOS;
+using Net.payOS.Types;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Add Anti-forgery token
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+});
 
 // Add Entity Framework
 builder.Services.AddDbContext<CinemaDbContext>(options =>
@@ -19,7 +30,23 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+// Add PayOS Service
+builder.Services.AddScoped<PayOSService>();
+
+// Add HttpClient and Gemini Chat Service
+builder.Services.AddHttpClient<CinemaManagement.Services.GeminiChatService>();
+builder.Services.AddScoped<CinemaManagement.Services.GeminiChatService>();
+
+// Add File Upload Service
+builder.Services.AddScoped<FileUploadService>();
+
+// Add Enhanced Shopping Service
+builder.Services.AddScoped<EnhancedShoppingService>();
+
 var app = builder.Build();
+
+
+
 // Tạo khách hàng GUEST nếu chưa tồn tại
 using (var scope = app.Services.CreateScope())
 {

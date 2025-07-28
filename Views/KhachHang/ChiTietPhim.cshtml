@@ -16,23 +16,23 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="text-center">
                                 @if (!string.IsNullOrEmpty(Model.ViTriFilePhim))
                                 {
                                     <img src="@Model.ViTriFilePhim" alt="@Model.TenPhim" 
-                                         class="img-fluid rounded shadow">
+                                         class="img-fluid rounded shadow movie-poster">
                                 }
                                 else
                                 {
-                                    <div class="bg-light p-5 rounded">
-                                        <i class="fas fa-film fa-3x text-muted"></i>
+                                    <div class="bg-light p-4 rounded movie-poster-placeholder">
+                                        <i class="fas fa-film fa-2x text-muted"></i>
                                         <p class="mt-2 text-muted">Không có poster</p>
                                     </div>
                                 }
                             </div>
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-md-9">
                             <h5>Thông tin phim</h5>
                             <table class="table table-borderless">
                                 <tr>
@@ -53,6 +53,159 @@
                             <p class="text-justify">@Model.MoTa</p>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Đánh giá phim -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-star me-2"></i>Đánh giá phim
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.TongSoDanhGia > 0)
+                    {
+                        <!-- Thống kê tổng quan -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <h2 class="text-warning mb-2">@ViewBag.DiemTrungBinh/10</h2>
+                                    <div class="rating-stars mb-2">
+                                        @{
+                                            var avgRating = (double)ViewBag.DiemTrungBinh;
+                                            var fullStars = (int)Math.Floor(avgRating / 2);
+                                            var hasHalfStar = (avgRating / 2) - fullStars >= 0.5;
+                                            var emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+                                        }
+                                        @for (int i = 0; i < fullStars; i++)
+                                        {
+                                            <i class="fas fa-star text-warning"></i>
+                                        }
+                                        @if (hasHalfStar)
+                                        {
+                                            <i class="fas fa-star-half-alt text-warning"></i>
+                                        }
+                                        @for (int i = 0; i < emptyStars; i++)
+                                        {
+                                            <i class="far fa-star text-warning"></i>
+                                        }
+                                    </div>
+                                    <p class="text-muted mb-0">@ViewBag.TongSoDanhGia đánh giá</p>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="p-3">
+                                    <h6 class="mb-3">Phân bố đánh giá:</h6>
+                                    @{
+                                        var danhGiaList = ViewBag.DanhGiaPhim as List<CinemaManagement.Models.DanhGiaPhim> ?? new List<CinemaManagement.Models.DanhGiaPhim>();
+                                        var phanBoRating = new Dictionary<int, int>();
+                                        for (int i = 1; i <= 10; i++)
+                                        {
+                                            phanBoRating[i] = danhGiaList.Count(dg => dg.DiemDanhGia == i);
+                                        }
+                                    }
+                                    @for (int rating = 10; rating >= 1; rating--)
+                                    {
+                                        var count = phanBoRating[rating];
+                                        var percentage = ViewBag.TongSoDanhGia > 0 ? (count * 100.0 / (int)ViewBag.TongSoDanhGia) : 0;
+                                        <div class="d-flex align-items-center mb-1">
+                                            <span class="me-2" style="width: 20px;">@rating</span>
+                                            <i class="fas fa-star text-warning me-2"></i>
+                                            <div class="progress flex-grow-1 me-2" style="height: 20px;">
+                                                <div class="progress-bar bg-warning" role="progressbar" 
+                                                     style="width: @percentage%" 
+                                                     aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                            <span class="text-muted" style="width: 40px;">@count</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Danh sách đánh giá chi tiết -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="mb-3">Đánh giá từ khách hàng:</h6>
+                                <div class="reviews-container" style="max-height: 600px; overflow-y: auto;">
+                                    @foreach (var danhGia in danhGiaList)
+                                    {
+                                        <div class="card mb-3 border-left-warning">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar-circle me-3">
+                                                            @(danhGia.KhachHang.HoTen.Split(' ').LastOrDefault()?.Substring(0, 1).ToUpper())
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-0">@danhGia.KhachHang.HoTen</h6>
+                                                            <small class="text-muted">@danhGia.ThoiGianDanhGia.ToString("dd/MM/yyyy HH:mm")</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="rating-display">
+                                                        <span class="badge bg-warning text-dark me-2">@danhGia.DiemDanhGia/10</span>
+                                                        <div class="d-inline-block">
+                                                            @{
+                                                                var customerStars = (int)Math.Floor(danhGia.DiemDanhGia / 2.0);
+                                                                var hasCustomerHalfStar = (danhGia.DiemDanhGia % 2) == 1;
+                                                                var customerEmptyStars = 5 - customerStars - (hasCustomerHalfStar ? 1 : 0);
+                                                            }
+                                                            @for (int i = 0; i < customerStars; i++)
+                                                            {
+                                                                <i class="fas fa-star text-warning" style="font-size: 14px;"></i>
+                                                            }
+                                                            @if (hasCustomerHalfStar)
+                                                            {
+                                                                <i class="fas fa-star-half-alt text-warning" style="font-size: 14px;"></i>
+                                                            }
+                                                            @for (int i = 0; i < customerEmptyStars; i++)
+                                                            {
+                                                                <i class="far fa-star text-warning" style="font-size: 14px;"></i>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                @if (!string.IsNullOrEmpty(danhGia.NoiDungDanhGia))
+                                                {
+                                                    <p class="mb-0 text-justify">@danhGia.NoiDungDanhGia</p>
+                                                }
+                                                else
+                                                {
+                                                    <p class="mb-0 text-muted font-italic">Khách hàng chưa để lại bình luận.</p>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Chưa có đánh giá nào</h5>
+                            <p class="text-muted">Hãy là người đầu tiên đánh giá bộ phim này!</p>
+                            <a href="@Url.Action("DanhGiaPhim", new { id = Model.MaPhim })" class="btn btn-warning">
+                                <i class="fas fa-star me-1"></i>Đánh giá ngay
+                            </a>
+                        </div>
+                    }
+
+                    @if (ViewBag.TongSoDanhGia > 0)
+                    {
+                        <div class="text-center mt-4">
+                            <a href="@Url.Action("DanhGiaPhim", new { id = Model.MaPhim })" class="btn btn-outline-warning">
+                                <i class="fas fa-plus me-1"></i>Thêm đánh giá của bạn
+                            </a>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -86,6 +239,178 @@
         </div>
     </div>
 
+    <!-- Phim đề xuất/liên quan -->
+    @{
+        var phimLienQuan = ViewBag.PhimLienQuan as List<dynamic>;
+        var validPhimLienQuan = new List<dynamic>();
+        
+        if (phimLienQuan != null)
+        {
+            // Lọc ra những phim không trùng với phim hiện tại (để đảm bảo)
+            validPhimLienQuan = phimLienQuan.Where(p => 
+                ((CinemaManagement.Models.Phim)p.Phim).MaPhim?.Trim() != Model.MaPhim?.Trim()
+            ).ToList();
+        }
+    }
+    
+    @if (validPhimLienQuan.Any())
+    {
+        <!-- Chỉ hiển thị section nếu có ít nhất 1 phim hợp lệ để đề xuất -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-film me-2"></i>Phim đề xuất cho bạn
+                        </h4>
+                        <small class="opacity-75">Những bộ phim hay bạn có thể quan tâm</small>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="recommendedMoviesCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="8000">
+                            @{
+                                var moviesPerSlide = 4; // 4 phim mỗi slide
+                                var totalSlides = (int)Math.Ceiling(validPhimLienQuan.Count / (double)moviesPerSlide);
+                            }
+
+                            <!-- Indicators -->
+                            <div class="carousel-indicators">
+                                @for (int i = 0; i < totalSlides; i++)
+                                {
+                                    <button type="button" data-bs-target="#recommendedMoviesCarousel" data-bs-slide-to="@i" 
+                                            class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")" 
+                                            aria-label="Slide @(i + 1)"></button>
+                                }
+                            </div>
+
+                            <!-- Carousel Items -->
+                            <div class="carousel-inner">
+                                @for (int slideIndex = 0; slideIndex < totalSlides; slideIndex++)
+                                {
+                                    <div class="carousel-item @(slideIndex == 0 ? "active" : "")">
+                                        <div class="container-fluid p-4">
+                                            <div class="row justify-content-center">
+                                                @for (int movieIndex = 0; movieIndex < moviesPerSlide; movieIndex++)
+                                                {
+                                                    var currentMovieIndex = slideIndex * moviesPerSlide + movieIndex;
+                                                    if (currentMovieIndex < validPhimLienQuan.Count)
+                                                    {
+                                                        var movieData = validPhimLienQuan[currentMovieIndex];
+                                                        var phim = (CinemaManagement.Models.Phim)movieData.Phim;
+                                                        var avgRating = (decimal)movieData.AvgRating;
+                                                        var ratingCount = (int)movieData.RatingCount;
+                                                        var avgPrice = (decimal)movieData.AvgPrice;
+                                                        var hasSchedule = (bool)movieData.HasSchedule;
+                                                        var recommendReason = (string)movieData.RecommendReason;
+
+                                                        <div class="col-md-6 col-lg-3 mb-4">
+                                                            <div class="phim-carousel-card card h-100 shadow-sm">
+                                                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center position-relative" 
+                                                                     style="height: 250px;">
+                                                                    @if (!string.IsNullOrEmpty(phim.ViTriFilePhim))
+                                                                    {
+                                                                        <img src="@phim.ViTriFilePhim" alt="@phim.TenPhim" 
+                                                                             class="img-fluid" style="max-height: 100%; max-width: 100%; object-fit: cover;">
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <div class="text-center text-muted">
+                                                                            <i class="fas fa-film fa-2x"></i>
+                                                                            <p class="mt-2 small">Không có poster</p>
+                                                                        </div>
+                                                                    }
+                                                                </div>
+                                                                
+                                                                <div class="card-body p-3">
+                                                                    <h6 class="card-title text-primary">@phim.TenPhim</h6>
+                                                                    <div class="card-text">
+                                                                        <div class="info-line">
+                                                                            <i class="fas fa-tag me-2 text-success"></i>
+                                                                            <span class="small">@phim.TheLoai</span>
+                                                                        </div>
+                                                                        <div class="info-line">
+                                                                            <i class="fas fa-clock me-2 text-warning"></i>
+                                                                            <span class="small">@phim.ThoiLuong phút</span>
+                                                                        </div>
+                                                                        <div class="info-line">
+                                                                            <i class="fas fa-users me-2 text-info"></i>
+                                                                            <span class="small">@phim.DoTuoiPhanAnh</span>
+                                                                        </div>
+                                                                        <div class="info-line rating-line" data-phim="@phim.MaPhim">
+                                                                            <div class="movie-rating">
+                                                                                <div class="stars-small">
+                                                                                    @if (ratingCount > 0)
+                                                                                    {
+                                                                                        var fullStars = (int)Math.Floor(avgRating / 2);
+                                                                                        var hasHalfStar = (avgRating / 2) - fullStars >= 0.5m;
+                                                                                        var emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+                                                                                        
+                                                                                        for (int i = 0; i < fullStars; i++)
+                                                                                        {
+                                                                                            <i class="fas fa-star text-warning"></i>
+                                                                                        }
+                                                                                        if (hasHalfStar)
+                                                                                        {
+                                                                                            <i class="fas fa-star-half-alt text-warning"></i>
+                                                                                        }
+                                                                                        for (int i = 0; i < emptyStars; i++)
+                                                                                        {
+                                                                                            <i class="far fa-star text-warning"></i>
+                                                                                        }
+                                                                                    }
+                                                                                </div>
+                                                                                <span class="rating-text small text-muted ms-1">
+                                                                                    @if (ratingCount > 0)
+                                                                                    {
+                                                                                        @($"{avgRating:0.0}/10 ({ratingCount})")
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        @("Chưa có đánh giá")
+                                                                                    }
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <p class="card-text small text-muted mt-2">
+                                                                        @(phim.MoTa.Length > 80 ? phim.MoTa.Substring(0, 80) + "..." : phim.MoTa)
+                                                                    </p>
+                                                                </div>
+                                                                
+                                                                <div class="card-footer p-2">
+                                                                    <div class="d-flex gap-1">
+                                                                        <a href="@Url.Action("ChiTietPhim", new { id = phim.MaPhim })" 
+                                                                           class="btn btn-primary btn-sm w-100">
+                                                                            <i class="fas fa-info-circle me-1"></i>Chi tiết
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Controls -->
+                            <button class="carousel-control-prev" type="button" data-bs-target="#recommendedMoviesCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#recommendedMoviesCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+    }
+
     <!-- Nút quay lại -->
     <div class="row mt-3">
         <div class="col-12">
@@ -115,6 +440,9 @@
 
             // Load schedule for today on page load
             loadScheduleForDateDetail($('#dateFilterDetail').val());
+
+            // Initialize recommended movies carousel
+            initializeRecommendedMoviesCarousel();
         });
 
         function loadScheduleForDateDetail(selectedDate) {
@@ -260,6 +588,64 @@
                 }
             );
         }
+
+        // Initialize recommended movies carousel
+        function initializeRecommendedMoviesCarousel() {
+            if ($('#recommendedMoviesCarousel').length > 0) {
+                var recommendedCarousel = new bootstrap.Carousel(document.getElementById('recommendedMoviesCarousel'), {
+                    interval: 6000, // Auto slide every 6 seconds
+                    wrap: true,
+                    touch: true
+                });
+
+                // Pause carousel on hover
+                $('#recommendedMoviesCarousel').hover(
+                    function() {
+                        recommendedCarousel.pause();
+                    },
+                    function() {
+                        recommendedCarousel.cycle();
+                    }
+                );
+
+                // Initial animation
+                $('.carousel-item.active .phim-carousel-card').each(function(index) {
+                    var $card = $(this);
+                    setTimeout(function() {
+                        $card.addClass('slide-in');
+                    }, index * 100);
+                });
+
+                // Animation for carousel items
+                $('#recommendedMoviesCarousel').on('slide.bs.carousel', function (e) {
+                    $('.carousel-item.active .phim-carousel-card').addClass('slide-out');
+                });
+
+                $('#recommendedMoviesCarousel').on('slid.bs.carousel', function (e) {
+                    $('.carousel-item.active .phim-carousel-card').each(function(index) {
+                        var $card = $(this);
+                        setTimeout(function() {
+                            $card.addClass('slide-in');
+                        }, index * 100);
+                    });
+                    $('.phim-carousel-card').removeClass('slide-out');
+                });
+
+                // Handle image loading errors for movie posters
+                $('.phim-carousel-card img').on('error', function() {
+                    var $this = $(this);
+                    var $container = $this.parent();
+                    
+                    $this.hide();
+                    $container.html(`
+                        <div class="text-center text-muted">
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                            <p class="mt-2 small">Không thể tải hình ảnh</p>
+                        </div>
+                    `);
+                });
+            }
+        }
     </script>
     
     <style>
@@ -376,6 +762,28 @@
             font-weight: 700;
         }
 
+        /* Movie Poster Styles */
+        .movie-poster {
+            max-width: 200px;
+            max-height: 300px;
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-radius: 10px !important;
+        }
+
+        .movie-poster-placeholder {
+            max-width: 200px;
+            max-height: 300px;
+            width: 100%;
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
         .table-borderless td:first-child {
             width: 120px;
             color: #495057;
@@ -432,6 +840,278 @@
 
         .schedule-info-header .badge {
             font-size: 13px;
+        }
+
+        /* Rating Section Styles */
+        .rating-stars i {
+            font-size: 18px;
+            margin-right: 2px;
+        }
+
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .border-left-warning {
+            border-left: 4px solid #ffc107 !important;
+        }
+
+        .reviews-container {
+            scrollbar-width: thin;
+            scrollbar-color: #ffc107 #f8f9fa;
+        }
+
+        .reviews-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .reviews-container::-webkit-scrollbar-track {
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .reviews-container::-webkit-scrollbar-thumb {
+            background: #ffc107;
+            border-radius: 4px;
+        }
+
+        .reviews-container::-webkit-scrollbar-thumb:hover {
+            background: #e0a800;
+        }
+
+        .progress {
+            background-color: #e9ecef;
+        }
+
+        .rating-display .badge {
+            font-size: 12px;
+        }
+
+        .font-italic {
+            font-style: italic;
+        }
+
+        .text-justify {
+            text-align: justify;
+        }
+
+        /* Rating animation */
+        .rating-stars i {
+            transition: color 0.3s ease;
+        }
+
+        .card.border-left-warning {
+            transition: all 0.3s ease;
+        }
+
+        .card.border-left-warning:hover {
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Responsive rating display */
+        @@media (max-width: 768px) {
+            .rating-stars i {
+                font-size: 16px;
+            }
+            
+            .avatar-circle {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+            
+            .rating-display .badge {
+                font-size: 11px;
+            }
+
+            /* Mobile poster adjustments */
+            .movie-poster {
+                max-width: 150px;
+                max-height: 225px;
+            }
+
+            .movie-poster-placeholder {
+                max-width: 150px;
+                max-height: 225px;
+                height: 200px;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .movie-poster {
+                max-width: 120px;
+                max-height: 180px;
+            }
+
+            .movie-poster-placeholder {
+                max-width: 120px;
+                max-height: 180px;
+                height: 160px;
+            }
+        }
+
+        /* Recommended Movies Section Styles - Updated to use phim-carousel-card */
+        #recommendedMoviesCarousel {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        #recommendedMoviesCarousel .phim-carousel-card {
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        #recommendedMoviesCarousel .phim-carousel-card.slide-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #recommendedMoviesCarousel .phim-carousel-card.slide-out {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+
+        #recommendedMoviesCarousel .phim-carousel-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Badge styles */
+        #recommendedMoviesCarousel .badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Info line styles similar to Index page */
+        #recommendedMoviesCarousel .info-line {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        #recommendedMoviesCarousel .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        /* Carousel Controls for Recommended Movies */
+        #recommendedMoviesCarousel .carousel-control-prev,
+        #recommendedMoviesCarousel .carousel-control-next {
+            width: 5%;
+            background: rgba(0, 0, 0, 0.3);
+            border: none;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+            z-index: 5;
+        }
+
+        #recommendedMoviesCarousel .carousel-control-prev:hover,
+        #recommendedMoviesCarousel .carousel-control-next:hover {
+            background: rgba(0, 0, 0, 0.6);
+            opacity: 1;
+        }
+
+        #recommendedMoviesCarousel .carousel-control-prev-icon,
+        #recommendedMoviesCarousel .carousel-control-next-icon {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            transition: all 0.3s ease;
+        }
+
+        #recommendedMoviesCarousel .carousel-control-prev-icon:hover,
+        #recommendedMoviesCarousel .carousel-control-next-icon:hover {
+            background-color: rgba(255, 255, 255, 1);
+            transform: scale(1.1);
+        }
+
+        #recommendedMoviesCarousel .carousel-indicators {
+            bottom: -45px;
+        }
+
+        #recommendedMoviesCarousel .carousel-indicators button {
+            background-color: #007bff;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: none;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+
+        #recommendedMoviesCarousel .carousel-indicators button.active {
+            background-color: #0056b3;
+            transform: scale(1.4);
+            box-shadow: 0 2px 10px rgba(0, 123, 255, 0.5);
+        }
+
+        #recommendedMoviesCarousel .carousel-indicators button:hover {
+            background-color: #0066cc;
+            transform: scale(1.2);
+        }
+
+        #recommendedMoviesCarousel .carousel-inner {
+            padding-bottom: 60px;
+        }
+
+        #recommendedMoviesCarousel .carousel-item {
+            min-height: 450px;
+        }
+
+        /* Card title truncation with tooltip */
+        .recommended-movie-card .card-title {
+            cursor: help;
+            position: relative;
+        }
+
+        /* Responsive design for recommended movies */
+        @@media (max-width: 768px) {
+            #recommendedMoviesCarousel .phim-carousel-card {
+                margin-bottom: 20px;
+            }
+
+            #recommendedMoviesCarousel .badge {
+                font-size: 0.7rem;
+                padding: 0.4rem 0.6rem;
+            }
+
+            #recommendedMoviesCarousel .card-title {
+                font-size: 14px;
+            }
+
+            #recommendedMoviesCarousel .carousel-control-prev,
+            #recommendedMoviesCarousel .carousel-control-next {
+                width: 8%;
+            }
+
+            #recommendedMoviesCarousel .carousel-item {
+                min-height: 400px;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            #recommendedMoviesCarousel .phim-carousel-card .card-body {
+                padding: 0.75rem;
+            }
         }
     </style>
 }

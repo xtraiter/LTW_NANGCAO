@@ -47,6 +47,72 @@ namespace CinemaManagement.ViewModels
 
         // Doanh thu theo ngày (từ hóa đơn)
         public List<DoanhThuTheoNgayViewModel> DoanhThuTheoNgay { get; set; } = new List<DoanhThuTheoNgayViewModel>();
+        
+        // Thêm các properties cho filter
+        public DateTime? TuNgay { get; set; }
+        public DateTime? DenNgay { get; set; }
+        public string? TenPhim { get; set; }
+        
+        // Doanh thu theo tháng
+        public List<DoanhThuTheoThangViewModel> DoanhThuTheoThang { get; set; } = new List<DoanhThuTheoThangViewModel>();
+    }
+
+    public class QuanLyHoaDonViewModel
+    {
+        public List<HoaDon> HoaDons { get; set; } = new List<HoaDon>();
+        public string? SearchTerm { get; set; }
+        public DateTime? TuNgay { get; set; }
+        public DateTime? DenNgay { get; set; }
+        public int CurrentPage { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+        public int TotalItems { get; set; }
+        public int TotalPages { get; set; }
+        
+        // Thống kê tổng quan
+        public decimal TongDoanhThu { get; set; }
+        public int TongSoHoaDon { get; set; }
+        public decimal DoanhThuTrungBinh { get; set; }
+    }
+
+    public class ChiTietHoaDonViewModel
+    {
+        public HoaDon HoaDon { get; set; } = null!;
+        public List<CTHD> ChiTietHoaDons { get; set; } = new List<CTHD>();
+        public List<HDVoucher> VouchersApDung { get; set; } = new List<HDVoucher>();
+        public decimal TongTienTruocGiamGia { get; set; }
+        public decimal TongTienGiamGia { get; set; }
+        public decimal TongTienSauGiamGia { get; set; }
+        
+        // Thêm các thuộc tính cần thiết cho dashboard
+        public DateTime? TuNgay { get; set; }
+        public DateTime? DenNgay { get; set; }
+        public string? TenPhim { get; set; }
+        public List<DoanhThuTheoThangViewModel> DoanhThuTheoThang { get; set; } = new List<DoanhThuTheoThangViewModel>();
+    }
+
+    // ViewModel cho quản lý khách hàng
+    public class QuanLyKhachHangViewModel
+    {
+        public List<KhachHang> KhachHangs { get; set; } = new List<KhachHang>();
+        public string SearchTerm { get; set; } = "";
+        public string SortBy { get; set; } = "hoTen";
+        public int CurrentPage { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+        public int TotalItems { get; set; }
+        public int TotalPages { get; set; }
+    }
+
+    // ViewModel cho quản lý khuyến mãi
+    public class QuanLyKhuyenMaiViewModel
+    {
+        public List<Voucher> Vouchers { get; set; } = new List<Voucher>();
+        public string SearchTerm { get; set; } = "";
+        public string Status { get; set; } = "";
+        public string SortBy { get; set; } = "tenGiamGia";
+        public int CurrentPage { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+        public int TotalItems { get; set; }
+        public int TotalPages { get; set; }
 
         // Doanh thu theo tháng
         public List<DoanhThuTheoThangViewModel> DoanhThuTheoThang { get; set; } = new List<DoanhThuTheoThangViewModel>();

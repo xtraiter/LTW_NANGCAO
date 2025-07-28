@@ -1,0 +1,105 @@
+@model CinemaManagement.Models.KhachHang
+@{
+    ViewData["Title"] = "Sửa thông tin khách hàng";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user-edit"></i> Sửa thông tin khách hàng
+                    </h3>
+                </div>
+
+                <form asp-action="Edit" method="post">
+                    <input asp-for="MaKhachHang" type="hidden" />
+                    
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="MaKhachHang" class="form-label">
+                                        <i class="fas fa-id-card"></i> Mã khách hàng
+                                    </label>
+                                    <input asp-for="MaKhachHang" class="form-control" readonly />
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="DiemTichLuy" class="form-label">
+                                        <i class="fas fa-star"></i> Điểm tích lũy
+                                    </label>
+                                    <input asp-for="DiemTichLuy" class="form-control" type="number" min="0" />
+                                    <span asp-validation-for="DiemTichLuy" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="HoTen" class="form-label">
+                                        <i class="fas fa-user"></i> Họ tên <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="HoTen" class="form-control" placeholder="Nhập họ tên khách hàng" />
+                                    <span asp-validation-for="HoTen" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="SDT" class="form-label">
+                                        <i class="fas fa-phone"></i> Số điện thoại <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="SDT" class="form-control" placeholder="Nhập số điện thoại" />
+                                    <span asp-validation-for="SDT" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                @{
+                                    var hangThanhVien = Model.DiemTichLuy >= 1000 ? "VIP" : 
+                                                       Model.DiemTichLuy >= 500 ? "Vàng" : 
+                                                       Model.DiemTichLuy >= 100 ? "Bạc" : "Đồng";
+                                    var badgeClass = Model.DiemTichLuy >= 1000 ? "bg-danger" : 
+                                                   Model.DiemTichLuy >= 500 ? "bg-warning" : 
+                                                   Model.DiemTichLuy >= 100 ? "bg-info" : "bg-secondary";
+                                }
+                                <div class="alert alert-info">
+                                    <i class="fas fa-crown"></i>
+                                    <strong>Hạng thành viên hiện tại:</strong> 
+                                    <span class="badge @badgeClass ms-2">@hangThanhVien</span>
+                                    <br />
+                                    <small class="text-muted mt-2 d-block">
+                                        <i class="fas fa-info-circle"></i>
+                                        Đồng: 0-99 điểm | Bạc: 100-499 điểm | Vàng: 500-999 điểm | VIP: 1000+ điểm
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Cập nhật thông tin
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

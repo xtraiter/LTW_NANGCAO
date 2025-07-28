@@ -1,0 +1,274 @@
+@{
+    ViewData["Title"] = "Thống kê đơn hàng sản phẩm";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-chart-bar me-2"></i>Thống kê đơn hàng sản phẩm
+        </h2>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Quay lại
+        </a>
+    </div>
+
+    <!-- Thống kê tổng quan -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-shopping-cart fa-3x mb-3"></i>
+                    <h3>@Model.HomNay</h3>
+                    <p class="mb-0">Đơn hàng hôm nay</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-alt fa-3x mb-3"></i>
+                    <h3>@Model.ThangNay</h3>
+                    <p class="mb-0">Đơn hàng tháng này</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-3x mb-3"></i>
+                    <h3>@Model.ThangTruoc</h3>
+                    <p class="mb-0">Đơn hàng tháng trước</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-3x mb-3"></i>
+                    <h3>@Model.DangXuLy</h3>
+                    <p class="mb-0">Đang xử lý</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê doanh thu -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-money-bill-wave me-2"></i>Doanh thu
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-success">@Model.DoanhThuHomNay.ToString("#,##0")</h4>
+                            <small class="text-muted">VNĐ hôm nay</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-primary">@Model.DoanhThuThangNay.ToString("#,##0")</h4>
+                            <small class="text-muted">VNĐ tháng này</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-truck me-2"></i>Trạng thái đơn hàng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h4 class="text-success">@Model.DaGiao</h4>
+                            <small class="text-muted">Đã giao</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-danger">@Model.DaHuy</h4>
+                            <small class="text-muted">Đã hủy</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-warning">@Model.DangXuLy</h4>
+                            <small class="text-muted">Đang xử lý</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top sản phẩm bán chạy -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-trophy me-2"></i>Top 10 sản phẩm bán chạy
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>STT</th>
+                            <th>Sản phẩm</th>
+                            <th>Số lượng bán</th>
+                            <th>Doanh thu</th>
+                            <th>Tỷ lệ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var tongSoLuong = Model.TongSoLuongBan;
+                            var tongDoanhThu = Model.TongDoanhThuSanPham;
+                        }
+                        @for (int i = 0; i < Model.TopSanPham.Count; i++)
+                        {
+                            var sanPham = Model.TopSanPham.ElementAt(i);
+                            var tyLeSoLuong = tongSoLuong > 0 ? (sanPham.SoLuongBan * 100.0 / tongSoLuong) : 0;
+                            var tyLeDoanhThu = tongDoanhThu > 0 ? (sanPham.DoanhThu * 100.0 / tongDoanhThu) : 0;
+                            
+                            <tr>
+                                <td>
+                                    @if (i < 3)
+                                    {
+                                        <span class="badge bg-warning">@(i + 1)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">@(i + 1)</span>
+                                    }
+                                </td>
+                                <td>
+                                    <strong>@sanPham.TenSanPham</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">@sanPham.SoLuongBan</span>
+                                </td>
+                                <td>
+                                    <span class="text-success fw-bold">@sanPham.DoanhThu.ToString("#,##0") VNĐ</span>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-success" style="width: @tyLeSoLuong%">
+                                            @tyLeSoLuong.ToString("F1")%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="2"><strong>Tổng cộng:</strong></td>
+                            <td><strong>@tongSoLuong</strong></td>
+                            <td><strong class="text-success">@tongDoanhThu.ToString("#,##0") VNĐ</strong></td>
+                            <td><strong>100%</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ thống kê -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Phân bố trạng thái đơn hàng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Doanh thu theo thời gian
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Biểu đồ trạng thái đơn hàng
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Đã giao', 'Đã hủy', 'Đang xử lý'],
+                datasets: [{
+                    data: [@Model.DaGiao, @Model.DaHuy, @Model.DangXuLy],
+                    backgroundColor: [
+                        '#28a745',
+                        '#dc3545',
+                        '#17a2b8'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Biểu đồ doanh thu
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Hôm nay', 'Tháng này'],
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: [@Model.DoanhThuHomNay, @Model.DoanhThuThangNay],
+                    backgroundColor: [
+                        '#007bff',
+                        '#28a745'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + ' VNĐ';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
+} 
