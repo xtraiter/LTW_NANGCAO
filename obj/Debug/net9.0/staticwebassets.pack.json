@@ -273,6 +273,10 @@
       "PackagePath": "staticwebassets\\uploads\\support\\670b247f-3310-42a1-9d3d-752043cb3bfa.png"
     },
     {
+      "Id": "C:\\Users\\tetut\\Desktop\\quanlyRapChieuPhim\\wwwroot\\uploads\\support\\c1f3e43a-ee49-4b76-b624-3c30f37c3e26.png",
+      "PackagePath": "staticwebassets\\uploads\\support\\c1f3e43a-ee49-4b76-b624-3c30f37c3e26.png"
+    },
+    {
       "Id": "obj\\Debug\\net9.0\\staticwebassets\\msbuild.CinemaManagement.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
     },

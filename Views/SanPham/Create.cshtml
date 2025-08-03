@@ -58,8 +58,9 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label asp-for="Gia" class="control-label">Giá bán (VNĐ) <span class="text-danger">*</span></label>
-                                    <input asp-for="Gia" type="number" class="form-control" placeholder="0" min="0" step="1000" />
+                                    <input asp-for="Gia" type="number" class="form-control" placeholder="0" min="1" step="1000" />
                                     <span asp-validation-for="Gia" class="text-danger"></span>
+                                    <small class="form-text text-muted">Giá phải lớn hơn 0 VNĐ</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -124,19 +125,67 @@
                 }
             });
 
-            // Format price input with thousands separator
+            // Validate and format price input
             $('#Gia').on('input', function() {
-                var value = $(this).val().replace(/,/g, '');
-                if (value) {
-                    $(this).val(Number(value).toLocaleString('en-US'));
+                var value = $(this).val();
+                
+                // Remove any non-numeric characters except decimal point
+                value = value.replace(/[^0-9.]/g, '');
+                
+                // Ensure only one decimal point
+                var parts = value.split('.');
+                if (parts.length > 2) {
+                    value = parts[0] + '.' + parts.slice(1).join('');
+                }
+                
+                // Update the input value
+                $(this).val(value);
+                
+                // Validate minimum value
+                var numValue = parseFloat(value);
+                if (value && numValue <= 0) {
+                    $(this).addClass('is-invalid');
+                    $(this).next('.text-danger').text('Giá phải lớn hơn 0');
+                } else {
+                    $(this).removeClass('is-invalid');
                 }
             });
 
-            // Remove formatting before form submission
-            $('form').on('submit', function() {
-                var priceInput = $('#Gia');
-                var value = priceInput.val().replace(/,/g, '');
-                priceInput.val(value);
+            // Validate quantity input
+            $('#SoLuongTon').on('input', function() {
+                var value = parseInt($(this).val());
+                if ($(this).val() && (isNaN(value) || value < 0)) {
+                    $(this).addClass('is-invalid');
+                    $(this).next('.text-danger').text('Số lượng phải lớn hơn hoặc bằng 0');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+            // Form validation before submission
+            $('form').on('submit', function(e) {
+                var isValid = true;
+                
+                // Validate price
+                var price = parseFloat($('#Gia').val());
+                if (!price || price <= 0) {
+                    $('#Gia').addClass('is-invalid');
+                    $('#Gia').next('.text-danger').text('Giá phải lớn hơn 0');
+                    isValid = false;
+                }
+                
+                // Validate quantity
+                var quantity = parseInt($('#SoLuongTon').val());
+                if ($('#SoLuongTon').val() === '' || isNaN(quantity) || quantity < 0) {
+                    $('#SoLuongTon').addClass('is-invalid');
+                    $('#SoLuongTon').next('.text-danger').text('Số lượng phải lớn hơn hoặc bằng 0');
+                    isValid = false;
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    return false;
+                }
             });
         });
     </script>

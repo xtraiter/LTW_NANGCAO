@@ -33,7 +33,7 @@ namespace CinemaManagement.ViewModels
         public string? MoTa { get; set; }
 
         [Required(ErrorMessage = "Giá là bắt buộc")]
-        [Range(0, double.MaxValue, ErrorMessage = "Giá phải lớn hơn 0")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Giá phải lớn hơn 0")]
         public decimal Gia { get; set; }
 
         [Required(ErrorMessage = "Số lượng tồn là bắt buộc")]

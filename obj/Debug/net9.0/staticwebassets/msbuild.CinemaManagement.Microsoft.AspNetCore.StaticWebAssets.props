@@ -1224,5 +1224,23 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\support\670b247f-3310-42a1-9d3d-752043cb3bfa.png'))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\support\c1f3e43a-ee49-4b76-b624-3c30f37c3e26.png'))">
+      <SourceType>Package</SourceType>
+      <SourceId>CinemaManagement</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/CinemaManagement</BasePath>
+      <RelativePath>uploads/support/c1f3e43a-ee49-4b76-b624-3c30f37c3e26.png</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>d0smfqb9xg</Fingerprint>
+      <Integrity>s8EjEo/+/6TE2XiBTFh2T6R4GR6l35aO/CqCwtYbSiQ=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\support\c1f3e43a-ee49-4b76-b624-3c30f37c3e26.png'))</OriginalItemSpec>
+    </StaticWebAsset>
   </ItemGroup>
 </Project>
